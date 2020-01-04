@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Events\Events.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Program.cs" />
+    <Compile Remove="Program.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Entries\" />
+    <Folder Include="Entries\Events\" />
+    <Folder Include="Media\" />
+    <Folder Include="Media\Events\" />
+  </ItemGroup>
+</Project>

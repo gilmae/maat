@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="dapper" Version="2.0.30" />
+    <PackageReference Include="Nancy" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.7">
+      <PrivateAssets Condition="'%(PackageReference.Version)' == ''">all</PrivateAssets>
+      <Publish Condition="'%(PackageReference.Version)' == ''">true</Publish>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="Nancy.Authentication.Stateless" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="3.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.0.0" />
+    <PackageReference Include="Npgsql" Version="4.1.1" />
+    <PackageReference Include="RestSharp" Version="106.6.10" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EventTest\StrangeVanilla.Blogging.Events.csproj" />
+    <ProjectReference Include="..\Events\Events.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="WebEdit\" />
+    <Folder Include="Micropub\" />
+    <Folder Include="Indexing\" />
+    <Folder Include="lib\" />
+    <Folder Include="lib\MessageBus\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="WebEdit\New.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="WebEdit\master.sshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="libEnbilulu">
+      <HintPath>..\..\Enbilulu\libEnbilulu\bin\Debug\netcoreapp3.0\libEnbilulu.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

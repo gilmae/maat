@@ -1,0 +1,29 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Events", "Events\Events.csproj", "{198F9E91-525C-4FD9-A616-9AAB64591AD5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrangeVanilla.Blogging.Events", "EventTest\StrangeVanilla.Blogging.Events.csproj", "{1018167C-91F3-47C1-9058-EFDB5A746AAB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrangeVanilla.Maat", "StrangeVanilla.Maat\StrangeVanilla.Maat.csproj", "{BE0AB91C-8BBA-44C0-A592-A6F38ED45D46}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{198F9E91-525C-4FD9-A616-9AAB64591AD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{198F9E91-525C-4FD9-A616-9AAB64591AD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{198F9E91-525C-4FD9-A616-9AAB64591AD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{198F9E91-525C-4FD9-A616-9AAB64591AD5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1018167C-91F3-47C1-9058-EFDB5A746AAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1018167C-91F3-47C1-9058-EFDB5A746AAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1018167C-91F3-47C1-9058-EFDB5A746AAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1018167C-91F3-47C1-9058-EFDB5A746AAB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE0AB91C-8BBA-44C0-A592-A6F38ED45D46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE0AB91C-8BBA-44C0-A592-A6F38ED45D46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE0AB91C-8BBA-44C0-A592-A6F38ED45D46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE0AB91C-8BBA-44C0-A592-A6F38ED45D46}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
