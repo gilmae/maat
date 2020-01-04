@@ -30,6 +30,7 @@
     <Folder Include="Indexing\" />
     <Folder Include="lib\" />
     <Folder Include="lib\MessageBus\" />
+    <Folder Include="Commands\" />
   </ItemGroup>
   <ItemGroup>
     <None Update="WebEdit\New.html">

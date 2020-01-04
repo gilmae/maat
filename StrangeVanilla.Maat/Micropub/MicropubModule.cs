@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Events;
@@ -8,13 +7,13 @@ using Nancy;
 using Nancy.ModelBinding;
 using Nancy.Security;
 using StrangeVanilla.Blogging.Events;
-using StrangeVanilla.Blogging.Events.Entries.Events;
 using Nancy.Authentication.Stateless;
 using StrangeVanilla.Maat.lib.MessageBus;
+using StrangeVanilla.Maat.Commands;
 
 namespace StrangeVanilla.Maat.Micropub
 {
-    public class MicropubModule : Nancy.NancyModule
+    public class MicropubModule : NancyModule
     {
         IEventStore<Entry> _entryRepository;
         IEventStore<Media> _mediaRepository;
@@ -46,79 +45,35 @@ namespace StrangeVanilla.Maat.Micropub
 
             Post("/micropub",
                 p => {
-
                     var post = this.Bind<MicropubPost>();
-                    var entry = new Entry();
-                    var events = new List<Event<Entry>>();
 
-                    events.Add(new EntryAdded(entry)
-                    {
-                        Body = post.content,
-                        Title = post.name
-                    });
+                    CreateEntryCommand command = new CreateEntryCommand(_entryRepository);
+                    ProcessMediaUpload mediaProcessor = new ProcessMediaUpload(_mediaRepository);
 
-                    if (post.category != null)
-                    {
-                        events.AddRange(post.category.Select(c => new EntryCategorised(entry, c)));
-                    }
-
-                    if (this.Request.Files != null)
-                    {
-
-                        events.AddRange(this.Request.Files.Select(ProcessMediaFile).Select(m => new MediaAssociated(entry, m)));
-                    }
-
-                    _entryRepository.StoreEvent(events);
-                    foreach (var e in events)
-                    {
-                        entry = e.Apply(entry);
-                    }
-
+                    var entry = command.Execute(post.name,
+                        post.content,
+                        post.category,
+                        this.Request.Files.Select(f => mediaProcessor.Execute(f.Name, f.ContentType, f.Value))
+                    );
                     _entryBus.Publish(entry.Id);
 
                     return Newtonsoft.Json.JsonConvert.SerializeObject(entry);
-
                 }
             );
 
             Post("/micropub/media",
                 p =>
                 {
-                   
+                    ProcessMediaUpload mediaProcessor = new ProcessMediaUpload(_mediaRepository);
                     if (this.Request.Files != null)
                     {
-                        var media = this.Request.Files.Select(f=>ProcessMediaFile(f));
+                        var media = this.Request.Files.Select(f => mediaProcessor.Execute(f.Name, f.ContentType, f.Value)
+);
                         return Newtonsoft.Json.JsonConvert.SerializeObject(media);
                     }
                     return null;
                 });
         }
 
-        private Media ProcessMediaFile(HttpFile file)
-        {
-            if (file.Value != null && file.Value.Length != 0)
-            {
-                string savePath = Path.GetFullPath(".");
-
-                // Put it in the MEdia STore
-                //using (var reader = new StreamReader(file.Value))
-                //{
-                //    var bytes = reader.ReadToEnd();
-                //    File.WriteAllBytes(savePath, bytes);
-
-                //}
-                var m = new Media();
-                MediaUploaded e = new MediaUploaded
-                {
-                    Name = file.Name,
-                    MediaStoreId = string.Format("{1}/{0}", Guid.NewGuid(), savePath),
-                    MimeType = file.ContentType
-                };
-                e.Apply(m);
-                _mediaRepository.StoreEvent(e);
-                return m;
-            }
-            return null;
-        }
     }
 }

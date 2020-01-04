@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Events;
+﻿using Events;
 using Microsoft.Extensions.Logging;
 using Nancy;
 using Nancy.ModelBinding;
 using Nancy.Responses;
 using StrangeVanilla.Blogging.Events;
-using StrangeVanilla.Blogging.Events.Entries.Events;
+using StrangeVanilla.Maat.Commands;
 
 namespace StrangeVanilla.Maat
 {
@@ -20,6 +17,7 @@ namespace StrangeVanilla.Maat
         {
             _entryRepository = entryRepository;
             _mediaRepository = mediaRepository;
+            
             Get("/write", p =>
             {
                 return View["WebEdit/New.html"];
@@ -28,24 +26,15 @@ namespace StrangeVanilla.Maat
             Post("/write/create", p => {
 
                 var post = this.Bind<Micropub.MicropubPost>();
-                var entry = new Entry();
-                var events = new List<Event<Entry>>();
 
-                events.Add(new EntryAdded(entry)
-                {
-                    Body = post.content,
-                    Title = post.name
-                });
+                CreateEntryCommand command = new CreateEntryCommand(_entryRepository);
+                ProcessMediaUpload mediaProcessor = new ProcessMediaUpload(_mediaRepository);
 
-                if (post.category != null)
-                {
-                    events.AddRange(post.category.Select(c => new EntryCategorised(entry, c)));
-                }
-                _entryRepository.StoreEvent(events);
-                foreach (var e in events)
-                {
-                    entry = e.Apply(entry);
-                }
+                var entry = command.Execute(post.name,
+                    post.content,
+                    post.category,
+                    null
+                );
 
                 return new RedirectResponse("/write");
             });
