@@ -10,7 +10,7 @@ namespace StrangeVanilla.Maat.lib.MessageBus
 
         public EnbiluluBus()
         {
-            client = new Client("http://localhost");//Environment.GetEnvironmentVariable("MattEnbiluluServer"));
+            client = new Client("http://localhost", 6700);//Environment.GetEnvironmentVariable("MattEnbiluluServer"));
             var stream = client.GetStream(streamName);
             if (stream == null)
             {
