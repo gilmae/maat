@@ -35,4 +35,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Indexing\QueryModule.cs" />
+  </ItemGroup>
 </Project>

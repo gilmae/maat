@@ -27,21 +27,7 @@ namespace StrangeVanilla.Maat.Micropub
             StatelessAuthentication.Enable(this, IndieAuth.GetAuthenticationConfiguration());
             this.RequiresAuthentication();
 
-            Get("/micropub/{id:Guid}",
-
-                p =>
-                {
-                    var entry = new Entry((Guid)p.id);
-                    var events = _entryRepository.Retrieve(p.id);
-
-                    foreach (var e in events)
-                    {
-                        entry = e.Apply(entry);
-                    }
-
-                    return Newtonsoft.Json.JsonConvert.SerializeObject(entry);
-                }
-                );
+            
 
             Post("/micropub",
                 p => {
