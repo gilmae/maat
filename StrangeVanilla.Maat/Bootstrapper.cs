@@ -6,6 +6,7 @@ using Nancy.TinyIoc;
 using Events;
 using StrangeVanilla.Blogging.Events;
 using StrangeVanilla.Maat.lib.MessageBus;
+using Nancy.Configuration;
 
 namespace StrangeVanilla.Maat
 {
@@ -16,6 +17,12 @@ namespace StrangeVanilla.Maat
         public Bootstrapper(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
+        }
+
+        public override void Configure(INancyEnvironment environment)
+        {
+            environment.Tracing(true, true);
+            base.Configure(environment);
         }
 
         protected override void ConfigureApplicationContainer(TinyIoCContainer container)
