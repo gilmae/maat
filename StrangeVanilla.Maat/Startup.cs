@@ -35,6 +35,8 @@ namespace StrangeVanilla.Maat
             services.AddSingleton<IEventStore<Media>, PgStore<Media>>();
             services.AddSingleton<IMessageBus<Entry>, EnbiluluBus<Entry>>();
 
+            services.AddSingleton<IProjection<Entry>, Projection<Entry>>();
+
             //// Configure using a sub-section of the environment variables.
             //services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
             //services.Configure<ConnectionStringSettingsCollection>(Configuration.GetSection("ConnectionStrings"));

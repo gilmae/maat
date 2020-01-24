@@ -8,10 +8,6 @@
   <ItemGroup>
     <PackageReference Include="dapper" Version="2.0.30" />
     <PackageReference Include="Nancy" Version="2.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.7">
-      <PrivateAssets Condition="'%(PackageReference.Version)' == ''">all</PrivateAssets>
-      <Publish Condition="'%(PackageReference.Version)' == ''">true</Publish>
-    </PackageReference>
     <PackageReference Include="Nancy.Authentication.Stateless" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Owin" Version="3.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="2.2.0" />
@@ -26,7 +22,7 @@
   <ItemGroup>
     <Folder Include="WebEdit\" />
     <Folder Include="Micropub\" />
-    <Folder Include="Indexing\" />
+    <Folder Include="Queries\" />
     <Folder Include="lib\" />
     <Folder Include="lib\MessageBus\" />
     <Folder Include="Commands\" />

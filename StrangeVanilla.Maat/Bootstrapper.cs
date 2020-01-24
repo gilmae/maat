@@ -33,12 +33,15 @@ namespace StrangeVanilla.Maat
             container.Register(_serviceProvider.GetService<IEventStore<Entry>>());
             container.Register(_serviceProvider.GetService<IEventStore<Media>>());
             container.Register(_serviceProvider.GetService<IMessageBus<Entry>>());
+            container.Register(_serviceProvider.GetService<IProjection<Entry>>());
         }
 
         protected override byte[] FavIcon
         {
             get { return null; }
         }
+
+        
 
     }
 }

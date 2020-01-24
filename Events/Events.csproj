@@ -4,4 +4,10 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="IProjection_BACKUP_37992.cs" />
+    <Compile Remove="IProjection_BASE_37992.cs" />
+    <Compile Remove="IProjection_REMOTE_37992.cs" />
+    <Compile Remove="IProjection_LOCAL_37992.cs" />
+  </ItemGroup>
 </Project>
