@@ -23,6 +23,15 @@ namespace StrangeVanilla.Maat
                                    .Where(x => x.IsSubclassOf(typeof(Event<T>))).ToList();
         }
 
+        public int? GetCurrentVersion(Guid id)
+        {
+            using (var conn = new NpgsqlConnection(_connectionString))
+            {
+                conn.Open();
+                return conn.Query<int?>("select max(Version) from Events where aggregate_id = @id and type=@type", new { id, type = _type }).FirstOrDefault();
+            }
+        }
+
         public IList<Event<T>> Retrieve(Guid id)
         {
             string sql = $"select body, event_type from Events where aggregate_id = @id and type=@type";
@@ -31,7 +40,7 @@ namespace StrangeVanilla.Maat
 
                 IEnumerable<dynamic> bodies = conn.Query<dynamic>(sql, new { id, type = _type });
 
-                return bodies.Select(Deserialise).OrderBy(e=>e.SequencePoint).ToList();
+                return bodies.Select(Deserialise).OrderBy(e=>e.Version).ToList();
             }
         }
 
@@ -44,7 +53,7 @@ namespace StrangeVanilla.Maat
 
                 IEnumerable<dynamic> bodies = conn.Query<dynamic>(sql, new { type = _type });
 
-                return bodies.Select(Deserialise).OrderBy(e => e.AggregateId).OrderBy(e => e.SequencePoint).ToList();
+                return bodies.Select(Deserialise).OrderBy(e => e.AggregateId).OrderBy(e => e.Version).ToList();
             }
         }
 
@@ -67,7 +76,7 @@ namespace StrangeVanilla.Maat
         public long StoreEvent(IList<Event<T>> events)
         {
             
-            string sql = $"insert into Events (aggregate_id, type, event_type, body) values(@aggregate_id, @type, @event_type, @body)";
+            string sql = $"insert into Events (aggregate_id, type, event_type, body, version) values(@aggregate_id, @type, @event_type, @body, @version)";
             using (var conn = new NpgsqlConnection(_connectionString))
             {
                 conn.Open();
@@ -75,11 +84,11 @@ namespace StrangeVanilla.Maat
                 {
                     string body = Newtonsoft.Json.JsonConvert.SerializeObject(e);
                     string eventType = e.GetType().Name;
-                    conn.Execute(sql, new { aggregate_id = e.AggregateId, type = _type, event_type = eventType, body });
+                    conn.Execute(sql, new { aggregate_id = e.AggregateId, type = _type, event_type = eventType, body, e.Version });
                 }
             }
 
-            return events.Last().SequencePoint;
+            return events.Last().Version;
         }
     }
 }

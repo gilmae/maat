@@ -23,20 +23,23 @@ namespace StrangeVanilla.Maat.Commands
             var entry = new Entry();
             var events = new List<Event<Entry>>();
 
+            Incrementor version = new Incrementor(_entryStore.GetCurrentVersion(entry.Id));
+
             events.Add(new EntryAdded(entry)
             {
                 Body = content,
-                Title = name
+                Title = name,
+                Version = version.Next()
             });
 
             if (categories != null)
             {
-                events.AddRange(categories.Select(c => new EntryCategorised(entry, c)));
+                events.AddRange(categories.Select(c => new EntryCategorised(entry, c) { Version = version.Next() }));
             }
 
             if (media != null)
             {
-                events.AddRange(media.Select(m => new MediaAssociated(entry, m)));
+                events.AddRange(media.Select(m => new MediaAssociated(entry, m) { Version = version.Next() }));
 
             }
 

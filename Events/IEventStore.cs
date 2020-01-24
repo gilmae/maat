@@ -11,5 +11,7 @@ namespace Events
         IList<Event<T>> Retrieve(Guid id);
         IList<Event<T>> Retrieve();
 
+        int? GetCurrentVersion(Guid id);
+
     }
 }

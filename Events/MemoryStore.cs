@@ -13,14 +13,16 @@ namespace Events
             _events = new List<Event<T>>();
         }
 
+        public int? GetCurrentVersion(Guid id) => _events.Where(e=>e.AggregateId == id)?.Max(e => e.Version);
+
         public IList<Event<T>> Retrieve(Guid id)
         {
-            return _events.Where(e => e.AggregateId == id).OrderBy(e => e.SequencePoint).ToList();
+            return _events.Where(e => e.AggregateId == id).OrderBy(e => e.Version).ToList();
         }
 
         public IList<Event<T>> Retrieve()
         {
-            return _events.OrderBy(e=>e.AggregateId).OrderBy(e => e.SequencePoint).ToList();
+            return _events.OrderBy(e=>e.AggregateId).OrderBy(e => e.Version).ToList();
         }
 
         public long StoreEvent(Event<T> e)
@@ -34,7 +36,7 @@ namespace Events
             {
                 _events.Add(e);
             }
-            return _events.Last().SequencePoint;
+            return _events.Last().Version;
         }
     }
 }
