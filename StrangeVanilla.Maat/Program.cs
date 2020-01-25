@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
+using System;
 
 namespace StrangeVanilla.Maat
 {
@@ -9,6 +10,9 @@ namespace StrangeVanilla.Maat
     {
         public static void Main(string[] args)
         {
+            Console.WriteLine($"Maat Connection String: {Environment.GetEnvironmentVariable("MAATCONNSTR")}");
+            Console.WriteLine($"Enbilulu host: {Environment.GetEnvironmentVariable("ENBILULUHOST")}");
+            Console.WriteLine($"Enbilulu port: {Environment.GetEnvironmentVariable("ENBILULUPORT")}");
             CreateWebHostBuilder(args).Build().Run();
         }
 
