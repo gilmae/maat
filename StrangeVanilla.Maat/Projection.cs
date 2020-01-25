@@ -50,7 +50,7 @@ namespace StrangeVanilla.Maat
 
                 while (true)
                 {
-                    var records = _client.GetRecordsAfter(streamName, lastPoint, 10);
+                    var records = _client.GetRecordsFrom(streamName, lastPoint, 10);
 
                     var aggregateIds = records.Records.Select(p => System.Text.Json.JsonSerializer.Deserialize<Guid>(p.Payload)).Distinct();
 

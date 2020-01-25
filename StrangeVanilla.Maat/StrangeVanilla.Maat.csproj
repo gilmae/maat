@@ -13,7 +13,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.0.0" />
     <PackageReference Include="Npgsql" Version="4.1.1" />
-    <PackageReference Include="Enbilulu.Client" Version="0.9.0" />
+    <PackageReference Include="Enbilulu.Client" Version="0.9.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EventTest\StrangeVanilla.Blogging.Events.csproj" />
