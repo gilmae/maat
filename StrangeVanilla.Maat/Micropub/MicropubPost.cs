@@ -11,6 +11,8 @@ namespace StrangeVanilla.Maat.Micropub
         
         public string name { get; set; }
 
+        public string postStatus { get; set; }
+
         [JsonProperty("bookmark-of")]
         public string bookmark_of { get; set; }
     }

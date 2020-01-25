@@ -26,7 +26,8 @@ namespace StrangeVanilla.Maat.Micropub
                     content = context.Request.Form["content"],
                     category = AsArray(context.Request.Form["category"]),
                     name = context.Request.Form["name"],
-                    bookmark_of = context.Request.Form["bookmark-of"]
+                    bookmark_of = context.Request.Form["bookmark-of"],
+                    postStatus = context.Request.Form["post-status"]
                 };
             }
 

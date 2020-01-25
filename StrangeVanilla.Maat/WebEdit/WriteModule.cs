@@ -33,7 +33,8 @@ namespace StrangeVanilla.Maat
                 var entry = command.Execute(post.name,
                     post.content,
                     post.category,
-                    null
+                    null,
+                    true
                 );
 
                 return new RedirectResponse("/write");

@@ -53,7 +53,8 @@ namespace StrangeVanilla.Maat.Micropub
                     var entry = command.Execute(post.name,
                         post.content,
                         post.category,
-                        this.Request.Files.Select(f => mediaProcessor.Execute(f.Name, f.ContentType, f.Value))
+                        this.Request.Files.Select(f => mediaProcessor.Execute(f.Name, f.ContentType, f.Value)),
+                        post.postStatus != "draft"
                     );
                     _entryBus.Publish(entry.Id);
 

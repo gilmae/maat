@@ -18,7 +18,7 @@ namespace StrangeVanilla.Maat.Commands
             _entryStore = entryStore;
         }
 
-        public Entry Execute(string name, string content, string[] categories, IEnumerable<Media> media)
+        public Entry Execute(string name, string content, string[] categories, IEnumerable<Media> media, bool published)
         {
             var entry = new Entry();
             var events = new List<Event<Entry>>();
@@ -31,6 +31,11 @@ namespace StrangeVanilla.Maat.Commands
                 Title = name,
                 Version = version.Next()
             });
+
+            if (published)
+            {
+                events.Add(new EntryPublished(entry));
+            }
 
             if (categories != null)
             {
