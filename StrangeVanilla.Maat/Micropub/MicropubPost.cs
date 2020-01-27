@@ -5,15 +5,22 @@ namespace StrangeVanilla.Maat.Micropub
 {
     public class MicropubPost
     {
-        public string h { get; set; }
-        public string content { get; set; }
-        public string[] category { get; set; }
-        
-        public string name { get; set; }
+        [JsonProperty("h")]
+        public string Type { get; set; }
 
-        public string postStatus { get; set; }
+        [JsonProperty("content")]
+        public string Content { get; set; }
+
+        [JsonProperty("name")]
+        public string Title { get; set; }
+
+        [JsonProperty("category")]
+        public string[] Categories { get; set; }
+
+        [JsonProperty("post-status")]
+        public string PostStatus { get; set; }
 
         [JsonProperty("bookmark-of")]
-        public string bookmark_of { get; set; }
+        public string BookmarkOf { get; set; }
     }
 }

@@ -30,9 +30,10 @@ namespace StrangeVanilla.Maat
                 CreateEntryCommand command = new CreateEntryCommand(_entryRepository);
                 ProcessMediaUpload mediaProcessor = new ProcessMediaUpload(_mediaRepository);
 
-                var entry = command.Execute(post.name,
-                    post.content,
-                    post.category,
+                var entry = command.Execute(post.Title,
+                    post.Content,
+                    post.Categories,
+                    post.BookmarkOf,
                     null,
                     true
                 );

@@ -10,11 +10,13 @@ namespace StrangeVanilla.Maat.Micropub
     {
         public object Bind(NancyContext context, Type modelType, object instance, BindingConfig configuration, params string[] blackList)
         {
-            if (context.Request.Headers.ContentType == "application.json")
+            if (context.Request.Headers.ContentType == "application/json")
             {
                 using (var reader = new StreamReader(context.Request.Body))
                 {
-                    return Newtonsoft.Json.JsonConvert.DeserializeObject<MicropubPost>(reader.ReadToEnd());
+                    string body = reader.ReadToEnd();
+                    Console.WriteLine(body);
+                    return Newtonsoft.Json.JsonConvert.DeserializeObject<MicropubPost>(body);
                 }
             }
             else if (context.Request.Headers.ContentType == "application/x-www-form-urlencoded" ||
@@ -22,12 +24,12 @@ namespace StrangeVanilla.Maat.Micropub
             {
                 return new MicropubPost
                 {
-                    h = context.Request.Form["h"],
-                    content = context.Request.Form["content"],
-                    category = AsArray(context.Request.Form["category"]),
-                    name = context.Request.Form["name"],
-                    bookmark_of = context.Request.Form["bookmark-of"],
-                    postStatus = context.Request.Form["post-status"]
+                    Type = context.Request.Form["h"],
+                    Content = context.Request.Form["content"],
+                    Categories = AsArray(context.Request.Form["category"]),
+                    Title = context.Request.Form["name"],
+                    BookmarkOf = context.Request.Form["bookmark-of"],
+                    PostStatus = context.Request.Form["post-status"]
                 };
             }
 

@@ -13,6 +13,7 @@ namespace StrangeVanilla.Blogging.Events
         public string Uid { get; set; }
         public IList<string> Syndications { get; set; }
         public IList<Guid> AssociatedMedia { get; set; }
+        public string BookmarkOf { get; set; }
         
         public Entry() : base() { }
         public Entry(Guid id) : base(id) { }

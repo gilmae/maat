@@ -18,7 +18,7 @@ namespace StrangeVanilla.Maat.Commands
             _entryStore = entryStore;
         }
 
-        public Entry Execute(string name, string content, string[] categories, IEnumerable<Media> media, bool published)
+        public Entry Execute(string name, string content, string[] categories, string bookmarkOf, IEnumerable<Media> media, bool published)
         {
             var entry = new Entry();
             var events = new List<Event<Entry>>();
@@ -29,7 +29,8 @@ namespace StrangeVanilla.Maat.Commands
             {
                 Body = content,
                 Title = name,
-                Version = version.Next()
+                Version = version.Next(),
+                BookmarkOf = bookmarkOf
             });
 
             if (published)

@@ -36,11 +36,12 @@ namespace StrangeVanilla.Maat.Micropub
                     CreateEntryCommand command = new CreateEntryCommand(_entryRepository);
                     ProcessMediaUpload mediaProcessor = new ProcessMediaUpload(_mediaRepository);
 
-                    var entry = command.Execute(post.name,
-                        post.content,
-                        post.category,
+                    var entry = command.Execute(post.Title,
+                        post.Content,
+                        post.Categories,
+                        post.BookmarkOf,
                         this.Request.Files.Select(f => mediaProcessor.Execute(f.Name, f.ContentType, f.Value)),
-                        post.postStatus != "draft"
+                        post.PostStatus != "draft"
                     );
                     _entryBus.Publish(entry.Id);
 
