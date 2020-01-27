@@ -22,7 +22,6 @@
   <ItemGroup>
     <Folder Include="WebEdit\" />
     <Folder Include="Micropub\" />
-    <Folder Include="Queries\" />
     <Folder Include="lib\" />
     <Folder Include="lib\MessageBus\" />
     <Folder Include="Commands\" />

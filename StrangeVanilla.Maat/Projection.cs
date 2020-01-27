@@ -86,6 +86,11 @@ namespace StrangeVanilla.Maat
             return projections[id];
         }
 
+        public IEnumerable<T> Get()
+        {
+            return projections.Values;
+        }
+
 
     }
 }
