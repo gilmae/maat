@@ -45,7 +45,9 @@ namespace StrangeVanilla.Maat.Micropub
                     );
                     _entryBus.Publish(entry.Id);
 
-                    return Newtonsoft.Json.JsonConvert.SerializeObject(entry);
+                    var response = new Nancy.Responses.TextResponse() { StatusCode = HttpStatusCode.Created };
+                    response.Headers.Add("Location", Path.Join(this.Request.Url, entry.Id.ToString()));
+                    return response;
                 }
             );
 
