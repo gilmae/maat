@@ -14,9 +14,7 @@ namespace StrangeVanilla.Maat.Micropub
             {
                 using (var reader = new StreamReader(context.Request.Body))
                 {
-                    string body = reader.ReadToEnd();
-                    Console.WriteLine(body);
-                    return Newtonsoft.Json.JsonConvert.DeserializeObject<MicropubPost>(body);
+                    return Newtonsoft.Json.JsonConvert.DeserializeObject<MicropubPost>(reader.ReadToEnd());
                 }
             }
             else if (context.Request.Headers.ContentType == "application/x-www-form-urlencoded" ||
