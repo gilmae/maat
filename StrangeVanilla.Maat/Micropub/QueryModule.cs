@@ -20,24 +20,27 @@ namespace StrangeVanilla.Maat.Micropub
             _entryRepository = entryRepository;
             _mediaRepository = mediaRepository;
 
-            Get("/micropub", p => {
+            Get("/micropub", p =>
+            {
                 string q = this.Request.Query["q"];
 
-                switch (q.ToLower())
+                switch (q)
                 {
                     case "config":
-                        return GetConfig();
+                        return new Nancy.Responses.JsonResponse(new Config { MediaEndpoint = Path.Join(this.Request.Url.SiteBase, "/micropub/media") },
+new Nancy.Responses.DefaultJsonSerializer(this.Context.Environment),
+this.Context.Environment);
+                    case "source":
+                        return new Nancy.Responses.JsonResponse(_entryRepository.Get().OrderByDescending(i=>i.Published_At).Take(20).Select(i=>new { properties = i }),
+new Nancy.Responses.DefaultJsonSerializer(this.Context.Environment),
+this.Context.Environment);
+
                     default:
-                        return JsonConvert.SerializeObject(entryRepository.Get().Take(20));
+                        return "";
+
                 }
             });
         }
 
-        protected object GetConfig()
-        {
-            return new Nancy.Responses.JsonResponse(new Config { MediaEndpoint = Path.Join(this.Request.Url.SiteBase, "/micropub/media") },
-                new Nancy.Responses.DefaultJsonSerializer(this.Context.Environment),
-                this.Context.Environment);
-        }
     }
 }
