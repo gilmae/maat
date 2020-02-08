@@ -10,6 +10,7 @@ using StrangeVanilla.Blogging.Events;
 using Nancy.Authentication.Stateless;
 using StrangeVanilla.Maat.lib.MessageBus;
 using StrangeVanilla.Maat.Commands;
+using StrangeVanilla.Maat.lib;
 
 namespace StrangeVanilla.Maat.Micropub
 {
@@ -46,7 +47,8 @@ namespace StrangeVanilla.Maat.Micropub
                     _entryBus.Publish(entry.Id);
 
                     var response = new Nancy.Responses.TextResponse() { StatusCode = HttpStatusCode.Created };
-                    response.Headers.Add("Location", Path.Join(this.Request.Url, entry.Id.ToString()));
+                    
+                    response.Headers.Add("Location", this.Context.EntryUrl(entry));
                     return response;
                 }
             );
