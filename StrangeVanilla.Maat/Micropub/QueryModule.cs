@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Events;
+using FastMember;
 using Microsoft.Extensions.Logging;
 using Nancy;
 using Newtonsoft.Json;
@@ -31,15 +33,91 @@ namespace StrangeVanilla.Maat.Micropub
 new Nancy.Responses.DefaultJsonSerializer(this.Context.Environment),
 this.Context.Environment);
                     case "source":
-                        return new Nancy.Responses.JsonResponse(_entryRepository.Get().OrderByDescending(i=>i.Published_At).Take(20).Select(i=>new { properties = i }),
-new Nancy.Responses.DefaultJsonSerializer(this.Context.Environment),
-this.Context.Environment);
+
+                        var accessor = TypeAccessor.Create(typeof(MicropubPost));
+
+                        var test = new MicropubPost();
+                        var testAccessor = ObjectAccessor.Create(new MicropubPost());
+
+                        var requestedProperties = SanitiseColumns((string[])MicropubBinder.AsArray(Request.Query["properties[]"]))
+                        .Where(p=> testAccessor.IsDefined(p.Key));
+
+                        var entries = _entryRepository
+                            .Get()
+                            .OrderByDescending(i => i.Published_At)
+                            .Take(20)
+                            .Select(i => new MicropubPost { Type = "Entry",
+                                Title = i.Title,
+                                Content = i.Body,
+                                Categories = i.Categories?.ToArray(),
+                                BookmarkOf = i.BookmarkOf }).ToList();
+
+                        if (requestedProperties != null & requestedProperties.Count() > 0)
+                        {
+                            var properties = entries.Select(i => GetColumns(requestedProperties, i, accessor));
+                            return new Nancy.Responses.JsonResponse(
+                                new {
+                                    properties
+                                },
+                                new Nancy.Serialization.JsonNet.JsonNetSerializer(),
+                                this.Context.Environment);
+                            
+                        }
+
+                        return new Nancy.Responses.JsonResponse(new { properties = entries },
+                                 new Nancy.Serialization.JsonNet.JsonNetSerializer(),
+                                 this.Context.Environment);
 
                     default:
                         return "";
 
                 }
             });
+        }
+
+        private Dictionary<string,string> SanitiseColumns(string[] columns)
+        {
+            Dictionary<string, string> columnMapping = new Dictionary<string, string>();
+
+            foreach (string c in columns)
+            {
+                switch (c)
+                {
+                    case "h":
+                        columnMapping["Type"] = c;
+                        break;
+
+                    case "content":
+                        columnMapping["Content"] = c;
+                        break;
+
+                    case "name":
+                        columnMapping["Title"] = c;
+                        break;
+
+                    case "category":
+                        columnMapping["Categories"] = c;
+                        break;
+
+                    case "post-status":
+                        columnMapping["PostStatus"] = c;
+                        break;
+
+                    case "bookmark-of":
+                        columnMapping["BookmarkOf"] = c;
+                        break;
+                    default:
+                        columnMapping[c] = c;
+                        break;
+                }
+            }
+
+            return columnMapping;
+        }
+
+        private Dictionary<string, object> GetColumns(IEnumerable<KeyValuePair<string,string>> columns, object source, TypeAccessor accessor)
+        {
+            return columns.ToDictionary(i => i.Value, i => accessor[source, i.Key]);
         }
 
     }
