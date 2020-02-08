@@ -13,15 +13,14 @@ namespace StrangeVanilla.Maat.lib
             return path;
         }
 
-        public static Guid GetEntryIdFromUrl(this Nancy.NancyContext ctx)
+        public static Guid GetEntryIdFromUrl(this Nancy.NancyContext ctx, string url)
         {
-            var url = ctx.Request.Url;
+            Nancy.Url requestUrl = new Nancy.Url(url);
+            var path = requestUrl.Path;
 
-            var path = url.Path;
-
-            if (path.StartsWith("entries"))
+            if (path.StartsWith(@"/entries"))
             {
-                var potentialId = path.Replace(@"entries/", "");
+                var potentialId = path.Replace(@"/entries/", "");
 
                 Guid entryId;
 

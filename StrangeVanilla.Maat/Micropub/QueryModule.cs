@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Nancy;
 using Newtonsoft.Json;
 using StrangeVanilla.Blogging.Events;
+using StrangeVanilla.Maat.lib;
 
 namespace StrangeVanilla.Maat.Micropub
 {
@@ -33,7 +34,6 @@ namespace StrangeVanilla.Maat.Micropub
 new Nancy.Responses.DefaultJsonSerializer(this.Context.Environment),
 this.Context.Environment);
                     case "source":
-
                         var accessor = TypeAccessor.Create(typeof(MicropubPost));
 
                         var test = new MicropubPost();
@@ -43,14 +43,30 @@ this.Context.Environment);
                         .Where(p=> testAccessor.IsDefined(p.Key));
 
                         var entries = _entryRepository
-                            .Get()
-                            .OrderByDescending(i => i.Published_At)
-                            .Take(20)
+                            .Get();
+
+                        string url = Request.Query["url"];
+                        if (!string.IsNullOrEmpty(url))
+                        {
+                            Guid entryId = this.Context.GetEntryIdFromUrl(url);
+
+                            if (entryId == Guid.Empty)
+                            {
+                                entries = entries.Where(e => e.Syndications.Contains(url)); 
+                            }
+                            else
+                            {
+                                entries = entries.Where(e => e.Id == entryId);
+                            }
+                        }
+                            
+
+                        var filteredEntries = entries.OrderByDescending(i => i.Published_At).Take(20)
                             .Select(i => new MicropubPost { Type = "Entry",
                                 Title = i.Title,
                                 Content = i.Body,
                                 Categories = i.Categories?.ToArray(),
-                                BookmarkOf = i.BookmarkOf }).ToList();
+                                BookmarkOf = i.BookmarkOf });
 
                         if (requestedProperties != null & requestedProperties.Count() > 0)
                         {
