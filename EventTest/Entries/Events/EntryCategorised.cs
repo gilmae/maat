@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Events;
 
 namespace StrangeVanilla.Blogging.Events.Entries.Events
@@ -18,7 +19,7 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
         {
             if (aggregate.Categories == null)
             {
-                aggregate.Categories = new[] { Category };
+                aggregate.Categories = new List<string> { Category };
             }
             else
             {
