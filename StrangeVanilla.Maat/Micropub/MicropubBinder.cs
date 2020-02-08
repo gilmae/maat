@@ -24,7 +24,7 @@ namespace StrangeVanilla.Maat.Micropub
                 {
                     Type = context.Request.Form["h"],
                     Content = context.Request.Form["content"],
-                    Categories = AsArray(context.Request.Form["category"]),
+                    Categories = AsArray(context.Request.Form["category[]"]),
                     Title = context.Request.Form["name"],
                     BookmarkOf = context.Request.Form["bookmark-of"],
                     PostStatus = context.Request.Form["post-status"]
@@ -34,7 +34,7 @@ namespace StrangeVanilla.Maat.Micropub
             return null;
         }
 
-        public string[] AsArray(dynamic field)
+        public static string[] AsArray(dynamic field)
         {
             if (field == null)
             {
