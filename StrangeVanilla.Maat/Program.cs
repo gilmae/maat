@@ -18,6 +18,7 @@ namespace StrangeVanilla.Maat
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) => WebHost
                 .CreateDefaultBuilder(args)
+                .UseUrls("http://0.0.0.0:6767")
                 .ConfigureKestrel((ct, k) => k.AllowSynchronousIO = true)
                 .ConfigureLogging((host, logging) =>
                 {
