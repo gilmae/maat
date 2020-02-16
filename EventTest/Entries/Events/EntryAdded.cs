@@ -15,7 +15,7 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
             AggregateId = entry.Id;
         }
 
-        public new void Apply(Entry aggregate)
+        public override void Apply(Entry aggregate)
         {
             base.Apply(aggregate);
             aggregate.Body = Body;

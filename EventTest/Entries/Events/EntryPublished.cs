@@ -20,7 +20,7 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
         public DateTime Published_At { get; set; }
 
 
-        public new void Apply(Entry aggregate)
+        public override void Apply(Entry aggregate)
         {
             base.Apply(aggregate);
             aggregate.Published_At = Published_At;

@@ -1,7 +1,7 @@
 ﻿using System;
 namespace Events
 {
-    public class Aggregate
+    public class Aggregate 
     {
         public Guid Id { get; set; }
         public int Version { get; set; }

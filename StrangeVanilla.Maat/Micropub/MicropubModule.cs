@@ -48,7 +48,7 @@ namespace StrangeVanilla.Maat.Micropub
                         this.Request.Files.Select(f => mediaProcessor.Execute(f.Name, f.ContentType, f.Value)),
                         post.PostStatus != "draft"
                     );
-                    _entryBus.Publish(new { entry.Id });
+                    _entryBus.Publish(new AggregateEventMessage { Id = entry.Id, Version = entry.Version });
 
                     var response = new Nancy.Responses.TextResponse() { StatusCode = HttpStatusCode.Created };
                     

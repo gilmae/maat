@@ -14,7 +14,7 @@ namespace StrangeVanilla.Blogging.Events
         public string MimeType { get; set; }
         public string MediaStoreId { get; set; }
 
-        public new void Apply(Media aggregate)
+        public override void Apply(Media aggregate)
         {
             base.Apply(aggregate);
             aggregate.Id = AggregateId;

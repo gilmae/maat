@@ -15,9 +15,10 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
             Category = category;
         }
 
-        public new void Apply(Entry aggregate)
+        public override void Apply(Entry aggregate)
         {
             base.Apply(aggregate);
+
             if (aggregate.Categories == null)
             {
                 aggregate.Categories = new List<string> { Category };

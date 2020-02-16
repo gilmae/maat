@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Events;
 using libEnbilulu;
+using StrangeVanilla.Maat.lib.MessageBus;
 
 namespace StrangeVanilla.Maat
 {
@@ -52,31 +53,31 @@ namespace StrangeVanilla.Maat
                 {
                     var records = _client.GetRecordsFrom(streamName, lastPoint, 10);
 
-                    var aggregateIds = records.Records.Select(p => System.Text.Json.JsonSerializer.Deserialize<dynamic>(p.Payload))
-                    .Select(i=>i.Id)
-                    .Distinct();
-
-                    if (aggregateIds.Count() > 0)
-                    {
-                        foreach (var id in aggregateIds)
-                        {
-
-                            T aggregate = (T)Activator.CreateInstance(typeof(T), id);
-                            var events = _aggregateRepository.Retrieve(id);
-                            foreach (var e in events)
-                            {
-                                e.Apply(aggregate);
-                            }
-                            projections.AddOrUpdate(aggregate.Id, aggregate, (key, oldValue) => aggregate);
-
-                        }
-                    }
                     if (records.Records.Count() == 0)
                     {
                         Thread.Sleep(TimeSpan.FromSeconds(5));
                     }
                     else
                     {
+                        var payloadData = records.Records.Select(p => System.Text.Json.JsonSerializer.Deserialize<AggregateEventMessage>(p.Payload)).ToList();
+                        var aggregateIds = payloadData.Select(i => i.Id).Distinct();
+
+                        if (aggregateIds.Count() > 0)
+                        {
+                            foreach (var id in aggregateIds)
+                            {
+
+                                T aggregate = (T)Activator.CreateInstance(typeof(T), id);
+                                var events = _aggregateRepository.Retrieve(id);
+                                foreach (var e in events)
+                                {
+                                    e.Apply(aggregate);
+                                }
+                                projections.AddOrUpdate(aggregate.Id, aggregate, (key, oldValue) => aggregate);
+
+                            }
+                        }
+
                         lastPoint = records.LastPoint.Value + 1;
                     }
                 }
