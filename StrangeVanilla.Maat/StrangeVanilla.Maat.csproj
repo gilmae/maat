@@ -26,6 +26,7 @@
     <Folder Include="lib\" />
     <Folder Include="lib\MessageBus\" />
     <Folder Include="Commands\" />
+    <Folder Include="lib\FileStore\" />
   </ItemGroup>
   <ItemGroup>
     <None Update="WebEdit\New.html">

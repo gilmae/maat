@@ -7,6 +7,7 @@ using Events;
 using StrangeVanilla.Blogging.Events;
 using StrangeVanilla.Maat.lib.MessageBus;
 using Nancy.Configuration;
+using StrangeVanilla.Maat.lib;
 
 namespace StrangeVanilla.Maat
 {
@@ -34,6 +35,7 @@ namespace StrangeVanilla.Maat
             container.Register(_serviceProvider.GetService<IEventStore<Media>>());
             container.Register(_serviceProvider.GetService<IMessageBus<Entry>>());
             container.Register(_serviceProvider.GetService<IProjection<Entry>>());
+            container.Register(_serviceProvider.GetService<IFileStore>());
         }
 
         protected override byte[] FavIcon

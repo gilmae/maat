@@ -5,6 +5,7 @@ using Nancy.ModelBinding;
 using Nancy.Responses;
 using StrangeVanilla.Blogging.Events;
 using StrangeVanilla.Maat.Commands;
+using StrangeVanilla.Maat.lib;
 
 namespace StrangeVanilla.Maat
 {
@@ -13,7 +14,7 @@ namespace StrangeVanilla.Maat
         IEventStore<Entry> _entryRepository;
         IEventStore<Media> _mediaRepository;
 
-        public WriteModule(ILogger<NancyModule> logger, IEventStore<Entry> entryRepository, IEventStore<Media> mediaRepository)
+        public WriteModule(ILogger<NancyModule> logger, IEventStore<Entry> entryRepository, IEventStore<Media> mediaRepository, IFileStore fileStore)
         {
             _entryRepository = entryRepository;
             _mediaRepository = mediaRepository;
@@ -28,7 +29,7 @@ namespace StrangeVanilla.Maat
                 var post = this.Bind<Micropub.MicropubPost>();
 
                 CreateEntryCommand command = new CreateEntryCommand(_entryRepository);
-                ProcessMediaUpload mediaProcessor = new ProcessMediaUpload(_mediaRepository);
+                ProcessMediaUpload mediaProcessor = new ProcessMediaUpload(_mediaRepository, fileStore);
 
                 var entry = command.Execute(post.Title,
                     post.Content,

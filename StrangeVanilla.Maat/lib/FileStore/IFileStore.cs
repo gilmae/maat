@@ -5,8 +5,8 @@ namespace StrangeVanilla.Maat.lib
 {
     public interface IFileStore
     {
-        public string Save(string filename, FileStream file);
+        public string Save(byte[] data);
 
-        public FileStream Get(string filaname);
+        public byte[] Get(string filaname);
     }
 }

@@ -4,7 +4,10 @@ using System.Linq;
 using Events;
 using Microsoft.Extensions.Logging;
 using Nancy;
+<<<<<<< HEAD
 using Nancy.ModelBinding;
+=======
+>>>>>>> Add FileStore interface, and implementation, for storing actual bytes of files
 using Nancy.Security;
 using StrangeVanilla.Blogging.Events;
 using Nancy.Authentication.Stateless;
@@ -14,16 +17,20 @@ using StrangeVanilla.Maat.lib;
 
 namespace StrangeVanilla.Maat.Micropub
 {
+<<<<<<< HEAD
     public class MicropubModule : NancyModule
+=======
+    public class MediaModule : NancyModule
+>>>>>>> Add FileStore interface, and implementation, for storing actual bytes of files
     {
         IEventStore<Entry> _entryRepository;
         IEventStore<Media> _mediaRepository;
         IMessageBus<Entry> _entryBus;
-        public MicropubModule(ILogger<NancyModule> logger,
-            IEventStore<Entry> entryRepository,
-            IEventStore<Media> mediaRepository,
-            IMessageBus<Entry> entryBus,
-            IFileStore fileStore)
+<<<<<<< HEAD
+        public MicropubModule(ILogger<NancyModule> logger, IEventStore<Entry> entryRepository, IEventStore<Media> mediaRepository, IMessageBus<Entry> entryBus)
+=======
+        public MediaModule(ILogger<NancyModule> logger, IEventStore<Entry> entryRepository, IEventStore<Media> mediaRepository, IMessageBus<Entry> entryBus, IFileStore fileStore)
+>>>>>>> Add FileStore interface, and implementation, for storing actual bytes of files
         {
 
             _entryRepository = entryRepository;
@@ -32,6 +39,7 @@ namespace StrangeVanilla.Maat.Micropub
             StatelessAuthentication.Enable(this, IndieAuth.GetAuthenticationConfiguration());
             this.RequiresAuthentication();
 
+<<<<<<< HEAD
             
 
             Post("/micropub",
@@ -39,7 +47,7 @@ namespace StrangeVanilla.Maat.Micropub
                     var post = this.Bind<MicropubPost>();
 
                     CreateEntryCommand command = new CreateEntryCommand(_entryRepository);
-                    ProcessMediaUpload mediaProcessor = new ProcessMediaUpload(_mediaRepository, fileStore);
+                    ProcessMediaUpload mediaProcessor = new ProcessMediaUpload(_mediaRepository);
 
                     var entry = command.Execute(post.Title,
                         post.Content,
@@ -48,7 +56,7 @@ namespace StrangeVanilla.Maat.Micropub
                         this.Request.Files.Select(f => mediaProcessor.Execute(f.Name, f.ContentType, f.Value)),
                         post.PostStatus != "draft"
                     );
-                    _entryBus.Publish(new { entry.Id });
+                    _entryBus.Publish(entry.Id);
 
                     var response = new Nancy.Responses.TextResponse() { StatusCode = HttpStatusCode.Created };
                     
@@ -56,6 +64,25 @@ namespace StrangeVanilla.Maat.Micropub
                     return response;
                 }
             );
+
+            Post("/micropub/media",
+                p =>
+                {
+                    ProcessMediaUpload mediaProcessor = new ProcessMediaUpload(_mediaRepository);
+=======
+            Post("/micropub/media",
+                p =>
+                {
+                    ProcessMediaUpload mediaProcessor = new ProcessMediaUpload(_mediaRepository, fileStore);
+>>>>>>> Add FileStore interface, and implementation, for storing actual bytes of files
+                    if (this.Request.Files != null)
+                    {
+                        var media = this.Request.Files.Select(f => mediaProcessor.Execute(f.Name, f.ContentType, f.Value)
+);
+                        return Newtonsoft.Json.JsonConvert.SerializeObject(media);
+                    }
+                    return null;
+                });
         }
 
     }

@@ -7,6 +7,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Nancy.Owin;
 using StrangeVanilla.Blogging.Events;
+using StrangeVanilla.Maat.lib;
+using StrangeVanilla.Maat.lib.FileStore;
 using StrangeVanilla.Maat.lib.MessageBus;
 
 namespace StrangeVanilla.Maat
@@ -36,6 +38,8 @@ namespace StrangeVanilla.Maat
             services.AddSingleton<IMessageBus<Entry>, EnbiluluBus<Entry>>();
 
             services.AddSingleton<IProjection<Entry>, Projection<Entry>>();
+
+            services.AddSingleton<IFileStore, FSStore>();
 
             //// Configure using a sub-section of the environment variables.
             //services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
