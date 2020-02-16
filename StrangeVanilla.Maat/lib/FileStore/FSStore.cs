@@ -9,7 +9,7 @@ namespace StrangeVanilla.Maat.lib.FileStore
 
         public FSStore()
         {
-            _rootPath = Path.GetFullPath(Environment.GetEnvironmentVariable("FSStoreRoot"));
+            _rootPath = Path.GetFullPath(Environment.GetEnvironmentVariable("FSSTORECONNSTR"));
         }
 
         public byte[] Get(string filename)

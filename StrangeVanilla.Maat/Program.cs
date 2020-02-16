@@ -13,6 +13,7 @@ namespace StrangeVanilla.Maat
             Console.WriteLine($"Maat Connection String: {Environment.GetEnvironmentVariable("MAATCONNSTR")}");
             Console.WriteLine($"Enbilulu host: {Environment.GetEnvironmentVariable("ENBILULUHOST")}");
             Console.WriteLine($"Enbilulu port: {Environment.GetEnvironmentVariable("ENBILULUPORT")}");
+            Console.WriteLine($"File Store COnnection String: {Environment.GetEnvironmentVariable("FSSTORECONNSTR")}");
             CreateWebHostBuilder(args).Build().Run();
         }
 
