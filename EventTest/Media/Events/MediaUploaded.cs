@@ -14,13 +14,13 @@ namespace StrangeVanilla.Blogging.Events
         public string MimeType { get; set; }
         public string MediaStoreId { get; set; }
 
-        public override Media Apply(Media aggregate)
+        public new void Apply(Media aggregate)
         {
+            base.Apply(aggregate);
             aggregate.Id = AggregateId;
             aggregate.Name = Name;
             aggregate.MediaStoreId = MediaStoreId;
             aggregate.MimeType = MimeType;
-            return aggregate;
         }
     }
 }

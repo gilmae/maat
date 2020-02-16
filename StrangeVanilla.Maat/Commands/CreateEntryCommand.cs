@@ -53,7 +53,7 @@ namespace StrangeVanilla.Maat.Commands
 
             foreach (var e in events)
             {
-                entry = e.Apply(entry);
+                e.Apply(entry);
             }
 
             return entry;

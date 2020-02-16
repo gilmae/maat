@@ -15,12 +15,12 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
             AggregateId = entry.Id;
         }
 
-        public override Entry Apply(Entry aggregate)
+        public new void Apply(Entry aggregate)
         {
+            base.Apply(aggregate);
             aggregate.Body = Body;
             aggregate.Title = Title;
             aggregate.BookmarkOf = BookmarkOf;
-            return aggregate;
         }
     }
 }

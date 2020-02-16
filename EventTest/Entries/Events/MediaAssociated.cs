@@ -16,8 +16,9 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
 
         public Guid MediaId { get; set; }
 
-        public override Entry Apply(Entry aggregate)
+        public new void Apply(Entry aggregate)
         {
+            base.Apply(aggregate);
             if (aggregate.AssociatedMedia == null)
             {
                 aggregate.AssociatedMedia = new List<Guid>();
@@ -26,8 +27,6 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
             {
                 aggregate.AssociatedMedia.Add(MediaId);
             }
-
-            return aggregate;
         }
     }
 }

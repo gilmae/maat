@@ -14,6 +14,9 @@ namespace Events
             OccuredAt = DateTime.UtcNow;
         }
 
-        public abstract T Apply(T aggregate);
+        public virtual void Apply(T aggregate)
+        {
+            aggregate.Version = Version;
+        }
     }
 }

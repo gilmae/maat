@@ -23,7 +23,7 @@ namespace StrangeVanilla.Maat
                 T aggregate = (T)Activator.CreateInstance(typeof(T), a.Key);
                 foreach (Event<T> e in a)
                 {
-                    aggregate = e.Apply(aggregate);
+                    e.Apply(aggregate);
                 }
 
                 projections.AddOrUpdate(aggregate.Id, aggregate, (key, oldValue) => aggregate);
@@ -52,7 +52,9 @@ namespace StrangeVanilla.Maat
                 {
                     var records = _client.GetRecordsFrom(streamName, lastPoint, 10);
 
-                    var aggregateIds = records.Records.Select(p => System.Text.Json.JsonSerializer.Deserialize<Guid>(p.Payload)).Distinct();
+                    var aggregateIds = records.Records.Select(p => System.Text.Json.JsonSerializer.Deserialize<dynamic>(p.Payload))
+                    .Select(i=>i.Id)
+                    .Distinct();
 
                     if (aggregateIds.Count() > 0)
                     {
@@ -63,7 +65,7 @@ namespace StrangeVanilla.Maat
                             var events = _aggregateRepository.Retrieve(id);
                             foreach (var e in events)
                             {
-                                aggregate = e.Apply(aggregate);
+                                e.Apply(aggregate);
                             }
                             projections.AddOrUpdate(aggregate.Id, aggregate, (key, oldValue) => aggregate);
 
