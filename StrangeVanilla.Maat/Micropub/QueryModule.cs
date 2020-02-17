@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using Events;
 using FastMember;
 using Microsoft.Extensions.Logging;
 using Nancy;
-using Newtonsoft.Json;
 using StrangeVanilla.Blogging.Events;
 using StrangeVanilla.Maat.lib;
 
