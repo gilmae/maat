@@ -14,7 +14,7 @@ using StrangeVanilla.Maat.lib;
 
 namespace StrangeVanilla.Maat.Micropub
 {
-    public class MicropubModule : NancyModule
+    public partial class MicropubModule : NancyModule
     {
         IEventStore<Entry> _entryRepository;
         IEventStore<Media> _mediaRepository;

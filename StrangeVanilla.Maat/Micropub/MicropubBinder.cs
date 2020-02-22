@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
-
 using Nancy;
 using Nancy.ModelBinding;
 
@@ -8,7 +8,19 @@ namespace StrangeVanilla.Maat.Micropub
 {
     public class MicropubBinder : IModelBinder
     {
+        const string micropubPost = "MicropubPost";
         public object Bind(NancyContext context, Type modelType, object instance, BindingConfig configuration, params string[] blackList)
+        {
+            switch (modelType.Name)
+            {
+                case micropubPost:
+                    return GetMicropubPost(context);
+                default:
+                    return null;
+            }
+        }
+
+        public MicropubPost GetMicropubPost(NancyContext context)
         {
             if (context.Request.Headers.ContentType == "application/json")
             {
@@ -29,6 +41,34 @@ namespace StrangeVanilla.Maat.Micropub
                     BookmarkOf = context.Request.Form["bookmark-of"],
                     PostStatus = context.Request.Form["post-status"]
                 };
+            }
+
+            return null;
+        }
+
+        public MicropubPayload GetMicropubPayload(NancyContext context)
+        {
+            if (context.Request.Headers.ContentType == "application/json")
+            {
+                using (var reader = new StreamReader(context.Request.Body))
+                {
+                    return Newtonsoft.Json.JsonConvert.DeserializeObject<MicropubPayload>(reader.ReadToEnd());
+                }
+            }
+            else if (context.Request.Headers.ContentType == "application/x-www-form-urlencoded" ||
+                context.Request.Headers.ContentType.ToString().StartsWith("multipart/form-data", StringComparison.CurrentCultureIgnoreCase))
+            {
+                var payload = new MicropubPayload();
+                payload.Type = new [] { $"h-{context.Request.Form["h"]}" };
+                payload.Properties = new Dictionary<string, string[]>();
+
+                payload.Properties["content"] = new string[] { context.Request.Form["content"] };
+
+                payload.Properties["category"] = AsArray(context.Request.Form["category[]"]);
+                payload.Properties["name"] = context.Request.Form["name"];
+                payload.Properties["bookmark-of"] = context.Request.Form["bookmark-of"];
+                payload.Properties["post-status"] = context.Request.Form["post-status"];
+                return payload;
             }
 
             return null;
