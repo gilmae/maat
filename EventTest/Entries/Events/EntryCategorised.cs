@@ -9,9 +9,9 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
         public string Category { get; set; }
 
         public EntryCategorised() { }
-        public EntryCategorised(Entry entry, string category)
+        public EntryCategorised(Guid entryId, string category)
         {
-            AggregateId = entry.Id;
+            AggregateId = entryId;
             Category = category;
         }
 
