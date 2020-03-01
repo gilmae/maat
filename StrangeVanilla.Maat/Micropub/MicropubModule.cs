@@ -42,7 +42,15 @@ namespace StrangeVanilla.Maat.Micropub
             Post("/micropub",
                 p =>
                 {
-                    var post = this.Bind<MicropubPayload>();
+                    MicropubPayload post;
+                    try
+                    {
+                        post = this.Bind<MicropubPayload>();
+                    }
+                    catch (Exception)
+                    {
+                        return new Nancy.Responses.HtmlResponse(HttpStatusCode.BadRequest);
+                    }
 
                     if (post.IsCreate())
                     {
@@ -82,6 +90,7 @@ namespace StrangeVanilla.Maat.Micropub
         {
             Response response;
             Entry entry;
+
             if (string.IsNullOrEmpty(post.Url))
             {
                 response = new Nancy.Responses.JsonResponse(new
@@ -111,37 +120,15 @@ namespace StrangeVanilla.Maat.Micropub
 
                 if (post.Add?.Count() > 0)
                 {
-                    var addCommand = new UpdateEntryAsAddCommand(_entryRepository);
-                    addCommand.Execute(entry, post.Add.GetValueOrDefault("name")?[0],
-                post.Add.GetValueOrDefault("content")?[0],
-                post.Add.GetValueOrDefault("category"),
-                post.Add.GetValueOrDefault("bookmark-of")?[0],
-                        null,
-                        post.Add.GetValueOrDefault("post-status")?[0] != "draft"
-                    );
+                    HandleAddUpdates(post, entry);
                 }
-                else if (post.Replace?.Count() > 0)
+                if (post.Replace?.Count() > 0)
                 {
-                    var replaceCommand = new UpdateEntryAsReplaceCommand(_entryRepository);
-                    replaceCommand.Execute(entry, post.Replace.GetValueOrDefault("name")?[0],
-                post.Replace.GetValueOrDefault("content")?[0],
-                post.Replace.GetValueOrDefault("category"),
-                post.Replace.GetValueOrDefault("bookmark-of")?[0],
-                        null,
-                        post.Replace.GetValueOrDefault("post-status")?[0] != "draft"
-                    );
+                    HandleReplaceUpdates(post, entry);
                 }
                 else if (post.Remove?.Count() > 0)
                 {
-
-                    var removeCommand = new UpdateEntryAsRemoveCommand(_entryRepository);
-                    removeCommand.Execute(entry, post.Remove.Contains("name"),
-                        post.Remove.Contains("content"),
-                        post.Remove.Contains("category"),
-                        post.Remove.Contains("bookmark-of"),
-                        false,
-                        false
-                    );
+                    HandleRemoveUpdates(post, entry);
 
                 }
                 _entryBus.Publish(new AggregateEventMessage { Id = entry.Id, Version = entry.Version });
@@ -153,6 +140,41 @@ namespace StrangeVanilla.Maat.Micropub
             }
         }
 
+        private void HandleRemoveUpdates(MicropubPayload post, Entry entry)
+        {
+            var removeCommand = new UpdateEntryAsRemoveCommand(_entryRepository);
+            removeCommand.Execute(entry, post.Remove.Contains("name"),
+                post.Remove.Contains("content"),
+                post.Remove.Contains("category"),
+                post.Remove.Contains("bookmark-of"),
+                false,
+                false
+            );
+        }
+
+        private void HandleReplaceUpdates(MicropubPayload post, Entry entry)
+        {
+            var replaceCommand = new UpdateEntryAsReplaceCommand(_entryRepository);
+            replaceCommand.Execute(entry, post.Replace.GetValueOrDefault("name")?[0],
+        post.Replace.GetValueOrDefault("content")?[0],
+        post.Replace.GetValueOrDefault("category"),
+        post.Replace.GetValueOrDefault("bookmark-of")?[0],
+                null,
+                post.Replace.GetValueOrDefault("post-status")?[0] != "draft"
+            );
+        }
+
+        private void HandleAddUpdates(MicropubPayload post, Entry entry)
+        {
+            var addCommand = new UpdateEntryAsAddCommand(_entryRepository);
+            addCommand.Execute(entry, post.Add.GetValueOrDefault("name")?[0],
+        post.Add.GetValueOrDefault("content")?[0],
+        post.Add.GetValueOrDefault("category"),
+        post.Add.GetValueOrDefault("bookmark-of")?[0],
+                null,
+                post.Add.GetValueOrDefault("post-status")?[0] != "draft"
+            );
+        }
     }
 
 }
