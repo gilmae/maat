@@ -38,6 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Indexing\QueryModule.cs" />
+    <Compile Remove="Commands\BaseCommand.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FastMember">

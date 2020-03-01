@@ -9,12 +9,16 @@ namespace StrangeVanilla.Maat.Micropub
     public class MicropubBinder : IModelBinder
     {
         const string micropubPost = "MicropubPost";
+        const string micropubPayload = "MicropubPayload";
+
         public object Bind(NancyContext context, Type modelType, object instance, BindingConfig configuration, params string[] blackList)
         {
             switch (modelType.Name)
             {
                 case micropubPost:
                     return GetMicropubPost(context);
+                case micropubPayload:
+                    return GetMicropubPayload(context);
                 default:
                     return null;
             }
@@ -65,9 +69,9 @@ namespace StrangeVanilla.Maat.Micropub
                 payload.Properties["content"] = new string[] { context.Request.Form["content"] };
 
                 payload.Properties["category"] = AsArray(context.Request.Form["category[]"]);
-                payload.Properties["name"] = context.Request.Form["name"];
-                payload.Properties["bookmark-of"] = context.Request.Form["bookmark-of"];
-                payload.Properties["post-status"] = context.Request.Form["post-status"];
+                payload.Properties["name"] = new string[] { context.Request.Form["name"] };
+                payload.Properties["bookmark-of"] = new string[] { context.Request.Form["bookmark-of"] };
+                payload.Properties["post-status"] = new string[] { context.Request.Form["post-status"] };
                 return payload;
             }
 
@@ -89,7 +93,7 @@ namespace StrangeVanilla.Maat.Micropub
 
         public bool CanBind(Type modelType)
         {
-            return modelType == typeof(MicropubPost);
+            return modelType == typeof(MicropubPost) || modelType == typeof(MicropubPayload);
         }
     }
 }

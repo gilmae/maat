@@ -7,11 +7,16 @@ namespace StrangeVanilla.Maat.Micropub
 {
     public class MicropubPayload
     {
+        public enum MicropubAction
+        {
+            update
+        }
+
         [JsonProperty("type")]
         public string[] Type { get; set; }
 
         [JsonProperty("action")]
-        public string Action { get; set; }
+        public MicropubAction? Action { get; set; }
 
         [JsonProperty("url")]
         public string Url { get; set; }
@@ -20,12 +25,17 @@ namespace StrangeVanilla.Maat.Micropub
         public Dictionary<string, string[]> Properties { get; set; }
 
         [JsonProperty("add")]
-        public MicropubPost Add { get; set; }
+        public Dictionary<string, string[]> Add { get; set; }
 
         [JsonProperty("replace")]
-        public MicropubPost Replace { get; set; }
+        public Dictionary<string, string[]> Replace { get; set; }
 
         [JsonProperty("remove")]
         public string[] Remove { get; set; }
+
+        public bool IsCreate()
+        {
+            return Properties?.Count > 0 && !Action.HasValue;
+        }
     }
 }

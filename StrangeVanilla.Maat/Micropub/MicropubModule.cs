@@ -11,6 +11,8 @@ using Nancy.Authentication.Stateless;
 using StrangeVanilla.Maat.lib.MessageBus;
 using StrangeVanilla.Maat.Commands;
 using StrangeVanilla.Maat.lib;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace StrangeVanilla.Maat.Micropub
 {
@@ -19,6 +21,8 @@ namespace StrangeVanilla.Maat.Micropub
         IEventStore<Entry> _entryRepository;
         IEventStore<Media> _mediaRepository;
         IMessageBus<Entry> _entryBus;
+        IFileStore _fileStore;
+
         public MicropubModule(ILogger<NancyModule> logger,
             IEventStore<Entry> entryRepository,
             IEventStore<Media> mediaRepository,
@@ -29,34 +33,126 @@ namespace StrangeVanilla.Maat.Micropub
             _entryRepository = entryRepository;
             _mediaRepository = mediaRepository;
             _entryBus = entryBus;
+            _fileStore = fileStore;
+
             StatelessAuthentication.Enable(this, IndieAuth.GetAuthenticationConfiguration());
             this.RequiresAuthentication();
 
-            
+
 
             Post("/micropub",
-                p => {
-                    var post = this.Bind<MicropubPost>();
+                p =>
+                {
+                    var post = this.Bind<MicropubPayload>();
 
-                    CreateEntryCommand command = new CreateEntryCommand(_entryRepository);
-                    ProcessMediaUpload mediaProcessor = new ProcessMediaUpload(_mediaRepository, fileStore);
-
-                    var entry = command.Execute(post.Title,
-                        post.Content,
-                        post.Categories,
-                        post.BookmarkOf,
-                        this.Request.Files.Select(f => mediaProcessor.Execute(f.Name, f.ContentType, f.Value)),
-                        post.PostStatus != "draft"
-                    );
-                    _entryBus.Publish(new AggregateEventMessage { Id = entry.Id, Version = entry.Version });
-
-                    var response = new Nancy.Responses.TextResponse() { StatusCode = HttpStatusCode.Created };
-                    
-                    response.Headers.Add("Location", this.Context.EntryUrl(entry));
-                    return response;
+                    if (post.IsCreate())
+                    {
+                        return Create(post);
+                    }
+                    else
+                    {
+                        return Update(post);
+                    }
                 }
             );
         }
 
+        public Response Create(MicropubPayload post)
+        {
+            CreateEntryCommand command = new CreateEntryCommand(_entryRepository);
+            ProcessMediaUpload mediaProcessor = new ProcessMediaUpload(_mediaRepository, _fileStore);
+
+            var entry = command.Execute(post.Properties.GetValueOrDefault("name")?[0],
+                post.Properties.GetValueOrDefault("content")?[0],
+                post.Properties.GetValueOrDefault("category"),
+                post.Properties.GetValueOrDefault("bookmark-of")?[0],
+                this.Request.Files.Select(f => mediaProcessor.Execute(f.Name, f.ContentType, f.Value)),
+                post.Properties.GetValueOrDefault("post-status")?[0] != "draft"
+            );
+
+            _entryBus.Publish(new AggregateEventMessage { Id = entry.Id, Version = entry.Version });
+
+            var response = new Nancy.Responses.TextResponse() { StatusCode = HttpStatusCode.Created };
+
+            response.Headers.Add("Location", this.Context.EntryUrl(entry));
+            return response;
+
+        }
+
+        public Response Update(MicropubPayload post)
+        {
+            Response response;
+            Entry entry;
+            if (string.IsNullOrEmpty(post.Url))
+            {
+                response = new Nancy.Responses.JsonResponse(new
+                {
+                    error = "invalid_request",
+                    error_description = "URL was not provided"
+                }, new Nancy.Serialization.JsonNet.JsonNetSerializer(), this.Context.Environment);
+                response.StatusCode = HttpStatusCode.BadRequest;
+                return response;
+            }
+
+            Guid entryId = this.Context.GetEntryIdFromUrl(post.Url);
+
+            if (entryId == Guid.Empty)
+            {
+                response = new Nancy.Responses.JsonResponse(new
+                {
+                    error = "invalid_request",
+                    error_description = "URL could not be parsed."
+                }, new Nancy.Serialization.JsonNet.JsonNetSerializer(), this.Context.Environment);
+                response.StatusCode = HttpStatusCode.BadRequest;
+                return response;
+            }
+            else
+            {
+                entry = new Entry(entryId);
+
+                if (post.Add?.Count() > 0)
+                {
+                    var addCommand = new UpdateEntryAsAddCommand(_entryRepository);
+                    addCommand.Execute(entry, post.Add.GetValueOrDefault("name")?[0],
+                post.Add.GetValueOrDefault("content")?[0],
+                post.Add.GetValueOrDefault("category"),
+                post.Add.GetValueOrDefault("bookmark-of")?[0],
+                        null,
+                        post.Add.GetValueOrDefault("post-status")?[0] != "draft"
+                    );
+                }
+                else if (post.Replace?.Count() > 0)
+                {
+                    var replaceCommand = new UpdateEntryAsReplaceCommand(_entryRepository);
+                    replaceCommand.Execute(entry, post.Replace.GetValueOrDefault("name")?[0],
+                post.Replace.GetValueOrDefault("content")?[0],
+                post.Replace.GetValueOrDefault("category"),
+                post.Replace.GetValueOrDefault("bookmark-of")?[0],
+                        null,
+                        post.Replace.GetValueOrDefault("post-status")?[0] != "draft"
+                    );
+                }
+                else if (post.Remove?.Count() > 0)
+                {
+
+                    var removeCommand = new UpdateEntryAsRemoveCommand(_entryRepository);
+                    removeCommand.Execute(entry, post.Remove.Contains("name"),
+                        post.Remove.Contains("content"),
+                        post.Remove.Contains("category"),
+                        post.Remove.Contains("bookmark-of"),
+                        false,
+                        false
+                    );
+
+                }
+
+                response = new Nancy.Responses.TextResponse() { StatusCode = HttpStatusCode.Created };
+
+                response.Headers.Add("Location", this.Context.EntryUrl(entry));
+                return response;
+            }
+        }
+
     }
+
 }

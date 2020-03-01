@@ -25,7 +25,7 @@ namespace StrangeVanilla.Maat.Commands
 
             Incrementor version = new Incrementor(_entryStore.GetCurrentVersion(entry.Id));
 
-            events.Add(new EntryAdded(entry)
+            events.Add(new EntryAdded(entry.Id)
             {
                 Body = content,
                 Title = name,
@@ -35,17 +35,17 @@ namespace StrangeVanilla.Maat.Commands
 
             if (published)
             {
-                events.Add(new EntryPublished(entry));
+                events.Add(new EntryPublished(entry.Id));
             }
 
             if (categories != null)
             {
-                events.AddRange(categories.Select(c => new EntryCategorised(entry, c) { Version = version.Next() }));
+                events.AddRange(categories.Select(c => new EntryCategorised(entry.Id, c) { Version = version.Next() }));
             }
 
             if (media != null)
             {
-                events.AddRange(media.Select(m => new MediaAssociated(entry, m) { Version = version.Next() }));
+                events.AddRange(media.Select(m => new MediaAssociated(entry.Id, m) { Version = version.Next() }));
 
             }
 
