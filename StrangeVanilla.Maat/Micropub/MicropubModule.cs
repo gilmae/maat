@@ -11,7 +11,6 @@ using Nancy.Authentication.Stateless;
 using StrangeVanilla.Maat.lib.MessageBus;
 using StrangeVanilla.Maat.Commands;
 using StrangeVanilla.Maat.lib;
-using System.Threading.Tasks;
 using System.Collections.Generic;
 
 namespace StrangeVanilla.Maat.Micropub
@@ -145,6 +144,7 @@ namespace StrangeVanilla.Maat.Micropub
                     );
 
                 }
+                _entryBus.Publish(new AggregateEventMessage { Id = entry.Id, Version = entry.Version });
 
                 response = new Nancy.Responses.TextResponse() { StatusCode = HttpStatusCode.Created };
 
