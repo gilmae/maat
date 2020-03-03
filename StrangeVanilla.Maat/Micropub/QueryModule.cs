@@ -60,7 +60,8 @@ this.Context.Environment);
                             
 
                         var filteredEntries = entries.OrderByDescending(i => i.Published_At).Take(20)
-                            .Select(i => new MicropubPost { Type = "Entry",
+                            .Select(i => new MicropubPost
+                            { Type = "Entry",
                                 Title = i.Title,
                                 Content = i.Body,
                                 Categories = i.Categories?.ToArray(),

@@ -8,9 +8,9 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
     public class MediaAssociated : Event<Entry>
     {
         public MediaAssociated() { }
-        public MediaAssociated(Entry entry, Media media)
+        public MediaAssociated(Guid entryId, Media media)
         {
-            AggregateId = entry.Id;
+            AggregateId = entryId;
             MediaId = media.MediaStoreId;
         }
 

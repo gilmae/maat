@@ -10,9 +10,9 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
         public string BookmarkOf { get; set; }
 
         public EntryAdded() { }
-        public EntryAdded(Entry entry)
+        public EntryAdded(Guid entryId)
         {
-            AggregateId = entry.Id;
+            AggregateId = entryId;
         }
 
         public override void Apply(Entry aggregate)

@@ -6,14 +6,14 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
     public class EntryPublished : Event<Entry>
     {
         public EntryPublished() { }
-        public EntryPublished(Entry entry) : this(entry, DateTime.UtcNow)
+        public EntryPublished(Guid entryId) : this(entryId, DateTime.UtcNow)
         {
             
         }
 
-        public EntryPublished(Entry entry, DateTime publishedAt)
+        public EntryPublished(Guid entryId, DateTime publishedAt)
         {
-            AggregateId = entry.Id;
+            AggregateId = entryId;
             Published_At = publishedAt;
         }
 

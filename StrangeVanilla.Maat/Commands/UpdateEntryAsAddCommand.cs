@@ -8,24 +8,23 @@ using StrangeVanilla.Blogging.Events.Entries.Events;
 
 namespace StrangeVanilla.Maat.Commands
 {
-    public class CreateEntryCommand
+    public class UpdateEntryAsAddCommand
     {
         IEventStore<Entry> _entryStore;
         
 
-        public CreateEntryCommand(IEventStore<Entry> entryStore)
+        public UpdateEntryAsAddCommand(IEventStore<Entry> entryStore)
         {
             _entryStore = entryStore;
         }
 
-        public Entry Execute(string name, string content, string[] categories, string bookmarkOf, IEnumerable<Media> media, bool published)
+        public Entry Execute(Entry entry, string name, string content, string[] categories, string bookmarkOf, IEnumerable<Media> media, bool published)
         {
-            var entry = new Entry();
             var events = new List<Event<Entry>>();
 
             Incrementor version = new Incrementor(_entryStore.GetCurrentVersion(entry.Id));
 
-            events.Add(new EntryAdded(entry.Id)
+            events.Add(new EntryUpdated(entry.Id)
             {
                 Body = content,
                 Title = name,
@@ -46,7 +45,6 @@ namespace StrangeVanilla.Maat.Commands
             if (media != null)
             {
                 events.AddRange(media.Select(m => new MediaAssociated(entry.Id, m) { Version = version.Next() }));
-
             }
 
             _entryStore.StoreEvent(events);
