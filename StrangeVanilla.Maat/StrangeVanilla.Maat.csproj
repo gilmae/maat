@@ -38,6 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Indexing\QueryModule.cs" />
+    <Compile Remove="lib\EntryHelper %28copy%29.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FastMember">
