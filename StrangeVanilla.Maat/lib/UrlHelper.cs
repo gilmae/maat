@@ -4,7 +4,7 @@ using StrangeVanilla.Blogging.Events;
 
 namespace StrangeVanilla.Maat.lib
 {
-    public static class EntryHelper
+    public static class UrlHelper
     {
         public static string EntryUrl(this Nancy.NancyContext ctx, Entry e)
         {
