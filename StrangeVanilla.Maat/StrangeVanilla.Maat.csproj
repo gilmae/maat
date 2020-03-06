@@ -18,7 +18,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Events\Events.csproj" />
-    <ProjectReference Include="..\EventTest\StrangeVanilla.Blogging.Events.csproj" />
+    <ProjectReference Include="..\StrangeVanilla.Blogging.Events\StrangeVanilla.Blogging.Events.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="WebEdit\" />
