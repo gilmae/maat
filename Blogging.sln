@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Events", "Events\Events.csproj", "{198F9E91-525C-4FD9-A616-9AAB64591AD5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrangeVanilla.Blogging.Events", "EventTest\StrangeVanilla.Blogging.Events.csproj", "{1018167C-91F3-47C1-9058-EFDB5A746AAB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrangeVanilla.Blogging.Events", "StrangeVanilla.Blogging.Events\StrangeVanilla.Blogging.Events.csproj", "{1018167C-91F3-47C1-9058-EFDB5A746AAB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrangeVanilla.Maat", "StrangeVanilla.Maat\StrangeVanilla.Maat.csproj", "{BE0AB91C-8BBA-44C0-A592-A6F38ED45D46}"
 EndProject
