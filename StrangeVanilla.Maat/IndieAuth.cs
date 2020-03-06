@@ -25,12 +25,21 @@ namespace StrangeVanilla.Maat
         public static StatelessAuthenticationConfiguration GetAuthenticationConfiguration()
         {
             return new StatelessAuthenticationConfiguration(ctx => {
-                if (string.IsNullOrEmpty(ctx.Request.Headers.Authorization))
+
+                string access_token = ctx.Request.Headers.Authorization;
+
+                if (string.IsNullOrEmpty(access_token))
                 {
-                    return null;
+                    string form_token = ctx.Request.Form["access_token"];
+                    if (string.IsNullOrEmpty(form_token))
+                    {
+                        return null;
+                    }
+
+                    access_token = string.Concat("Bearer: ", ctx.Request.Form["access_token"]);
                 }
 
-                if (ctx.Request.Headers.Authorization == "itsame")
+                if (access_token.EndsWith("itsame")) // Dev mode
                 {
                     return new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
 {
@@ -41,7 +50,7 @@ namespace StrangeVanilla.Maat
                 req.Method = "GET";
                 req.Headers.Add("Content-Type", "application/json");
                 req.Headers.Add("Accept", "application/json");
-                req.Headers.Add("Authorization", ctx.Request.Headers.Authorization);
+                req.Headers.Add("Authorization", access_token);
 
                 var response = req.GetResponse();
 
