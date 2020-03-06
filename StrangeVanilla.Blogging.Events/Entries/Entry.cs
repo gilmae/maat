@@ -12,10 +12,19 @@ namespace StrangeVanilla.Blogging.Events
         public DateTime Published_At { get; set; }
         public string Uid { get; set; }
         public IList<string> Syndications { get; set; }
-        public IList<string> AssociatedMedia { get; set; }
+        public IList<MediaLink> AssociatedMedia { get; set; }
         public string BookmarkOf { get; set; }
         
         public Entry() : base() { }
         public Entry(Guid id) : base(id) { }
+
+        public class MediaLink
+        {
+            public string Url { get; set; }
+            public string Type { get; set; }
+            public string Description { get; set; }
+        }
     }
+
+    
 }

@@ -33,7 +33,7 @@ namespace StrangeVanilla.Maat.lib
             return Guid.Empty;
         }
 
-        public static string MediaUrl(this Nancy.NancyContext ctx, Entry e)
+        public static string MediaUrl(this Nancy.NancyContext ctx,  Media e)
         {
             var url = ctx.Request.Url;
             var path = Path.Join(url.SiteBase, "media", e.Id.ToString());

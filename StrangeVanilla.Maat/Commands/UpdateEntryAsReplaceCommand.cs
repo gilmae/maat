@@ -18,7 +18,7 @@ namespace StrangeVanilla.Maat.Commands
             _entryStore = entryStore;
         }
 
-        public Entry Execute(Entry entry, string name, string content, string[] categories, string bookmarkOf, IEnumerable<Media> media, bool published)
+        public Entry Execute(Entry entry, string name, string content, string[] categories, IEnumerable<Entry.MediaLink> media, string bookmarkOf, bool published)
         {
             var events = new List<Event<Entry>>();
 
@@ -46,7 +46,7 @@ namespace StrangeVanilla.Maat.Commands
             if (media != null)
             {
                 events.Add(new MediaCleared(entry.Id) { Version = version.Next() });
-                events.AddRange(media.Select(m => new MediaAssociated(entry.Id, m) { Version = version.Next() }));
+                events.AddRange(media.Select(m => new MediaAssociated(entry.Id, m.Url, m.Type, m.Description) { Version = version.Next() }));
 
             }
 

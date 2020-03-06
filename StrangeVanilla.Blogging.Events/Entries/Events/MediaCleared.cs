@@ -14,7 +14,7 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
         public override void Apply(Entry entry)
         {
             base.Apply(entry);
-            entry.AssociatedMedia = new List<string>();
+            entry.AssociatedMedia = new List<Entry.MediaLink>();
         }
     }
 }

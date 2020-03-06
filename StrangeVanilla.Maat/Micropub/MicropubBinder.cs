@@ -64,7 +64,7 @@ namespace StrangeVanilla.Maat.Micropub
             {
                 var payload = new MicropubPayload();
                 payload.Type = new [] { $"h-{context.Request.Form["h"]}" };
-                payload.Properties = new Dictionary<string, string[]>();
+                payload.Properties = new Dictionary<string, object[]>();
 
                 payload.Properties["content"] = new string[] { context.Request.Form["content"] };
 

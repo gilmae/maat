@@ -12,6 +12,7 @@ using StrangeVanilla.Maat.lib.MessageBus;
 using StrangeVanilla.Maat.Commands;
 using StrangeVanilla.Maat.lib;
 using System.Collections.Generic;
+using StrangeVanilla.Blogging.Events.Entries.Events;
 
 namespace StrangeVanilla.Maat.Micropub
 {
@@ -47,7 +48,7 @@ namespace StrangeVanilla.Maat.Micropub
                     {
                         post = this.Bind<MicropubPayload>();
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
                         return new Nancy.Responses.HtmlResponse(HttpStatusCode.BadRequest);
                     }
@@ -69,21 +70,40 @@ namespace StrangeVanilla.Maat.Micropub
             CreateEntryCommand command = new CreateEntryCommand(_entryRepository);
             ProcessMediaUpload mediaProcessor = new ProcessMediaUpload(_mediaRepository, _fileStore);
 
-            var entry = command.Execute(post.Properties.GetValueOrDefault("name")?[0],
-                post.Properties.GetValueOrDefault("content")?[0],
-                post.Properties.GetValueOrDefault("category"),
-                post.Properties.GetValueOrDefault("bookmark-of")?[0],
-                this.Request.Files.Select(f => mediaProcessor.Execute(f.Name, f.ContentType, f.Value)),
-                post.Properties.GetValueOrDefault("post-status")?[0] != "draft"
+            // Create can come via Form post, which may include uploaded files
+            IEnumerable<Media> uploads = Request.Files.Select(f => mediaProcessor.Execute(f.Name, f.ContentType, f.Value));
+            IEnumerable<Entry.MediaLink> media = uploads.Select(u => new Entry.MediaLink { Url = this.Context.MediaUrl(u), Type = u.Name });
+
+            var photos = ParseMediaReference(post.Properties.GetValueOrDefault("photo"), "photo");
+            if (photos != null)
+            {
+                media = media.Union(photos).ToList();
+            }
+
+
+            var entry = command.Execute(post.Properties.GetValueOrDefault("name")?[0]?.ToString(),
+                post.Properties.GetValueOrDefault("content")?[0]?.ToString(),
+                post.Properties.GetValueOrDefault("category") as string[],
+                media,
+                post.Properties.GetValueOrDefault("bookmark-of")?[0]?.ToString(),
+                (post.Properties.GetValueOrDefault("post-status")?[0]?.ToString()) != "draft"
             );
 
+            
+            
             _entryBus.Publish(new AggregateEventMessage { Id = entry.Id, Version = entry.Version });
 
             var response = new Nancy.Responses.TextResponse() { StatusCode = HttpStatusCode.Created };
 
-            response.Headers.Add("Location", this.Context.EntryUrl(entry));
+            response.Headers.Add("Location", UrlHelper.EntryUrl(Context, entry));
             return response;
 
+        }
+
+        private IEnumerable<Entry.MediaLink> ParseMediaReference(IEnumerable<dynamic> items, string type)
+        {
+            
+            return items?.Select(i=>new Entry.MediaLink{ Url = i.url, Type = type, Description = i.alt});
         }
 
         public Response Update(MicropubPayload post)
@@ -146,8 +166,8 @@ namespace StrangeVanilla.Maat.Micropub
             removeCommand.Execute(entry, post.Remove.Contains("name"),
                 post.Remove.Contains("content"),
                 post.Remove.Contains("category"),
+                post.Remove.Contains("photo"),
                 post.Remove.Contains("bookmark-of"),
-                false,
                 false
             );
         }
@@ -158,8 +178,8 @@ namespace StrangeVanilla.Maat.Micropub
             replaceCommand.Execute(entry, post.Replace.GetValueOrDefault("name")?[0],
         post.Replace.GetValueOrDefault("content")?[0],
         post.Replace.GetValueOrDefault("category"),
-        post.Replace.GetValueOrDefault("bookmark-of")?[0],
-                null,
+        ParseMediaReference(post.Properties.GetValueOrDefault("photo"), "photo"),
+            post.Replace.GetValueOrDefault("bookmark-of")?[0],
                 post.Replace.GetValueOrDefault("post-status")?[0] != "draft"
             );
         }
@@ -170,8 +190,8 @@ namespace StrangeVanilla.Maat.Micropub
             addCommand.Execute(entry, post.Add.GetValueOrDefault("name")?[0],
         post.Add.GetValueOrDefault("content")?[0],
         post.Add.GetValueOrDefault("category"),
+        ParseMediaReference(post.Properties.GetValueOrDefault("photo"), "photo"),
         post.Add.GetValueOrDefault("bookmark-of")?[0],
-                null,
                 post.Add.GetValueOrDefault("post-status")?[0] != "draft"
             );
         }

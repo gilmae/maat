@@ -22,7 +22,7 @@ namespace StrangeVanilla.Maat.Micropub
         public string Url { get; set; }
 
         [JsonProperty("properties")]
-        public Dictionary<string, string[]> Properties { get; set; }
+        public Dictionary<string, dynamic[]> Properties { get; set; }
 
         [JsonProperty("add")]
         public Dictionary<string, string[]> Add { get; set; }

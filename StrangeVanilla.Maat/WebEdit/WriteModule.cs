@@ -34,8 +34,8 @@ namespace StrangeVanilla.Maat
                 var entry = command.Execute(post.Title,
                     post.Content,
                     post.Categories,
-                    post.BookmarkOf,
                     null,
+                    post.BookmarkOf,
                     true
                 );
 

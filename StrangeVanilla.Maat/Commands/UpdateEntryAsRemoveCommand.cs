@@ -18,7 +18,7 @@ namespace StrangeVanilla.Maat.Commands
             _entryStore = entryStore;
         }
 
-        public Entry Execute(Entry entry, bool name, bool content, bool categories, bool bookmarkOf, bool media, bool published)
+        public Entry Execute(Entry entry, bool name, bool content, bool categories, bool media, bool bookmarkOf, bool published)
         {
             var events = new List<Event<Entry>>();
 
