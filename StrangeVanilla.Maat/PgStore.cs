@@ -16,7 +16,6 @@ namespace StrangeVanilla.Maat
 
         public PgStore()
         {
-            // TODO put this in env
             _connectionString = Environment.GetEnvironmentVariable("MAATCONNSTR");
             _validTypes = AppDomain.CurrentDomain.GetAssemblies()
                                    .SelectMany(x => x.GetTypes())
