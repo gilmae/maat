@@ -6,10 +6,15 @@ using StrangeVanilla.Maat.lib;
 
 namespace StrangeVanilla.Maat.Commands
 {
-    public class ProcessMediaUpload
+    public class ProcessMediaUpload : BaseCommand<Media>
     {
         IEventStore<Media> _mediaStore;
         IFileStore _fileStore;
+
+        public string Name { get; set; }
+        public string MimeType { get; set; }
+        public byte[] Data { get; set; }
+        public Stream Stream { get; set; }
 
         public ProcessMediaUpload(IEventStore<Media> mediaStore, IFileStore fileStore)
         {
@@ -17,17 +22,21 @@ namespace StrangeVanilla.Maat.Commands
             _fileStore = fileStore;
         }
 
-        public Media Execute(string name, string mimetype, byte[] data)
+        public override Media Execute()
         {
-            string savePath = _fileStore.Save(data);
+            if (Stream != null)
+            {
+                Data = ReadStream(Stream);
+            }
+            string savePath = _fileStore.Save(Data);
             // Put it in the MEdia STore
 
             var m = new Media();
             MediaUploaded e = new MediaUploaded
             {
-                Name = name,
+                Name = Name,
                 MediaStoreId = savePath,
-                MimeType = mimetype
+                MimeType = MimeType
             };
 
             e.Apply(m);
@@ -35,7 +44,7 @@ namespace StrangeVanilla.Maat.Commands
             return m;
         }
 
-        public Media Execute(string name, string mimetype, Stream data)
+        private byte[] ReadStream(Stream data)
         {
             var bytes = new byte[data.Length];
 
@@ -46,7 +55,7 @@ namespace StrangeVanilla.Maat.Commands
                 index += 1000;
             }
 
-            return Execute(name, mimetype, bytes);
+            return bytes;
         }
     }
 }

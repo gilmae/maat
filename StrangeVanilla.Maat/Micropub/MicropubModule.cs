@@ -67,11 +67,19 @@ namespace StrangeVanilla.Maat.Micropub
 
         public Response Create(MicropubPayload post)
         {
-            CreateEntryCommand command = new CreateEntryCommand(_entryRepository);
             ProcessMediaUpload mediaProcessor = new ProcessMediaUpload(_mediaRepository, _fileStore);
 
-            // Create can come via Form post, which may include uploaded files
-            IEnumerable<Media> uploads = Request.Files.Select(f => mediaProcessor.Execute(f.Name, f.ContentType, f.Value));
+            // Create can be a Form post, which may include uploaded files
+            IEnumerable<Media> uploads = Request.Files.Select(f =>
+                new ProcessMediaUpload(_mediaRepository, _fileStore)
+                {
+                    Name = f.Name,
+                    MimeType = f.ContentType,
+                    Stream = f.Value
+                }
+                .Execute()
+            );
+
             IEnumerable<Entry.MediaLink> media = uploads.Select(u => new Entry.MediaLink { Url = this.Context.MediaUrl(u), Type = u.Name });
 
             var photos = ParseMediaReference(post.Properties.GetValueOrDefault("photo"), "photo");
@@ -80,16 +88,17 @@ namespace StrangeVanilla.Maat.Micropub
                 media = media.Union(photos).ToList();
             }
 
+            CreateEntryCommand command = new CreateEntryCommand(_entryRepository)
+            {
+                Content = post.Properties.GetValueOrDefault("content")?[0]?.ToString(),
+                Name = post.Properties.GetValueOrDefault("name")?[0]?.ToString(),
+                Categories = post.Properties.GetValueOrDefault("category") as string[],
+                Media = media,
+                BookmarkOf = post.Properties.GetValueOrDefault("bookmark-of")?[0]?.ToString(),
+                Published = post.Properties.GetValueOrDefault("post-status")?[0]?.ToString() != "draft"
+            };
 
-            var entry = command.Execute(post.Properties.GetValueOrDefault("name")?[0]?.ToString(),
-                post.Properties.GetValueOrDefault("content")?[0]?.ToString(),
-                post.Properties.GetValueOrDefault("category") as string[],
-                media,
-                post.Properties.GetValueOrDefault("bookmark-of")?[0]?.ToString(),
-                (post.Properties.GetValueOrDefault("post-status")?[0]?.ToString()) != "draft"
-            );
-
-            
+            var entry = command.Execute();
             
             _entryBus.Publish(new AggregateEventMessage { Id = entry.Id, Version = entry.Version });
 
@@ -102,7 +111,6 @@ namespace StrangeVanilla.Maat.Micropub
 
         private IEnumerable<Entry.MediaLink> ParseMediaReference(IEnumerable<dynamic> items, string type)
         {
-            
             return items?.Select(i=>new Entry.MediaLink{ Url = i.url, Type = type, Description = i.alt});
         }
 
@@ -136,22 +144,34 @@ namespace StrangeVanilla.Maat.Micropub
             }
             else
             {
-                entry = new Entry(entryId);
 
+                entry = new Entry(entryId);
+                BaseCommand<Entry> command = null;
+                try { 
                 if (post.Add?.Count() > 0)
                 {
-                    HandleAddUpdates(post, entry);
+                    command = GetAddCommand(post, entry);
                 }
                 if (post.Replace?.Count() > 0)
                 {
-                    HandleReplaceUpdates(post, entry);
+                    command = GetReplaceCommand(post, entry);
                 }
                 else if (post.Remove?.Count() > 0)
                 {
-                    HandleRemoveUpdates(post, entry);
-
+                    command = GetRemoveCommand(post, entry);
                 }
-                _entryBus.Publish(new AggregateEventMessage { Id = entry.Id, Version = entry.Version });
+            }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+
+                if (command != null)
+                {
+                    entry = command.Execute();
+
+                    _entryBus.Publish(new AggregateEventMessage { Id = entry.Id, Version = entry.Version });
+                }
 
                 response = new Nancy.Responses.TextResponse() { StatusCode = HttpStatusCode.Created };
 
@@ -160,40 +180,50 @@ namespace StrangeVanilla.Maat.Micropub
             }
         }
 
-        private void HandleRemoveUpdates(MicropubPayload post, Entry entry)
+        private BaseCommand<Entry> GetRemoveCommand(MicropubPayload post, Entry entry)
         {
-            var removeCommand = new UpdateEntryAsRemoveCommand(_entryRepository);
-            removeCommand.Execute(entry, post.Remove.Contains("name"),
-                post.Remove.Contains("content"),
-                post.Remove.Contains("category"),
-                post.Remove.Contains("photo"),
-                post.Remove.Contains("bookmark-of"),
-                false
-            );
+            var removeCommand = new UpdateEntryAsRemoveCommand(_entryRepository)
+            {
+                Entry = entry,
+                Name = post.Remove.Contains("name"),
+                Content = post.Remove.Contains("content"),
+                Categories = post.Remove.Contains("category"),
+                Media = post.Remove.Contains("photo"),
+                BookmarkOf = post.Remove.Contains("bookmark-of")
+            };
+            return removeCommand;
         }
 
-        private void HandleReplaceUpdates(MicropubPayload post, Entry entry)
+        private BaseCommand<Entry> GetReplaceCommand(MicropubPayload post, Entry entry)
         {
-            var replaceCommand = new UpdateEntryAsReplaceCommand(_entryRepository);
-            replaceCommand.Execute(entry, post.Replace.GetValueOrDefault("name")?[0],
-        post.Replace.GetValueOrDefault("content")?[0],
-        post.Replace.GetValueOrDefault("category"),
-        ParseMediaReference(post.Properties.GetValueOrDefault("photo"), "photo"),
-            post.Replace.GetValueOrDefault("bookmark-of")?[0],
-                post.Replace.GetValueOrDefault("post-status")?[0] != "draft"
-            );
+            var replaceCommand = new UpdateEntryAsReplaceCommand(_entryRepository)
+            {
+                Entry = entry,
+                Name = post.Replace.GetValueOrDefault("name")?[0]?.ToString(),
+                Content = post.Replace.GetValueOrDefault("content")?[0]?.ToString(),
+                Categories = post.Replace.GetValueOrDefault("category") as string[],
+                Media = ParseMediaReference(post.Replace.GetValueOrDefault("photo"), "photo"),
+                BookmarkOf = post.Replace.GetValueOrDefault("bookmark-of")?[0]?.ToString(),
+                Published = post.Replace.GetValueOrDefault("post-status")?[0]?.ToString() != "draft"
+            };
+
+            return replaceCommand;
         }
 
-        private void HandleAddUpdates(MicropubPayload post, Entry entry)
+        private BaseCommand<Entry> GetAddCommand(MicropubPayload post, Entry entry)
         {
-            var addCommand = new UpdateEntryAsAddCommand(_entryRepository);
-            addCommand.Execute(entry, post.Add.GetValueOrDefault("name")?[0],
-        post.Add.GetValueOrDefault("content")?[0],
-        post.Add.GetValueOrDefault("category"),
-        ParseMediaReference(post.Properties.GetValueOrDefault("photo"), "photo"),
-        post.Add.GetValueOrDefault("bookmark-of")?[0],
-                post.Add.GetValueOrDefault("post-status")?[0] != "draft"
-            );
+            var addCommand = new UpdateEntryAsAddCommand(_entryRepository)
+            {
+                Entry = entry,
+                Name = post.Add.GetValueOrDefault("name")?[0]?.ToString(),
+                Content = post.Add.GetValueOrDefault("content")?[0]?.ToString(),
+                Categories = post.Add.GetValueOrDefault("category") as string[],
+                Media = ParseMediaReference(post.Add.GetValueOrDefault("photo"), "photo"),
+                BookmarkOf = post.Add.GetValueOrDefault("bookmark-of")?[0]?.ToString(),
+                Published = post.Add.GetValueOrDefault("post-status")?[0]?.ToString() != "draft"
+            };
+
+            return addCommand;
         }
     }
 

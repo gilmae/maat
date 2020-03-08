@@ -30,16 +30,44 @@ namespace StrangeVanilla.Maat.Micropub
             Post("/micropub/media",
                 p =>
                 {
-                    ProcessMediaUpload mediaProcessor = new ProcessMediaUpload(_mediaRepository, fileStore);
-                    if (this.Request.Files != null)
+                    Nancy.Response response;
+                    if (this.Request.Files == null)
                     {
-                        var media = this.Request.Files.Select(f => mediaProcessor.Execute(f.Name, f.ContentType, f.Value)
-);
-                        return Newtonsoft.Json.JsonConvert.SerializeObject(media);
+                        response = new Nancy.Responses.JsonResponse(new
+                        {
+                            error = "invalid_request",
+                            error_description = "No files provided"
+                        }, new Nancy.Serialization.JsonNet.JsonNetSerializer(), this.Context.Environment);
+                        response.StatusCode = HttpStatusCode.BadRequest;
+                        return response;
                     }
-                    return null;
+                    else if (this.Request.Files.Count() > 1)
+                    {
+                        response = new Nancy.Responses.JsonResponse(new
+                        {
+                            error = "invalid_request",
+                            error_description = "Too many files provided."
+                        }, new Nancy.Serialization.JsonNet.JsonNetSerializer(), this.Context.Environment);
+                        response.StatusCode = HttpStatusCode.BadRequest;
+                        return response;
+                    }
+                    else
+                    {
+                        var f = Request.Files.First();
+                        var media = new ProcessMediaUpload(_mediaRepository, fileStore)
+                        {
+                            Name = f.Name,
+                            MimeType = f.ContentType,
+                            Stream = f.Value
+                        }.Execute();
+
+
+                        response = new Nancy.Responses.TextResponse() { StatusCode = HttpStatusCode.Created };
+
+                        response.Headers.Add("Location", UrlHelper.MediaUrl(Context, media));
+                    }
+                    return response;
                 });
         }
-
     }
 }

@@ -1,10 +1,8 @@
 ﻿using System;
 namespace StrangeVanilla.Maat.Commands
 {
-    public class BaseCommand
+    public abstract class BaseCommand<T>
     {
-        public BaseCommand()
-        {
-        }
+        public abstract T Execute();
     }
 }

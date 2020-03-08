@@ -8,53 +8,59 @@ using StrangeVanilla.Blogging.Events.Entries.Events;
 
 namespace StrangeVanilla.Maat.Commands
 {
-    public class UpdateEntryAsAddCommand
+    public class UpdateEntryAsAddCommand : BaseCommand<Entry>
     {
         IEventStore<Entry> _entryStore;
-        
+        public Entry Entry { get; set; }
+        public string Name { get; set; }
+        public string Content { get; set; }
+        public string[] Categories { get; set; }
+        public IEnumerable<Entry.MediaLink> Media { get; set; }
+        public string BookmarkOf { get; set; }
+        public bool Published { get; set; }
 
         public UpdateEntryAsAddCommand(IEventStore<Entry> entryStore)
         {
             _entryStore = entryStore;
         }
 
-        public Entry Execute(Entry entry, string name, string content, string[] categories, IEnumerable<Entry.MediaLink> media, string bookmarkOf, bool published)
+        public override  Entry Execute()
         {
             var events = new List<Event<Entry>>();
 
-            Incrementor version = new Incrementor(_entryStore.GetCurrentVersion(entry.Id));
+            Incrementor version = new Incrementor(_entryStore.GetCurrentVersion(Entry.Id));
 
-            events.Add(new EntryUpdated(entry.Id)
+            events.Add(new EntryUpdated(Entry.Id)
             {
-                Body = content,
-                Title = name,
+                Body = Content,
+                Title = Name,
                 Version = version.Next(),
-                BookmarkOf = bookmarkOf
+                BookmarkOf = BookmarkOf
             });
 
-            if (published)
+            if (Published)
             {
-                events.Add(new EntryPublished(entry.Id));
+                events.Add(new EntryPublished(Entry.Id));
             }
 
-            if (categories != null)
+            if (Categories != null)
             {
-                events.AddRange(categories.Select(c => new EntryCategorised(entry.Id, c) { Version = version.Next() }));
+                events.AddRange(Categories.Select(c => new EntryCategorised(Entry.Id, c) { Version = version.Next() }));
             }
 
-            if (media != null)
+            if (Media != null)
             {
-                events.AddRange(media.Select(m => new MediaAssociated(entry.Id, m.Url, m.Type, m.Description) { Version = version.Next() }));
+                events.AddRange(Media.Select(m => new MediaAssociated(Entry.Id, m.Url, m.Type, m.Description) { Version = version.Next() }));
             }
 
             _entryStore.StoreEvent(events);
 
             foreach (var e in events)
             {
-                e.Apply(entry);
+                e.Apply(Entry);
             }
 
-            return entry;
+            return Entry;
         }
     }
 }

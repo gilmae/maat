@@ -24,20 +24,21 @@ namespace StrangeVanilla.Maat
                 return View["WebEdit/New.html"];
             });
 
-            Post("/write/create", p => {
-
+            Post("/write/create", p =>
+            {
                 var post = this.Bind<Micropub.MicropubPost>();
 
-                CreateEntryCommand command = new CreateEntryCommand(_entryRepository);
-                ProcessMediaUpload mediaProcessor = new ProcessMediaUpload(_mediaRepository, fileStore);
+                CreateEntryCommand command = new CreateEntryCommand(_entryRepository)
+                {
+                    Name = post.Title,
+                    Content = post.Content,
+                    Categories = post.Categories,
+                    BookmarkOf = post.BookmarkOf,
+                    Published = true
+                };
 
-                var entry = command.Execute(post.Title,
-                    post.Content,
-                    post.Categories,
-                    null,
-                    post.BookmarkOf,
-                    true
-                );
+                var entry = command.Execute();
+
 
                 return new RedirectResponse("/write");
             });

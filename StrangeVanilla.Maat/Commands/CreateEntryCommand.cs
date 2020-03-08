@@ -8,17 +8,23 @@ using StrangeVanilla.Blogging.Events.Entries.Events;
 
 namespace StrangeVanilla.Maat.Commands
 {
-    public class CreateEntryCommand
+    public class CreateEntryCommand : BaseCommand<Entry>
     {
         IEventStore<Entry> _entryStore;
-        
+
+        public string Name { get; set; }
+        public string Content { get; set; }
+        public string[] Categories { get; set; }
+        public IEnumerable<Entry.MediaLink> Media { get; set; }
+        public string BookmarkOf { get; set; }
+        public bool Published { get; set; }
 
         public CreateEntryCommand(IEventStore<Entry> entryStore)
         {
             _entryStore = entryStore;
         }
 
-        public Entry Execute(string name, string content, string[] categories, IEnumerable<Entry.MediaLink> media, string bookmarkOf, bool published)
+        public override Entry Execute()
         {
             var entry = new Entry();
             var events = new List<Event<Entry>>();
@@ -27,25 +33,25 @@ namespace StrangeVanilla.Maat.Commands
 
             events.Add(new EntryAdded(entry.Id)
             {
-                Body = content,
-                Title = name,
+                Body = Content,
+                Title = Name,
                 Version = version.Next(),
-                BookmarkOf = bookmarkOf
+                BookmarkOf = BookmarkOf
             });
 
-            if (published)
+            if (Published)
             {
                 events.Add(new EntryPublished(entry.Id));
             }
 
-            if (categories != null)
+            if (Categories != null)
             {
-                events.AddRange(categories.Select(c => new EntryCategorised(entry.Id, c) { Version = version.Next() }));
+                events.AddRange(Categories.Select(c => new EntryCategorised(entry.Id, c) { Version = version.Next() }));
             }
 
-            if (media != null)
+            if (Media != null)
             {
-                events.AddRange(media.Select(m => new MediaAssociated(entry.Id, m.Url, m.Type, m.Description)));
+                events.AddRange(Media.Select(m => new MediaAssociated(entry.Id, m.Url, m.Type, m.Description)));
             }
 
             _entryStore.StoreEvent(events);
