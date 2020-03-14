@@ -5,7 +5,7 @@ using Npgsql;
 using Dapper;
 using System.Linq;
 
-namespace StrangeVanilla.Maat
+namespace StrangeVanilla.Blogging.Events
 {
     public class PgStore<T> : IEventStore<T> where T : Aggregate
     {
@@ -61,7 +61,7 @@ namespace StrangeVanilla.Maat
             Type event_type = _validTypes.FirstOrDefault(t => t.Name == data.event_type);
             if (event_type != null)
             {
-                return Newtonsoft.Json.JsonConvert.DeserializeObject(data.body, event_type);
+                return System.Text.Json.JsonSerializer.Deserialize(data.body, event_type);
             }
             return null;
         }
@@ -81,7 +81,7 @@ namespace StrangeVanilla.Maat
                 conn.Open();
                 foreach (Event<T> e in events)
                 {
-                    string body = Newtonsoft.Json.JsonConvert.SerializeObject(e);
+                    string body = System.Text.Json.JsonSerializer.Serialize(e);
                     string eventType = e.GetType().Name;
                     conn.Execute(sql, new { aggregate_id = e.AggregateId, type = _type, event_type = eventType, body, e.Version });
                 }

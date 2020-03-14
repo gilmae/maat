@@ -48,7 +48,7 @@ namespace StrangeVanilla.Maat.Micropub
                     {
                         post = this.Bind<MicropubPayload>();
                     }
-                    catch (Exception ex)
+                    catch
                     {
                         return new Nancy.Responses.HtmlResponse(HttpStatusCode.BadRequest);
                     }
