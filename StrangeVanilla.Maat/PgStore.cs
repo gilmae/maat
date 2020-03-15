@@ -4,8 +4,9 @@ using Events;
 using Npgsql;
 using Dapper;
 using System.Linq;
+using Microsoft.Extensions.Configuration;
 
-namespace StrangeVanilla.Blogging.Events
+namespace StrangeVanilla.Maat
 {
     public class PgStore<T> : IEventStore<T> where T : Aggregate
     {
@@ -14,7 +15,7 @@ namespace StrangeVanilla.Blogging.Events
         List<Type> _validTypes;
 
 
-        public PgStore()
+        public PgStore(IConfiguration configuration)
         {
             _connectionString = Environment.GetEnvironmentVariable("MAATCONNSTR");
             _validTypes = AppDomain.CurrentDomain.GetAssemblies()

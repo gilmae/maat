@@ -40,7 +40,7 @@ namespace StrangeVanilla.Maat.Commands
 
             if (Published)
             {
-                events.Add(new EntryPublished(Entry.Id));
+                events.Add(new EntryPublished(Entry.Id) { Version = version.Next() });
             }
 
             if (Categories != null)

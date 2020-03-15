@@ -36,7 +36,8 @@ namespace StrangeVanilla.Maat.Commands
             {
                 Name = Name,
                 MediaStoreId = savePath,
-                MimeType = MimeType
+                MimeType = MimeType,
+                Version = 0
             };
 
             e.Apply(m);

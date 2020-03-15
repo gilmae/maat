@@ -41,7 +41,7 @@ namespace StrangeVanilla.Maat.Commands
 
             if (Published)
             {
-                events.Add(new EntryPublished(entry.Id));
+                events.Add(new EntryPublished(entry.Id) { Version = version.Next() });
             }
 
             if (Categories != null)
@@ -51,7 +51,7 @@ namespace StrangeVanilla.Maat.Commands
 
             if (Media != null)
             {
-                events.AddRange(Media.Select(m => new MediaAssociated(entry.Id, m.Url, m.Type, m.Description)));
+                events.AddRange(Media.Select(m => new MediaAssociated(entry.Id, m.Url, m.Type, m.Description) { Version = version.Next() }));
             }
 
             _entryStore.StoreEvent(events);
