@@ -14,7 +14,8 @@ namespace StrangeVanilla.Blogging.Events
         public IList<string> Syndications { get; set; }
         public IList<MediaLink> AssociatedMedia { get; set; }
         public string BookmarkOf { get; set; }
-        
+        public string ReplyTo { get; set; }
+
         public Entry() : base() { }
         public Entry(Guid id) : base(id) { }
 
@@ -25,6 +26,4 @@ namespace StrangeVanilla.Blogging.Events
             public string Description { get; set; }
         }
     }
-
-    
 }

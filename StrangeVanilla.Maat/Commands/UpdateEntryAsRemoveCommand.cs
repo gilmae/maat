@@ -18,6 +18,7 @@ namespace StrangeVanilla.Maat.Commands
         public bool Media { get; set; }
         public bool BookmarkOf { get; set; }
         public Entry Entry { get; set; }
+        public bool ReplyTo { get; set; }
 
         public UpdateEntryAsRemoveCommand(IEventStore<Entry> entryStore)
         {
@@ -34,8 +35,9 @@ namespace StrangeVanilla.Maat.Commands
             {
                 Body = Content ? "" : null,
                 Title = Name ? "" : null,
-                Version =version.Next(),
-                BookmarkOf = BookmarkOf ? "" : null
+                Version = version.Next(),
+                BookmarkOf = BookmarkOf ? "" : null,
+                ReplyTo = ReplyTo ? "" : null
             });
 
             if (Categories)

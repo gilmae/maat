@@ -18,6 +18,7 @@ namespace StrangeVanilla.Maat.Commands
         public IEnumerable<Entry.MediaLink> Media { get; set; }
         public string BookmarkOf { get; set; }
         public bool Published { get; set; }
+        public string ReplyTo { get; set; }
 
         public UpdateEntryAsAddCommand(IEventStore<Entry> entryStore)
         {
@@ -35,7 +36,8 @@ namespace StrangeVanilla.Maat.Commands
                 Body = Content,
                 Title = Name,
                 Version = version.Next(),
-                BookmarkOf = BookmarkOf
+                BookmarkOf = BookmarkOf,
+                ReplyTo = ReplyTo
             });
 
             if (Published)

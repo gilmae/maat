@@ -88,6 +88,7 @@ namespace StrangeVanilla.Maat.Micropub
                 media = media.Union(photos).ToList();
             }
 
+            string inReplyTo = post.Properties.GetValueOrDefault("in-reply-to")?[0]?.ToString();
             CreateEntryCommand command = new CreateEntryCommand(_entryRepository)
             {
                 Content = post.Properties.GetValueOrDefault("content")?[0]?.ToString(),
@@ -95,7 +96,8 @@ namespace StrangeVanilla.Maat.Micropub
                 Categories = post.Properties.GetValueOrDefault("category") as string[],
                 Media = media,
                 BookmarkOf = post.Properties.GetValueOrDefault("bookmark-of")?[0]?.ToString(),
-                Published = post.Properties.GetValueOrDefault("post-status")?[0]?.ToString() != "draft"
+                Published = post.Properties.GetValueOrDefault("post-status")?[0]?.ToString() != "draft",
+                ReplyTo = inReplyTo,
             };
 
             var entry = command.Execute();
