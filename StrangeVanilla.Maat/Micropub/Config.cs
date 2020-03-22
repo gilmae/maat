@@ -6,5 +6,8 @@ namespace StrangeVanilla.Maat.Micropub
     {
         [JsonProperty("media-endpoint")]
         public string MediaEndpoint { get; set; }
+
+        [JsonProperty("q")]
+        public string[] SupportedQueries { get; set; }
     }
 }

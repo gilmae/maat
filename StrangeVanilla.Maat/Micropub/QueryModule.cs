@@ -29,9 +29,12 @@ namespace StrangeVanilla.Maat.Micropub
                 switch (q)
                 {
                     case "config":
-                        return new Nancy.Responses.JsonResponse(new Config { MediaEndpoint = Path.Join(this.Request.Url.SiteBase, "/micropub/media") },
-new Nancy.Responses.DefaultJsonSerializer(this.Context.Environment),
-this.Context.Environment);
+                        return new Nancy.Responses.JsonResponse(new  Config{
+                            MediaEndpoint = Path.Join(this.Request.Url.SiteBase, "/micropub/media"),
+                            SupportedQueries = new[] { "config","source"}
+                        },
+                        new Nancy.Serialization.JsonNet.JsonNetSerializer(),
+                        this.Context.Environment);
                     case "source":
 
                         var requestedProperties = (string[])MicropubBinder.AsArray(Request.Query["properties[]"]);
@@ -60,7 +63,6 @@ this.Context.Environment);
                                 entries = entries.Where(e => e.Id == entryId);
                             }
                         }
-                            
 
                         var pagedEntries = entries.OrderByDescending(i => i.PublishedAt).Take(20);
                         EntryToMicropubConverter converter = new EntryToMicropubConverter(requestedProperties);
@@ -69,13 +71,10 @@ this.Context.Environment);
                         var micropubEntries = pagedEntries.Select(e => MicropubEnricher(Context, e, converter.ToDictionary(e), includeUrl, includeType));
 
                         
-                            return new Nancy.Responses.JsonResponse(
-                                micropubEntries,
-                                new Nancy.Serialization.JsonNet.JsonNetSerializer(),
-                                this.Context.Environment);
-                            
-                        
-
+                        return new Nancy.Responses.JsonResponse(
+                            micropubEntries,
+                            new Nancy.Serialization.JsonNet.JsonNetSerializer(),
+                            Context.Environment);
                     default:
                         return "";
 
