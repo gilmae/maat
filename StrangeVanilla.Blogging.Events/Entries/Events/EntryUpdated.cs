@@ -11,6 +11,7 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
         public string BookmarkOf { get; set; }
         public string ReplyTo { get; set; }
 
+        public EntryUpdated() { }
         public EntryUpdated(Guid entryId)
         {
             AggregateId = entryId;

@@ -6,6 +6,7 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
 {
     public class EntryCategoriesCleared : Event<Entry>
     {
+        public EntryCategoriesCleared() { }
         public EntryCategoriesCleared(Guid entryId)
         {
             AggregateId = entryId;

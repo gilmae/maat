@@ -14,16 +14,16 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
         public EntryPublished(Guid entryId, DateTime publishedAt)
         {
             AggregateId = entryId;
-            Published_At = publishedAt;
+            PublishedAt = publishedAt;
         }
 
-        public DateTime Published_At { get; set; }
+        public DateTime PublishedAt { get; set; }
 
 
         public override void Apply(Entry aggregate)
         {
             base.Apply(aggregate);
-            aggregate.Published_At = Published_At;
+            aggregate.PublishedAt = PublishedAt;
         }
     }
 }

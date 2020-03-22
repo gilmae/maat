@@ -9,7 +9,7 @@ namespace StrangeVanilla.Blogging.Events
         public string Title { get; set; }
         public string Body { get; set; }
         public IList<string> Categories { get; set; }
-        public DateTime Published_At { get; set; }
+        public DateTime PublishedAt { get; set; }
         public string Uid { get; set; }
         public IList<string> Syndications { get; set; }
         public IList<MediaLink> AssociatedMedia { get; set; }

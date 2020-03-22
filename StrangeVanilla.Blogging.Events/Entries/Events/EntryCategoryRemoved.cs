@@ -7,6 +7,7 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
     {
         public string Category { get; set; }
 
+        public EntryCategoryRemoved() { }
         public EntryCategoryRemoved(Guid entryId)
         {
             AggregateId = entryId;
