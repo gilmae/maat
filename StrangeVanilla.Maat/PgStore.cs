@@ -82,7 +82,7 @@ namespace StrangeVanilla.Maat
                 conn.Open();
                 foreach (Event<T> e in events)
                 {
-                    string body = System.Text.Json.JsonSerializer.Serialize(e);
+                    string body = System.Text.Json.JsonSerializer.Serialize(e as object);
                     string eventType = e.GetType().Name;
                     conn.Execute(sql, new { aggregate_id = e.AggregateId, type = _type, event_type = eventType, body, e.Version });
                 }
