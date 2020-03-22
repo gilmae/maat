@@ -40,9 +40,4 @@
     <Compile Remove="lib\EntryHelper %28copy%29.cs" />
     <Compile Remove="Commands\AddReplyCommand.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Reference Include="FastMember">
-      <HintPath>..\..\fast-member\FastMember\bin\Release\netcoreapp2.0\FastMember.dll</HintPath>
-    </Reference>
-  </ItemGroup>
 </Project>

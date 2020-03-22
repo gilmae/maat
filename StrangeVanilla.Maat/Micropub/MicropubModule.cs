@@ -13,6 +13,8 @@ using StrangeVanilla.Maat.Commands;
 using StrangeVanilla.Maat.lib;
 using System.Collections.Generic;
 using StrangeVanilla.Blogging.Events.Entries.Events;
+using System.Dynamic;
+using Microsoft.CSharp.RuntimeBinder;
 
 namespace StrangeVanilla.Maat.Micropub
 {
@@ -89,14 +91,15 @@ namespace StrangeVanilla.Maat.Micropub
             }
 
             string inReplyTo = post.Properties.GetValueOrDefault("in-reply-to")?[0]?.ToString();
+            string postStatus = post.Properties.GetValueOrDefault("post-status")?[0]?.ToString();
             CreateEntryCommand command = new CreateEntryCommand(_entryRepository)
             {
                 Content = post.Properties.GetValueOrDefault("content")?[0]?.ToString(),
                 Name = post.Properties.GetValueOrDefault("name")?[0]?.ToString(),
-                Categories = post.Properties.GetValueOrDefault("category") as string[],
+                Categories = (post.Properties.GetValueOrDefault("category") as object[]).Select(x=>x.ToString()).ToArray(),
                 Media = media,
                 BookmarkOf = post.Properties.GetValueOrDefault("bookmark-of")?[0]?.ToString(),
-                Published = post.Properties.GetValueOrDefault("post-status")?[0]?.ToString() != "draft",
+                Published = postStatus == null || postStatus != "draft",
                 ReplyTo = inReplyTo,
             };
 
@@ -113,7 +116,28 @@ namespace StrangeVanilla.Maat.Micropub
 
         private IEnumerable<Entry.MediaLink> ParseMediaReference(IEnumerable<dynamic> items, string type)
         {
-            return items?.Select(i=>new Entry.MediaLink{ Url = i.url, Type = type, Description = i.alt});
+            IList<Entry.MediaLink> media = new List<Entry.MediaLink>();
+            foreach (dynamic item in items)
+            {
+                if (item is string)
+                {
+                    media.Add(new Entry.MediaLink { Url = item, Type=type });
+                }
+                else
+                {
+                    var m = new Entry.MediaLink { Url = item.url, Type = type };
+                    try
+                    {
+                        m.Description = item.alt;
+                    }
+                    catch (RuntimeBinderException)
+                    {
+
+                    }
+                    media.Add(m);
+                }
+            }
+            return media;
         }
 
         public Response Update(MicropubPayload post)

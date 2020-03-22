@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Events;
-using FastMember;
 using Microsoft.Extensions.Logging;
 using Nancy;
 using StrangeVanilla.Blogging.Events;
 using StrangeVanilla.Maat.lib;
+using static StrangeVanilla.Blogging.Events.Entry;
 
 namespace StrangeVanilla.Maat.Micropub
 {
@@ -32,13 +33,14 @@ namespace StrangeVanilla.Maat.Micropub
 new Nancy.Responses.DefaultJsonSerializer(this.Context.Environment),
 this.Context.Environment);
                     case "source":
-                        var accessor = TypeAccessor.Create(typeof(MicropubPost));
 
-                        var test = new MicropubPost();
-                        var testAccessor = ObjectAccessor.Create(new MicropubPost());
-
-                        var requestedProperties = SanitiseColumns((string[])MicropubBinder.AsArray(Request.Query["properties[]"]))
-                        .Where(p=> testAccessor.IsDefined(p.Key));
+                        var requestedProperties = (string[])MicropubBinder.AsArray(Request.Query["properties[]"]);
+                        bool includeType = false;
+                        bool includeUrl = true;
+                        if (requestedProperties == null || requestedProperties.Count() == 0)
+                        {
+                            includeType = true;
+                        }
 
                         var entries = _entryRepository
                             .Get();
@@ -46,6 +48,7 @@ this.Context.Environment);
                         string url = Request.Query["url"];
                         if (!string.IsNullOrEmpty(url))
                         {
+                            includeUrl = false;
                             Guid entryId = this.Context.GetEntryIdFromUrl(url);
 
                             if (entryId == Guid.Empty)
@@ -59,81 +62,124 @@ this.Context.Environment);
                         }
                             
 
-                        var filteredEntries = entries.OrderByDescending(i => i.Published_At).Take(20)
-                            .Select(i => new MicropubPost
-                            { Type = "Entry",
-                                Title = i.Title,
-                                Content = i.Body,
-                                Categories = i.Categories?.ToArray(),
-                                BookmarkOf = i.BookmarkOf });
+                        var pagedEntries = entries.OrderByDescending(i => i.PublishedAt).Take(20);
+                        EntryToMicropubConverter converter = new EntryToMicropubConverter(requestedProperties);
 
-                        if (requestedProperties != null & requestedProperties.Count() > 0)
-                        {
-                            var properties = entries.Select(i => GetColumns(requestedProperties, i, accessor));
+
+                        var micropubEntries = pagedEntries.Select(e => MicropubEnricher(Context, e, converter.ToDictionary(e), includeUrl, includeType));
+
+                        
                             return new Nancy.Responses.JsonResponse(
-                                new {
-                                    properties
-                                },
+                                micropubEntries,
                                 new Nancy.Serialization.JsonNet.JsonNetSerializer(),
                                 this.Context.Environment);
                             
-                        }
-
-                        return new Nancy.Responses.JsonResponse(new { properties = entries },
-                                 new Nancy.Serialization.JsonNet.JsonNetSerializer(),
-                                 this.Context.Environment);
+                        
 
                     default:
                         return "";
 
                 }
             });
+
+            
         }
 
-        private Dictionary<string,string> SanitiseColumns(string[] columns)
+        private dynamic MicropubEnricher(NancyContext context, Entry entry, Dictionary<string,object> properties, bool includeUrl, bool includeType)
         {
-            Dictionary<string, string> columnMapping = new Dictionary<string, string>();
-
-            foreach (string c in columns)
+            Dictionary<string, object> enrichedItem = new Dictionary<string, object>();
+            enrichedItem["properties"] = properties;
+            if (includeUrl)
             {
-                switch (c)
+                enrichedItem["url"] = new[] { UrlHelper.EntryUrl(context, entry) };
+            }
+            if (includeType)
+            {
+                enrichedItem["type"] = "h-entry";
+            }
+            return enrichedItem;
+        }
+        
+
+        
+        private class EntryToMicropubConverter
+        {
+            private Dictionary<string, PropertyInfo> _properties = new Dictionary<string, PropertyInfo>();
+            private static Dictionary<string, string> columnMapper = new Dictionary<string, string>
+            {
+                {"name", "Title"},
+                {"content", "Body" },
+                {"category", "Categories" },
+                {"photo", "AssociatedMedia" },
+                {"in-reply-to", "ReplyTo" },
+                {"post-status", "PublishedAt" },
+                {"published", "PublishedAt" },
+                {"bookmark-of", "BookmarkOf" }
+            };
+
+            public EntryToMicropubConverter() : this(null) { }
+            public EntryToMicropubConverter(IList<string> columnsRequired)
+            {
+                if (columnsRequired == null || columnsRequired.Count == 0){
+                    columnsRequired = columnMapper.Keys.ToList();
+                }
+
+                columnsRequired = columnsRequired.Where(c => columnMapper.ContainsKey(c)).ToList();
+
+                Type entry = typeof(Entry);
+                foreach (string column in columnsRequired)
                 {
-                    case "h":
-                        columnMapping["Type"] = c;
-                        break;
-
-                    case "content":
-                        columnMapping["Content"] = c;
-                        break;
-
-                    case "name":
-                        columnMapping["Title"] = c;
-                        break;
-
-                    case "category":
-                        columnMapping["Categories"] = c;
-                        break;
-
-                    case "post-status":
-                        columnMapping["PostStatus"] = c;
-                        break;
-
-                    case "bookmark-of":
-                        columnMapping["BookmarkOf"] = c;
-                        break;
-                    default:
-                        columnMapping[c] = c;
-                        break;
+                    var property = entry.GetProperty(columnMapper[column]);
+                    if (property != null)
+                    {
+                        _properties[column] = property;
+                    }
                 }
             }
 
-            return columnMapping;
-        }
+            public Dictionary<string, object> ToDictionary(Entry entry)
+            {
+                Dictionary<string, object> values = new Dictionary<string, object>();
 
-        private Dictionary<string, object> GetColumns(IEnumerable<KeyValuePair<string,string>> columns, object source, TypeAccessor accessor)
-        {
-            return columns.ToDictionary(i => i.Value, i => accessor[source, i.Key]);
-        }
+                foreach (string key in _properties.Keys)
+                {
+                    values[key] = GetValue(key, entry);
+                }
 
+                return values;
+
+            }
+
+
+            public object GetValue(string columnName, Entry entry) 
+            {
+                object value = _properties[columnName].GetValue(entry);
+                switch (columnName)
+                {
+                    case "name":
+                    case "content":
+                    case "in-reply-to":
+                    case "bookmark-of":
+                    case "category":
+                    case "published":
+                        return value;
+                    case "photo":
+                        var media = value as IList<MediaLink>;
+                        if (media != null)
+                        {
+                            return media.Where(x => x.Type == "photo");
+                        }
+                        return null;
+                    case "post-status":
+                        return value == null ? "draft" : "published";
+                    default:
+                        return null;
+
+                }
+
+
+
+            }
+        }
     }
 }
