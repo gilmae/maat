@@ -125,7 +125,7 @@ namespace StrangeVanilla.Maat.Micropub
                 }
                 else
                 {
-                    var m = new Entry.MediaLink { Url = item.url, Type = type };
+                    var m = new Entry.MediaLink { Url = item.value, Type = type };
                     try
                     {
                         m.Description = item.alt;
