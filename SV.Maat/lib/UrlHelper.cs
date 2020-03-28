@@ -1,24 +1,25 @@
 ﻿using System;
 using System.IO;
+using Microsoft.AspNetCore.Http;
 using StrangeVanilla.Blogging.Events;
 
-namespace StrangeVanilla.Maat.lib
+namespace SV.Maat.lib
 {
     public static class UrlHelper
     {
-        public static string EntryUrl(this Nancy.NancyContext ctx, Entry e)
+        public static string EntryUrl(this HttpContext ctx, Entry e)
         {
-            var url = ctx.Request.Url;
-            var path = Path.Join(url.SiteBase, "entries", e.Id.ToString());
+             var path = ctx.Request.Scheme + "://" + Path.Join(ctx.Request.Host.ToString(), ctx.Request.PathBase, "entries", e.Id.ToString());
             return path;
         }
 
-        public static Guid GetEntryIdFromUrl(this Nancy.NancyContext ctx, string url)
+        public static Guid GetEntryIdFromUrl(this HttpContext ctx, string url)
         {
-            Nancy.Url requestUrl = new Nancy.Url(url);
-            var path = requestUrl.Path;
+            Uri requestUrl = new Uri(url);
+            var path = requestUrl.PathAndQuery;
+            
 
-            if (path.StartsWith(@"/entries"))
+            if (path.Contains(@"/entries/"))
             {
                 var potentialId = path.Replace(@"/entries/", "");
 
@@ -33,19 +34,18 @@ namespace StrangeVanilla.Maat.lib
             return Guid.Empty;
         }
 
-        public static string MediaUrl(this Nancy.NancyContext ctx,  Media e)
+        public static string MediaUrl(this HttpContext ctx, Media e)
         {
-            var url = ctx.Request.Url;
-            var path = Path.Join(url.SiteBase, "media", e.Id.ToString());
+            var path = ctx.Request.Scheme + "://" +  Path.Join(ctx.Request.Host.ToString(), ctx.Request.PathBase, "media", e.Id.ToString());
             return path;
         }
 
-        public static Guid GetMediaIdFromUrl(this Nancy.NancyContext ctx, string url)
+        public static Guid GetMediaIdFromUrl(this HttpContext ctx, string url)
         {
-            Nancy.Url requestUrl = new Nancy.Url(url);
-            var path = requestUrl.Path;
+            Uri requestUrl = new Uri(url);
+            var path = requestUrl.PathAndQuery;
 
-            if (path.StartsWith(@"/media"))
+            if (path.Contains(@"/media/"))
             {
                 var potentialId = path.Replace(@"/media/", "");
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using libEnbilulu;
 
-namespace StrangeVanilla.Maat.lib.MessageBus
+namespace SV.Maat.lib.MessageBus
 {
     public class EnbiluluBus<T> : IMessageBus<T> 
     {

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Events;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -10,6 +11,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using StrangeVanilla.Blogging.Events;
+using SV.Maat.lib.FileStore;
+using SV.Maat.lib.MessageBus;
 
 namespace SV.Maat
 {
@@ -25,7 +29,15 @@ namespace SV.Maat
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddMvc().AddNewtonsoftJson();
             services.AddControllers();
+            services.AddSingleton<IEventStore<Entry>, PgStore<Entry>>();
+            services.AddSingleton<IEventStore<Media>, PgStore<Media>>();
+            services.AddSingleton<IMessageBus<Entry>, EnbiluluBus<Entry>>();
+
+            services.AddSingleton<IProjection<Entry>, Projection<Entry>>();
+
+            services.AddSingleton<IFileStore, FSStore>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -36,7 +48,7 @@ namespace SV.Maat
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseRouting();
 

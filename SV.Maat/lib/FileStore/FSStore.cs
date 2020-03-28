@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace StrangeVanilla.Maat.lib.FileStore
+namespace SV.Maat.lib.FileStore
 {
     public class FSStore : IFileStore
     {

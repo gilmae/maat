@@ -1,5 +1,5 @@
 ﻿using System;
-namespace StrangeVanilla.Maat.Commands
+namespace SV.Maat.Commands
 {
     public abstract class BaseCommand<T>
     {

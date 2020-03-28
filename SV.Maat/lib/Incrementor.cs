@@ -1,4 +1,4 @@
-﻿namespace SV.Maat
+﻿namespace SV.Maat.lib
 {
     public class Incrementor
     {

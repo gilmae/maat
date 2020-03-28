@@ -5,8 +5,9 @@ using Events;
 
 using StrangeVanilla.Blogging.Events;
 using StrangeVanilla.Blogging.Events.Entries.Events;
+using SV.Maat.lib;
 
-namespace StrangeVanilla.Maat.Commands
+namespace SV.Maat.Commands
 {
     public class UpdateEntryAsAddCommand : BaseCommand<Entry>
     {
