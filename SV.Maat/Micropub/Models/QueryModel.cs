@@ -6,7 +6,7 @@ namespace SV.Maat.Micropub.Models
     public class QueryModel
     {
         [BindProperty(Name ="q")]
-        public string Q { get; set; }
+        public string Query { get; set; }
 
         [BindProperty(Name ="url")]
         public string Url { get; set; }
