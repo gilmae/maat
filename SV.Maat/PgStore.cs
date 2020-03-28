@@ -6,7 +6,7 @@ using Dapper;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
 
-namespace SV.Maat
+namespace StrangeVanilla.Maat
 {
     public class PgStore<T> : IEventStore<T> where T : Aggregate
     {

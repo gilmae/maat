@@ -5,9 +5,8 @@ using Events;
 
 using StrangeVanilla.Blogging.Events;
 using StrangeVanilla.Blogging.Events.Entries.Events;
-using SV.Maat.lib;
 
-namespace SV.Maat.Commands
+namespace StrangeVanilla.Maat.Commands
 {
     public class UpdateEntryAsRemoveCommand : BaseCommand<Entry>
     {

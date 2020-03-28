@@ -5,25 +5,4 @@
   </PropertyGroup>
 
 
-  <ItemGroup>
-    <ProjectReference Include="..\Events\Events.csproj">
-      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
-    </ProjectReference>
-    <ProjectReference Include="..\StrangeVanilla.Blogging.Events\StrangeVanilla.Blogging.Events.csproj">
-      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Npgsql" Version="4.1.3.1" />
-    <PackageReference Include="Dapper" Version="2.0.30" />
-    <PackageReference Include="Enbilulu.Client" Version="0.9.3" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.3" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="lib\" />
-    <Folder Include="Micropub\" />
-    <Folder Include="Micropub\Models\" />
-    <Folder Include="Commands\" />
-  </ItemGroup>
 </Project>

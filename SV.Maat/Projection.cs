@@ -6,9 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Events;
 using libEnbilulu;
-using SV.Maat.lib.MessageBus;
+using StrangeVanilla.Maat.lib.MessageBus;
 
-namespace SV.Maat
+namespace StrangeVanilla.Maat
 {
     public class Projection<T> : IProjection<T> where T : Aggregate
     {

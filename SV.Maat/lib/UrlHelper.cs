@@ -1,25 +1,24 @@
 ﻿using System;
 using System.IO;
-using Microsoft.AspNetCore.Http;
 using StrangeVanilla.Blogging.Events;
 
-namespace SV.Maat.lib
+namespace StrangeVanilla.Maat.lib
 {
     public static class UrlHelper
     {
-        public static string EntryUrl(this HttpContext ctx, Entry e)
+        public static string EntryUrl(this Nancy.NancyContext ctx, Entry e)
         {
-             var path = ctx.Request.Scheme + "://" + Path.Join(ctx.Request.Host.ToString(), ctx.Request.PathBase, "entries", e.Id.ToString());
+            var url = ctx.Request.Url;
+            var path = Path.Join(url.SiteBase, "entries", e.Id.ToString());
             return path;
         }
 
-        public static Guid GetEntryIdFromUrl(this HttpContext ctx, string url)
+        public static Guid GetEntryIdFromUrl(this Nancy.NancyContext ctx, string url)
         {
-            Uri requestUrl = new Uri(url);
-            var path = requestUrl.PathAndQuery;
-            
+            Nancy.Url requestUrl = new Nancy.Url(url);
+            var path = requestUrl.Path;
 
-            if (path.Contains(@"/entries/"))
+            if (path.StartsWith(@"/entries"))
             {
                 var potentialId = path.Replace(@"/entries/", "");
 
@@ -34,18 +33,19 @@ namespace SV.Maat.lib
             return Guid.Empty;
         }
 
-        public static string MediaUrl(this HttpContext ctx, Media e)
+        public static string MediaUrl(this Nancy.NancyContext ctx,  Media e)
         {
-            var path = ctx.Request.Scheme + "://" +  Path.Join(ctx.Request.Host.ToString(), ctx.Request.PathBase, "media", e.Id.ToString());
+            var url = ctx.Request.Url;
+            var path = Path.Join(url.SiteBase, "media", e.Id.ToString());
             return path;
         }
 
-        public static Guid GetMediaIdFromUrl(this HttpContext ctx, string url)
+        public static Guid GetMediaIdFromUrl(this Nancy.NancyContext ctx, string url)
         {
-            Uri requestUrl = new Uri(url);
-            var path = requestUrl.PathAndQuery;
+            Nancy.Url requestUrl = new Nancy.Url(url);
+            var path = requestUrl.Path;
 
-            if (path.Contains(@"/media/"))
+            if (path.StartsWith(@"/media"))
             {
                 var potentialId = path.Replace(@"/media/", "");
 

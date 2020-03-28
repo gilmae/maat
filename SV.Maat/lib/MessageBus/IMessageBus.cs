@@ -1,5 +1,5 @@
 ﻿using System;
-namespace SV.Maat.lib.MessageBus
+namespace StrangeVanilla.Maat.lib.MessageBus
 {
     public interface IMessageBus<T>
     {

@@ -2,9 +2,9 @@
 using System.IO;
 using Events;
 using StrangeVanilla.Blogging.Events;
-using SV.Maat.lib.FileStore;
+using StrangeVanilla.Maat.lib;
 
-namespace SV.Maat.Commands
+namespace StrangeVanilla.Maat.Commands
 {
     public class ProcessMediaUpload : BaseCommand<Media>
     {
