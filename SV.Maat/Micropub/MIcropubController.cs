@@ -40,28 +40,15 @@ namespace SV.Maat.Micropub
             _entryBus = entryBus;
             _fileStore = fileStore;
         }
-        private string GetToken()
-        {
-            string access_token = Request.Headers["Authorization"];
-
-            if (string.IsNullOrEmpty(access_token))
-            {
-                string form_token = Request.Form["access_token"];
-                if (string.IsNullOrEmpty(form_token))
-                {
-                    return null;
-                }
-
-                access_token = string.Concat("Bearer: ", form_token);
-            }
-
-            return access_token
-        }
-
+        
         [HttpPost]
         [Consumes("application/json")]
         public IActionResult Publish([FromBody]MicropubPublishModel post)
         {
+            if (!IndieAuth.IndieAuth.VerifyAccessToken(Request.Headers["Authorization"]))
+            {
+                return Unauthorized();
+            }
             if (post.IsCreate()){
                 return Create(post);
             }
@@ -73,6 +60,10 @@ namespace SV.Maat.Micropub
         [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
         public IActionResult CreateFromForm([FromForm]MicropubFormCreateModel post)
         {
+            if (!IndieAuth.IndieAuth.VerifyAccessToken(Request.Form["access_token"].ToString() ?? Request.Headers["Authorization"].ToString()))
+            {
+                return Unauthorized();
+            }
             ProcessMediaUpload mediaProcessor = new ProcessMediaUpload(_mediaRepository, _fileStore);
             IEnumerable<Entry.MediaLink> media = new List<Entry.MediaLink>();
             if (post.Photo != null)

@@ -1,11 +1,10 @@
-﻿using System;
-using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
 
 namespace SV.Maat.Micropub.Models
 {
     public class Config
     {
-        [JsonPropertyName("media-endpoint")]
+        [JsonProperty("media-endpoint")]
         public string MediaEndpoint { get; set; }
 
     }

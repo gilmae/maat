@@ -22,6 +22,15 @@ namespace SV.Maat.IndieAuth
 
         public static bool VerifyAccessToken(string access_token)
         {
+            if (string.IsNullOrEmpty(access_token))
+            {
+                return false;
+            }
+
+            if (access_token.StartsWith("Bearer: "))
+            {
+                access_token = access_token.Replace("Bearer: ", "");
+            }
             if (access_token.EndsWith("itsame")) // Dev mode
             {
                 return true;

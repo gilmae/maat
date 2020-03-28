@@ -13,6 +13,10 @@ namespace SV.Maat.Micropub
         [Route("media")]
         public IActionResult CreateMedia(IFormFile file)
         {
+            if (!IndieAuth.IndieAuth.VerifyAccessToken(Request.Form["access_token"].ToString() ?? Request.Headers["Authorization"].ToString()))
+            {
+                return Unauthorized();
+            }
             if (file == null)
             {
                 return BadRequest(new

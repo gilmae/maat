@@ -25,28 +25,10 @@ namespace SV.Maat.Micropub
             _entryView = entryView;
         }
 
-        private string GetToken()
-        {
-            string access_token = Request.Headers["Authorization"];
-
-            if (string.IsNullOrEmpty(access_token))
-            {
-                string form_token = Request.Form["access_token"];
-                if (string.IsNullOrEmpty(form_token))
-                {
-                    return null;
-                }
-
-                access_token = string.Concat("Bearer: ", form_token);
-            }
-
-            return access_token;
-        }
-
         [HttpGet]
         public IActionResult Query([FromQuery] QueryModel query)
         {
-            if (!IndieAuth.IndieAuth.VerifyAccessToken(GetToken()))
+            if (!IndieAuth.IndieAuth.VerifyAccessToken(Request.Headers["Authorization"]))
             {
                 return Unauthorized();
             }
