@@ -10,11 +10,11 @@ using SV.Maat.lib.MessageBus;
 
 namespace SV.Maat
 {
-    public class Projection<T> : IProjection<T> where T : Aggregate
+    public class MemoryProjection<T> : IProjection<T> where T : Aggregate
     {
         ConcurrentDictionary<Guid, T> projections = new ConcurrentDictionary<Guid, T>();
 
-        public Projection(IEventStore<T> _aggregateRepository)
+        public MemoryProjection(IEventStore<T> _aggregateRepository)
         {
 
             var events = _aggregateRepository.Retrieve().GroupBy(e => e.AggregateId);
