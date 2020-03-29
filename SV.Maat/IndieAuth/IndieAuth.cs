@@ -27,23 +27,16 @@ namespace SV.Maat.IndieAuth
                 return false;
             }
 
-            if (access_token.StartsWith("Bearer: "))
+            if (access_token.StartsWith("Bearer "))
             {
-                access_token = access_token.Replace("Bearer: ", "");
+                access_token = access_token.Replace("Bearer ", "");
             }
-            if (access_token.EndsWith("itsame")) // Dev mode
-            {
-                return true;
-//                return new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
-//{
-//                        new Claim(ClaimTypes.Name, "test")}, "Basic"));
-            }
-
+       
             var req = WebRequest.Create(IndieAuthTokenValidationEndpoint);
             req.Method = "GET";
             req.Headers.Add("Content-Type", "application/json");
             req.Headers.Add("Accept", "application/json");
-            req.Headers.Add("Authorization", access_token);
+            req.Headers.Add("Authorization", $"Bearer {access_token}");
 
             var response = req.GetResponse();
 
