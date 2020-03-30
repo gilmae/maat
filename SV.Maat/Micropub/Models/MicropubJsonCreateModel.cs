@@ -42,4 +42,10 @@ namespace SV.Maat.Micropub.Models
             return model.Type != null && model.Type.Count() > 0;
         }
     }
+
+    public enum ActionType
+    {
+        update,
+        delete
+    }
 }
