@@ -7,6 +7,9 @@ namespace SV.Maat.Micropub.Models
         [JsonProperty("media-endpoint")]
         public string MediaEndpoint { get; set; }
 
+        [JsonProperty("q")]
+        public string[] SupportedQueries { get; set; }
+
     }
 
 

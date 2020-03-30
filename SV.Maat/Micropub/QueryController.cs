@@ -46,7 +46,10 @@ namespace SV.Maat.Micropub
 
         private Config GetConfig()
         {
-            return new Config { MediaEndpoint = Url.ActionLink("CreateMedia", "Micropub") };
+            return new Config {
+                MediaEndpoint = Url.ActionLink("CreateMedia", "Micropub"),
+                SupportedQueries = new[] { "config", "source" }
+            };
         }
 
         private IActionResult GetSourceQuery(string url, string[] properties)
