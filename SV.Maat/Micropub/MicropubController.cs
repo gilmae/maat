@@ -49,11 +49,20 @@ namespace SV.Maat.Micropub
             {
                 return Unauthorized();
             }
-            if (post.IsCreate()){
+            if (post.IsCreate())
+            {
                 return Create(post);
             }
+            else if (post.Action == ActionType.update.ToString())
+            {
+                return Update(post);
+            }
+            else if (post.Action == ActionType.delete.ToString())
+            {
+                return Delete(post);
+            }
 
-            return Update(post);
+            return BadRequest();
         }
 
         [HttpPost]
@@ -130,6 +139,36 @@ namespace SV.Maat.Micropub
             string location = SV.Maat.lib.UrlHelper.EntryUrl(HttpContext, entry);
             //Response.Headers.Add("Location", UrlHelper.EntryUrl(HttpContext, entry));
             return base.Created(location, null);
+        }
+
+        public IActionResult Delete(MicropubPublishModel model)
+        {
+            if (string.IsNullOrEmpty(model.Url))
+            {
+                return BadRequest(new
+                {
+                    error = "invalid_request",
+                    error_description = "URL was not provided"
+                });
+            }
+
+            Guid entryId = HttpContext.GetEntryIdFromUrl(model.Url);
+
+            if (entryId == Guid.Empty)
+            {
+                return BadRequest(new
+                {
+                    error = "invalid_request",
+                    error_description = "URL could not be parsed."
+                });
+            }
+
+            var entry = new Entry(entryId);
+
+            var command = new DeleteEntry(_entryRepository) { Entry = entry };
+            command.Execute();
+
+            return Ok();
         }
 
         private IActionResult Update(MicropubPublishModel model)

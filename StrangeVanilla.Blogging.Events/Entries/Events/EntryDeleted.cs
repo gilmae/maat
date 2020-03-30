@@ -21,6 +21,7 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
         {
             base.Apply(aggregate);
             aggregate.DeletedAt = DeletedAt;
+            
         }
     }
 }

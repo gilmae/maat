@@ -113,9 +113,10 @@ namespace SV.Maat.Micropub
                 {"category", "Categories" },
                 {"photo", "AssociatedMedia" },
                 {"in-reply-to", "ReplyTo" },
-                {"post-status", "PublishedAt" },
+                {"post-status", "Status" },
                 {"published", "PublishedAt" },
-                {"bookmark-of", "BookmarkOf" }
+                {"bookmark-of", "BookmarkOf" },
+                { "dt-deleted", "DeletedAt"}
             };
 
             public EntryToMicropubConverter() : this(null) { }
@@ -163,6 +164,7 @@ namespace SV.Maat.Micropub
                     case "bookmark-of":
                     case "category":
                     case "published":
+                    case "dt-deleted":
                         return value;
                     case "photo":
                         var media = value as IList<MediaLink>;
@@ -172,7 +174,7 @@ namespace SV.Maat.Micropub
                         }
                         return null;
                     case "post-status":
-                        return value == null ? "draft" : "published";
+                        return value.ToString();
                     default:
                         return null;
 

@@ -18,6 +18,22 @@ namespace StrangeVanilla.Blogging.Events
 
         public DateTime? DeletedAt { get; set; }
 
+        public StatusType Status
+        {
+            get
+            {
+                if (DeletedAt.HasValue)
+                {
+                    return StatusType.deleted;
+                }
+                else if (PublishedAt.HasValue)
+                {
+                    return StatusType.published;
+                }
+                return StatusType.published;
+            }
+        }
+
         public Entry() : base() { }
         public Entry(Guid id) : base(id) { }
 
@@ -27,5 +43,11 @@ namespace StrangeVanilla.Blogging.Events
             public string Type { get; set; }
             public string Description { get; set; }
         }
+    }
+
+    public enum StatusType{
+        draft,
+        published,
+        deleted
     }
 }
