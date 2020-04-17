@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using StrangeVanilla.Blogging.Events;
 using SV.Maat.lib.FileStore;
 using SV.Maat.lib.MessageBus;
+using SV.Maat.Users;
 
 namespace SV.Maat
 {
@@ -38,6 +39,10 @@ namespace SV.Maat
             services.AddSingleton<IProjection<Entry>, MemoryProjection<Entry>>();
 
             services.AddSingleton<IFileStore, FSStore>();
+            services.AddSingleton<IUserStore, UserStore>();
+
+            services.AddRazorPages();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -57,6 +62,7 @@ namespace SV.Maat
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapRazorPages();
             });
         }
     }
