@@ -31,9 +31,14 @@
     <Folder Include="Users\Models\" />
     <Folder Include="lib\Repository\" />
     <Folder Include="Users\Views\" />
+    <Folder Include="IndieAuth\Models\" />
+    <Folder Include="IndieAuth\Views\" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Users\Views\View.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="IndieAuth\Views\AuthenticationRequest.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

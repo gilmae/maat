@@ -1,0 +1,17 @@
+﻿@page
+@{
+}
+@model SV.Maat.IndieAuth.Models.AuthenticationRequest
+
+<section>
+    <header>Client Id</header>
+    <p>@Html.DisplayFor(m=>m.ClientId)</p>
+
+    <form action="@Url.Action("ApproveAuthenticationRequest")">
+        <input type="hidden" name="id" value="@Html.ValueFor(m=>m.Id)" />
+        <input type="submit" name="action" value="approve" />
+        <input type="submit" name="action" value="reject" />
+    </form>
+</section>
+
+

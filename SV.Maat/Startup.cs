@@ -13,8 +13,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using StrangeVanilla.Blogging.Events;
+using SV.Maat.IndieAuth;
+using SV.Maat.IndieAuth.Models;
 using SV.Maat.lib.FileStore;
 using SV.Maat.lib.MessageBus;
+using SV.Maat.lib.Repository;
 using SV.Maat.Users;
 
 namespace SV.Maat
@@ -45,6 +48,7 @@ namespace SV.Maat
 
             services.AddSingleton<IFileStore, FSStore>();
             services.AddTransient<IUserStore, UserStore>();
+            services.AddTransient<IRepository<AuthenticationRequest>, AuthenticationRequestionStore>();
 
 
             services.Configure<RazorViewEngineOptions>(o =>
