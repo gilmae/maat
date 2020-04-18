@@ -20,5 +20,11 @@ namespace SV.Maat.IndieAuth.Models
 
         [BindProperty(Name="response_type")]
         public string ResponseType { get; set; }
+
+        public string AuthorisationCode { get; set; }
+
+        public DateTime AuthCodeExpiresAt { get; set; }
+
+        public string State { get; set; }
     }
 }

@@ -7,8 +7,8 @@
     <header>Client Id</header>
     <p>@Html.DisplayFor(m=>m.ClientId)</p>
 
-    <form action="@Url.Action("ApproveAuthenticationRequest")">
-        <input type="hidden" name="id" value="@Html.ValueFor(m=>m.Id)" />
+    <form method="POST" action="@Url.Action("ApproveAuthenticationRequest")">
+        <input type="hidden" name="id" value="@Html.ValueFor(m=>m.id)" />
         <input type="submit" name="action" value="approve" />
         <input type="submit" name="action" value="reject" />
     </form>
