@@ -1,4 +1,5 @@
 ﻿using System;
+using Dapper.Contrib.Extensions;
 using SV.Maat.lib.Repository;
 
 namespace SV.Maat.Users.Models

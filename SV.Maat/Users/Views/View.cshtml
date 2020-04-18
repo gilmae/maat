@@ -1,0 +1,17 @@
+﻿@page
+@model SV.Maat.Users.Models.User
+@{
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="authorization_endpoint" href="@ViewBag.auth_endpoint">
+    <link rel="token_endpoint" href="@ViewBag.token_endpoint">
+    <link rel="micropub" href="@Url.Action("Publish", "Micropub")">
+</head>
+<body>
+    <h1>@Html.DisplayFor(m => m.Name)</h1>
+</body>
+</html>
+
+

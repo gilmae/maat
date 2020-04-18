@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using SV.Maat.lib;
@@ -8,49 +9,33 @@ using SV.Maat.Users.Models;
 namespace SV.Maat.Users
 {
     [Route("user")]
-    public class UserController : ControllerBase
+    public class UsersController : Controller
     {
         IUserStore _userStore;
 
-        public UserController(IUserStore userStore)
+        public UsersController(IUserStore userStore)
         {
             _userStore = userStore;
         }
 
-        //[HttpPost]
-        //[Route("register")]
-        //public IActionResult Register([FromBody] Credentials model)
-        //{
-
-        //    User user = new User { Username = model.Username };
-        //    user.HashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password, BCrypt.Net.BCrypt.GenerateSalt());
-
-        //    _userStore.Insert(user);
-
-        //    return Ok(user);
-        //}
-
-        //[HttpPost]
-        //[Route("login")]
-        //public IActionResult Login([FromBody] Credentials model)
-        //{
-        //    User user = _userStore.FindByUsername(model.Username).FirstOrDefault(u=> BCrypt.Net.BCrypt.Verify(model.Password, u.HashedPassword));
-
-        //    if (user != null)
-        //    {
-        //        return Ok();
-        //    }
-        //    return Unauthorized();
-        //}
-
         [HttpGet]
-        [Route("")]
-        public IActionResult GetUserPage()
+        [Route("{id}")]
+        public ActionResult View(long id)
         {
-            return Ok(new User() { Name = "gilmae" });
-
+            var user = _userStore.Find(id);
+            ViewBag.auth_endpoint = "https://" + Path.Join(HttpContext.Request.Host.ToString(), "auth");
+            ViewBag.token_endpoint = "https://" + Path.Join(HttpContext.Request.Host.ToString(), "auth/token");
+            
+            return View(user);
         }
 
-
+        [HttpPost]
+        [Route("create")]
+        public IActionResult Create([FromBody]Credentials model)
+        {
+            var user = new User { Username = model.Username, Name = model.Username, HashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password) };
+            _userStore.Insert(user);
+            return Ok(user);
+        }
     }
 }

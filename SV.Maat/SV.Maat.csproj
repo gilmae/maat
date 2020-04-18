@@ -30,5 +30,11 @@
     <Folder Include="Users\" />
     <Folder Include="Users\Models\" />
     <Folder Include="lib\Repository\" />
+    <Folder Include="Users\Views\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Users\Views\View.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>
