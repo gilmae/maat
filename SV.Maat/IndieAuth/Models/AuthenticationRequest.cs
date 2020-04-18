@@ -23,7 +23,7 @@ namespace SV.Maat.IndieAuth.Models
 
         public string AuthorisationCode { get; set; }
 
-        public DateTime AuthCodeExpiresAt { get; set; }
+        public DateTime? AuthCodeExpiresAt { get; set; }
 
         public string State { get; set; }
     }

@@ -21,7 +21,7 @@ namespace SV.Maat.Users
         {
             using (Connection)
             {
-                return Connection.Query<User>("select * from User where username=@username", new { username });
+                return Connection.Query<User>("select * from users where username=@username", new { username });
             }
         }
     }

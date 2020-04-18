@@ -23,9 +23,10 @@ namespace SV.Maat.Users
         public ActionResult View(long id)
         {
             var user = _userStore.Find(id);
-            ViewBag.auth_endpoint = "https://" + Path.Join(HttpContext.Request.Host.ToString(), "auth");
+            ViewBag.auth_endpoint = this.Url.ActionLink("AuthenticationRequest", "IndieAuth"); //"https://" + Path.Join(HttpContext.Request.Host.ToString(), "auth");
             ViewBag.token_endpoint = "https://" + Path.Join(HttpContext.Request.Host.ToString(), "auth/token");
-            
+
+
             return View(user);
         }
 

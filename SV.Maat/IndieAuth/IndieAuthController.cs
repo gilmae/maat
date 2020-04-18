@@ -15,9 +15,9 @@ namespace SV.Maat.IndieAuth
     public class IndieAuthController : Controller
     {
 
-        IRepository<AuthenticationRequest> _authenticationRequestStore;
+        IAuthenticationRequestStore _authenticationRequestStore;
 
-        public IndieAuthController(IRepository<AuthenticationRequest> authenticationRequestStore)
+        public IndieAuthController(IAuthenticationRequestStore authenticationRequestStore)
         {
             _authenticationRequestStore = authenticationRequestStore;
         }
@@ -30,6 +30,7 @@ namespace SV.Maat.IndieAuth
                 model.ResponseType = "id";
             }
             model.AuthorisationCode = "";
+            model.AuthCodeExpiresAt = DateTime.UtcNow;
             
             _authenticationRequestStore.Insert(model);
             return View(model);
@@ -37,12 +38,44 @@ namespace SV.Maat.IndieAuth
         }
 
         [HttpPost]
-        public IActionResult ApproveAuthenticationRequest([FromForm] int id)
+        public IActionResult VerifyAuthorisationCode([FromForm] AuthorisationCodeVerificationRequest model)
+        {
+            var request = _authenticationRequestStore.FindByAuthCode(model.AuthorisationCode);
+            if (request == null)
+            {
+                return BadRequest();
+            }
+
+            if (model.ClientId != request.ClientId || model.RedirectUri != request.RedirectUri)
+            {
+                return BadRequest();
+            }
+
+            if (request.AuthCodeExpiresAt < DateTime.UtcNow)
+            {
+                return BadRequest();
+            }
+
+            return Ok(new { me = this.Url.ActionLink("View", "Users", new { id = 1 }) });
+
+
+        }
+
+        [HttpPost]
+        [Route("approve")]
+        public IActionResult ApproveAuthenticationRequest([FromForm] int id, string action)
         {
             AuthenticationRequest request = _authenticationRequestStore.Find(id);
             if(request == null)
             {
                 return NotFound();
+            }
+
+            request.State = action;
+            if (action == "reject")
+            {
+                _authenticationRequestStore.Update(request);
+                return Ok();
             }
 
             request.AuthorisationCode = Guid.NewGuid().ToString();
