@@ -118,14 +118,14 @@ namespace SV.Maat.IndieAuth
             {
                 return BadRequest();
             }
+            string access_token = Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(Guid.NewGuid().ToString()));
 
-            request.AccessToken = Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(Guid.NewGuid().ToString()));
-
+            request.AccessToken = BCrypt.Net.BCrypt.HashPassword(access_token);
             _authenticationRequestStore.Update(request);
 
             return Ok(new TokenResponse
             {
-                AccessToken = request.AccessToken,
+                AccessToken = access_token,
                 UserProfileUrl = request.UserProfileUrl,
                 Scope = request.Scope,
                 TokenType = "Bearer"

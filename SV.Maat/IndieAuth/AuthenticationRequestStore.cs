@@ -21,5 +21,14 @@ namespace SV.Maat.IndieAuth
                 return Connection.Query<AuthenticationRequest>("select * from authenticationrequests where \"AuthorisationCode\" = @code", new { code }).FirstOrDefault();
             }
         }
+
+
+        public AuthenticationRequest FindByAccessToken(string hashedToken)
+        {
+            using (Connection)
+            {
+                return Connection.Query<AuthenticationRequest>("select * from authenticationrequests where \"AccessCode\" = @code", new { code=hashedToken }).FirstOrDefault();
+            }
+        }
     }
 }
