@@ -8,7 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FDF3DC26-C6C8-497B-8C20-EE3554A7FAD8}"
 	ProjectSection(SolutionItems) = preProject
 		nuget.config = nuget.config
-		README = README
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SV.Maat", "SV.Maat\SV.Maat.csproj", "{83B06705-B449-4C73-A356-AB29023E4ED8}"
