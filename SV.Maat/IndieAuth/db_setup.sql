@@ -11,8 +11,10 @@ CREATE TABLE public.authenticationrequests
     "CsrfToken" character varying(256) COLLATE pg_catalog."default",
     "ResponseType" character varying(128) COLLATE pg_catalog."default" NOT NULL,
     "AuthorisationCode" character varying(128) COLLATE pg_catalog."default",
+    "Scope"  character varying(128) COLLATE pg_catalog."default",
     "AuthCodeExpiresAt" timestamp with time zone,
-    "State" character varying(128) COLLATE pg_catalog."default"
+    "State" character varying(128) COLLATE pg_catalog."default",
+    "AccessToken" character varying(128) COLLATE pg_catalog."default"
 )
 WITH (
     OIDS = FALSE

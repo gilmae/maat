@@ -78,7 +78,7 @@ namespace SV.Maat.IndieAuth
                 return Ok();
             }
 
-            request.AuthorisationCode = Guid.NewGuid().ToString();
+            request.AuthorisationCode = Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(Guid.NewGuid().ToString()));
             request.AuthCodeExpiresAt = DateTime.UtcNow.AddMinutes(5);
 
             _authenticationRequestStore.Update(request);
@@ -92,6 +92,44 @@ namespace SV.Maat.IndieAuth
             uriBuilder.Query = query.ToString();
 
             return Redirect(uriBuilder.Uri.ToString());
+        }
+
+        [HttpPost]
+        [Route("token")]
+        public IActionResult TokenRequest([FromForm]TokenRequest model)
+        {
+            var request = _authenticationRequestStore.FindByAuthCode(model.AuthorisationCode);
+            if (request == null)
+            {
+                return BadRequest();
+            }
+
+            if (model.ClientId != request.ClientId || model.RedirectUri != request.RedirectUri)
+            {
+                return BadRequest();
+            }
+
+            if (request.AuthCodeExpiresAt < DateTime.UtcNow)
+            {
+                return BadRequest();
+            }
+
+            if (string.IsNullOrEmpty(request.Scope))
+            {
+                return BadRequest();
+            }
+
+            request.AccessToken = Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(Guid.NewGuid().ToString()));
+
+            _authenticationRequestStore.Update(request);
+
+            return Ok(new TokenResponse
+            {
+                AccessToken = request.AccessToken,
+                UserProfileUrl = request.UserProfileUrl,
+                Scope = request.Scope,
+                TokenType = "Bearer"
+            });
         }
     }
 }
