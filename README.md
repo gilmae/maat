@@ -12,5 +12,7 @@ I can use - Micro.blog. I even have an existing micropub endpoint of my own to d
 * ~Support photo property in json update~
 * ~Support photo property in form create~
 * ~Re-implement file upload via form create~
-* Review category support in update
-* Review post-status support in update
+* ~Review category support in update~
+* ~Review post-status support in update~
+* IndieAuth endpoints
+* A web app client
