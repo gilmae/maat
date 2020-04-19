@@ -118,9 +118,14 @@ namespace SV.Maat.IndieAuth
             {
                 return BadRequest();
             }
-            string access_token = Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(Guid.NewGuid().ToString()));
+            BearerToken token = new BearerToken { AuthenticationRequest = request.id };
 
-            request.AccessToken = BCrypt.Net.BCrypt.HashPassword(access_token);
+            string access_token = Convert.ToBase64String(
+                System.Text.Encoding.ASCII.GetBytes(
+                    System.Text.Json.JsonSerializer.Serialize(token)
+                    )
+                );
+
             _authenticationRequestStore.Update(request);
 
             return Ok(new TokenResponse

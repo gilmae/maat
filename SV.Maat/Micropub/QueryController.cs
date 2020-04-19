@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Events;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using StrangeVanilla.Blogging.Events;
+using SV.Maat.IndieAuth.Middleware;
 using SV.Maat.lib;
 using SV.Maat.Micropub.Models;
 using static StrangeVanilla.Blogging.Events.Entry;
@@ -26,12 +28,13 @@ namespace SV.Maat.Micropub
         }
 
         [HttpGet]
+        [Authorize(AuthenticationSchemes =IndieAuthTokenHandler.SchemeName)]
         public IActionResult Query([FromQuery] QueryModel query)
         {
-            if (!IndieAuth.IndieAuth.VerifyAccessToken(Request.Headers["Authorization"]))
-            {
-                return Unauthorized();
-            }
+            //if (!IndieAuth.IndieAuth.VerifyAccessToken(Request.Headers["Authorization"]))
+            //{
+            //    return Unauthorized();
+            //}
             QueryType q = (QueryType)Enum.Parse(typeof(QueryType), query.Query);
             if (q == QueryType.config)
             {

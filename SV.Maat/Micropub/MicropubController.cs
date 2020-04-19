@@ -13,6 +13,8 @@ using SV.Maat.lib.FileStore;
 using SV.Maat.lib.MessageBus;
 using SV.Maat.Micropub.Models;
 using SV.Maat.lib;
+using Microsoft.AspNetCore.Authorization;
+using SV.Maat.IndieAuth.Middleware;
 
 namespace SV.Maat.Micropub
 {
@@ -43,12 +45,10 @@ namespace SV.Maat.Micropub
         
         [HttpPost]
         [Consumes("application/json")]
+        [Authorize(AuthenticationSchemes = IndieAuthTokenHandler.SchemeName)]
         public IActionResult Publish([FromBody]MicropubPublishModel post)
         {
-            if (!IndieAuth.IndieAuth.VerifyAccessToken(Request.Headers["Authorization"]))
-            {
-                return Unauthorized();
-            }
+            
             if (post.IsCreate())
             {
                 return Create(post);
@@ -67,12 +67,9 @@ namespace SV.Maat.Micropub
 
         [HttpPost]
         [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
+        [Authorize(AuthenticationSchemes = IndieAuthTokenHandler.SchemeName)]
         public IActionResult CreateFromForm([FromForm]MicropubFormCreateModel post)
         {
-            if (!IndieAuth.IndieAuth.VerifyAccessToken(Request.Form["access_token"].ToString() ?? Request.Headers["Authorization"].ToString()))
-            {
-                return Unauthorized();
-            }
             ProcessMediaUpload mediaProcessor = new ProcessMediaUpload(_mediaRepository, _fileStore);
             IEnumerable<Entry.MediaLink> media = new List<Entry.MediaLink>();
             if (post.Photo != null)

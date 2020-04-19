@@ -14,6 +14,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using StrangeVanilla.Blogging.Events;
 using SV.Maat.IndieAuth;
+using SV.Maat.IndieAuth.Middleware;
 using SV.Maat.IndieAuth.Models;
 using SV.Maat.lib.FileStore;
 using SV.Maat.lib.MessageBus;
@@ -56,6 +57,11 @@ namespace SV.Maat
                 o.ViewLocationFormats.Add("/{1}/Views/{0}" + RazorViewEngine.ViewExtension);
                 o.ViewLocationFormats.Add("/Shared/Views/{0}" + RazorViewEngine.ViewExtension);
             });
+
+            services.AddAuthentication(opt => {
+                opt.DefaultScheme = IndieAuthTokenHandler.SchemeName;
+            })
+                .AddScheme<IndieAuthOptions, IndieAuthTokenHandler>(IndieAuthTokenHandler.SchemeName, op => { });
         }
 
        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
