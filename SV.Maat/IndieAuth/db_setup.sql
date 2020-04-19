@@ -36,6 +36,8 @@ CREATE TABLE public.accesstokens
     "AuthenticationRequestId" integer NOT NULL,
     "UserId" integer NOT NULL,
     "Name" character varying(128) COLLATE pg_catalog."default" NOT NULL,
+    "ClientId" character varying(128) COLLATE pg_catalog."default" NOT NULL,
+    "Scope" character varying(128) COLLATE pg_catalog."default" NOT NULL,
     CONSTRAINT accesstokens_pkey PRIMARY KEY (id)
 )
 WITH (

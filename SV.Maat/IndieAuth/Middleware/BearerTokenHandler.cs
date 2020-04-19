@@ -34,7 +34,8 @@ namespace SV.Maat.IndieAuth.Middleware
 
                 var claims = new[]
                 {
-                    new Claim(ClaimTypes.Uri, token.UserId.ToString())
+                    new Claim(ClaimTypes.Sid, token.UserId.ToString()),
+                    new Claim(ClaimTypes.UserData, token.id.ToString(), "TokenId")
                 };
 
             var claimsIdentity = new ClaimsIdentity(claims, nameof(IndieAuthTokenHandler));

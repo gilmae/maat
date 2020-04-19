@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SV.Maat.IndieAuth.Middleware;
 using SV.Maat.IndieAuth.Models;
 using SV.Maat.lib;
 using SV.Maat.lib.Repository;
-using SV.Maat.Users;
-
-// For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace SV.Maat.IndieAuth
 {
@@ -135,7 +135,9 @@ namespace SV.Maat.IndieAuth
             AccessToken token = new AccessToken {
                 AuthenticationRequestId = request.id,
                 UserId=this.Url.GetUserIdFromUrl(request.UserProfileUrl),
-                Name = request.ClientId
+                Name = request.ClientId,
+                Scope = request.Scope,
+                ClientId = request.ClientId
             };
             _accessTokenStore.Insert(token);
 
@@ -152,6 +154,33 @@ namespace SV.Maat.IndieAuth
                 Scope = request.Scope,
                 TokenType = "Bearer"
             });
+        }
+
+        [HttpGet]
+        [Route("token")]
+        [Authorize(AuthenticationSchemes = IndieAuthTokenHandler.SchemeName)]
+        public IActionResult VerifyTokenRequest()
+        {
+            var tokenIdClaim = this.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.UserData && c.ValueType== "TokenId")?.Value;
+            if (!int.TryParse(tokenIdClaim, out int tokenId))
+            {
+                return Unauthorized();
+            }
+
+            var token = _accessTokenStore.Find(tokenId);
+
+            if (token == null)
+            {
+                return Unauthorized();
+            }
+
+            return Ok(new
+            {
+                me = this.Url.ActionLink("view", "users", new { id = token.UserId }),
+                scope = token.Scope,
+                client_id = token.ClientId
+            });
+
         }
     }
 }

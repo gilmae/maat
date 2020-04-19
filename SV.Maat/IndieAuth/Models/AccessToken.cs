@@ -14,5 +14,11 @@ namespace SV.Maat.IndieAuth.Models
 
         [JsonPropertyName("name")]
         public string Name { get; set; }
+
+        [JsonIgnore]
+        public string Scope { get; set; }
+
+        [JsonIgnore]
+        public string ClientId { get; set; }
     }
 }
