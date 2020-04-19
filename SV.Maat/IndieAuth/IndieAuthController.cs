@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Mvc;
 using SV.Maat.IndieAuth.Models;
+using SV.Maat.lib;
 using SV.Maat.lib.Repository;
+using SV.Maat.Users;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -14,14 +16,19 @@ namespace SV.Maat.IndieAuth
     [Route("auth")]
     public class IndieAuthController : Controller
     {
-
+        const string DefaultScope = "create update delete query media";
+        
         IAuthenticationRequestStore _authenticationRequestStore;
+        IRepository<AccessToken> _accessTokenStore;
 
-        public IndieAuthController(IAuthenticationRequestStore authenticationRequestStore)
+        public IndieAuthController(IAuthenticationRequestStore authenticationRequestStore, IRepository<AccessToken> accessTokenStore)
         {
             _authenticationRequestStore = authenticationRequestStore;
+            _accessTokenStore = accessTokenStore;
         }
 
+
+        // Used for both AuthenticationRequest and AuthorizationRequest
         [HttpGet]
         public IActionResult AuthenticationRequest([FromQuery]AuthenticationRequest model)
         {
@@ -29,9 +36,18 @@ namespace SV.Maat.IndieAuth
             {
                 model.ResponseType = "id";
             }
+
+            if (model.ResponseType == "code" && string.IsNullOrEmpty(model.Scope))
+            {
+                model.Scope = DefaultScope;
+            }
+
+            //TODO SHOULD check what is at the client id
+
             model.AuthorisationCode = "";
             model.AuthCodeExpiresAt = DateTime.UtcNow;
-            
+            model.UserId =  this.Url.GetUserIdFromUrl(model.UserProfileUrl);
+
             _authenticationRequestStore.Insert(model);
             return View(model);
             
@@ -56,9 +72,7 @@ namespace SV.Maat.IndieAuth
                 return BadRequest();
             }
 
-            return Ok(new { me = this.Url.ActionLink("View", "Users", new { id = 1 }) });
-
-
+            return Ok(new { me = request.UserProfileUrl });
         }
 
         [HttpPost]
@@ -82,7 +96,6 @@ namespace SV.Maat.IndieAuth
             request.AuthCodeExpiresAt = DateTime.UtcNow.AddMinutes(5);
 
             _authenticationRequestStore.Update(request);
-
 
             UriBuilder uriBuilder = new UriBuilder(request.RedirectUri);
             var query = HttpUtility.ParseQueryString(uriBuilder.Query);
@@ -118,12 +131,16 @@ namespace SV.Maat.IndieAuth
             {
                 return BadRequest();
             }
-            BearerToken token = new BearerToken { AuthenticationRequest = request.id };
+
+            AccessToken token = new AccessToken {
+                AuthenticationRequestId = request.id,
+                UserId=this.Url.GetUserIdFromUrl(request.UserProfileUrl),
+                Name = request.ClientId
+            };
+            _accessTokenStore.Insert(token);
 
             string access_token = Convert.ToBase64String(
-                System.Text.Encoding.ASCII.GetBytes(
-                    System.Text.Json.JsonSerializer.Serialize(token)
-                    )
+                System.Text.Encoding.ASCII.GetBytes(System.Text.Json.JsonSerializer.Serialize(token))
                 );
 
             _authenticationRequestStore.Update(request);

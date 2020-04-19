@@ -50,6 +50,7 @@ namespace SV.Maat
             services.AddSingleton<IFileStore, FSStore>();
             services.AddTransient<IUserStore, UserStore>();
             services.AddTransient<IAuthenticationRequestStore, AuthenticationRequestStore>();
+            services.AddTransient<IRepository<AccessToken>, AccessTokenStore>();
 
 
             services.Configure<RazorViewEngineOptions>(o =>

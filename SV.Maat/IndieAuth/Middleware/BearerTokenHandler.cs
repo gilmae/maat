@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SV.Maat.IndieAuth.Models;
@@ -29,12 +30,11 @@ namespace SV.Maat.IndieAuth.Middleware
         {
             try
             {
-
-                BearerToken token = System.Text.Json.JsonSerializer.Deserialize<BearerToken>(Convert.FromBase64String(ReadToken()));
+                AccessToken token = System.Text.Json.JsonSerializer.Deserialize<AccessToken>(Convert.FromBase64String(ReadToken()));
 
                 var claims = new[]
                 {
-                    new Claim(ClaimTypes.NameIdentifier, token.AuthenticationRequest.ToString())
+                    new Claim(ClaimTypes.Uri, token.UserId.ToString())
                 };
 
             var claimsIdentity = new ClaimsIdentity(claims, nameof(IndieAuthTokenHandler));
@@ -67,8 +67,6 @@ namespace SV.Maat.IndieAuth.Middleware
             return accessToken;
         }
     }
-
-
 
     public class IndieAuthOptions : AuthenticationSchemeOptions { }
 }

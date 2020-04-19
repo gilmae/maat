@@ -31,5 +31,7 @@ namespace SV.Maat.IndieAuth.Models
         public string State { get; set; }
 
         public string AccessToken { get; set; }
+
+        public int UserId { get; set; }
     }
 }

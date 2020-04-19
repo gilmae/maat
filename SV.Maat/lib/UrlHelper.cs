@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using StrangeVanilla.Blogging.Events;
 
 namespace SV.Maat.lib
@@ -58,6 +59,22 @@ namespace SV.Maat.lib
             }
 
             return Guid.Empty;
+        }
+
+        public static int GetUserIdFromUrl(this IUrlHelper ctx, string url)
+        {
+            var genericUserUrl = ctx.ActionLink("view", "users", new { id = -1 }).ToLower();
+
+            string prefix = genericUserUrl.Substring(0, genericUserUrl.IndexOf("-1"));
+
+            string possibleId = url.ToLower().Replace(prefix, "");
+
+            if (possibleId.Contains("/"))
+            {
+                possibleId = possibleId.Substring(0, possibleId.IndexOf("/"));
+            }
+
+            return int.Parse(possibleId);
         }
     }
 }
