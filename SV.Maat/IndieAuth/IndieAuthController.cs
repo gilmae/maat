@@ -20,6 +20,7 @@ namespace SV.Maat.IndieAuth
         
         IAuthenticationRequestStore _authenticationRequestStore;
         IRepository<AccessToken> _accessTokenStore;
+        MicroformatParser mfparser = new MicroformatParser();
 
         public IndieAuthController(IAuthenticationRequestStore authenticationRequestStore, IRepository<AccessToken> accessTokenStore)
         {
@@ -42,7 +43,16 @@ namespace SV.Maat.IndieAuth
                 model.Scope = DefaultScope;
             }
 
-            //TODO SHOULD check what is at the client id
+            model.ClientId = CanonicaliseUrl(model.ClientId);
+
+            var app = GetApp(model.ClientId);
+            if (app == null)
+            {
+                return BadRequest();
+            }
+            
+            model.ClientLogo = app.Logo;
+            model.ClientName = app.Name;
 
             model.AuthorisationCode = "";
             model.AuthCodeExpiresAt = DateTime.UtcNow;
@@ -57,6 +67,8 @@ namespace SV.Maat.IndieAuth
         public IActionResult VerifyAuthorisationCode([FromForm] AuthorisationCodeVerificationRequest model)
         {
             var request = _authenticationRequestStore.FindByAuthCode(model.AuthorisationCode);
+            request.ClientId = CanonicaliseUrl(request.ClientId);
+
             if (request == null)
             {
                 return BadRequest();
@@ -112,6 +124,8 @@ namespace SV.Maat.IndieAuth
         public IActionResult TokenRequest([FromForm]TokenRequest model)
         {
             var request = _authenticationRequestStore.FindByAuthCode(model.AuthorisationCode);
+            request.ClientId = CanonicaliseUrl(request.ClientId);
+
             if (request == null)
             {
                 return BadRequest();
@@ -135,7 +149,7 @@ namespace SV.Maat.IndieAuth
             AccessToken token = new AccessToken {
                 AuthenticationRequestId = request.id,
                 UserId=this.Url.GetUserIdFromUrl(request.UserProfileUrl),
-                Name = request.ClientId,
+                Name = request.ClientName,
                 Scope = request.Scope,
                 ClientId = request.ClientId
             };
@@ -182,5 +196,15 @@ namespace SV.Maat.IndieAuth
             });
 
         }
+
+        private string CanonicaliseUrl(string url)
+        {
+            return new Uri(url).ToString().ToLower();
+        }
+
+        private App GetApp(string clientId)
+        {
+            return mfparser.GetApps(clientId).Result.Where(a => a.Url == clientId).FirstOrDefault();
+        } 
     }
 }

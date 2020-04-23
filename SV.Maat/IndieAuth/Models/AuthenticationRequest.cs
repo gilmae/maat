@@ -24,6 +24,9 @@ namespace SV.Maat.IndieAuth.Models
         [BindProperty(Name ="scope")]
         public string Scope { get; set; }
 
+        public string ClientName { get; set; }
+        public string ClientLogo { get; set; }
+
         public string AuthorisationCode { get; set; }
 
         public DateTime? AuthCodeExpiresAt { get; set; }
