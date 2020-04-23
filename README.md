@@ -14,5 +14,9 @@ I can use - Micro.blog. I even have an existing micropub endpoint of my own to d
 * ~Re-implement file upload via form create~
 * ~Review category support in update~
 * ~Review post-status support in update~
-* IndieAuth endpoints
+* ~IndieAuth endpoints~
 * A web app client
+
+## Try Not To Do
+* Don't yak shave a microformat parser. Try and be content with the minimally viable parser.
+* Don't yak shave a library for urls, for canonicalising not for merging absolute and relative urls. The minimally viable extension functions are enough.
