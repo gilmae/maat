@@ -105,8 +105,7 @@ namespace SV.Maat.Micropub
 
             _entryBus.Publish(new AggregateEventMessage { Id = entry.Id, Version = entry.Version });
 
-            string location = SV.Maat.lib.UrlHelper.EntryUrl(HttpContext, entry);
-            //Response.Headers.Add("Location", UrlHelper.EntryUrl(HttpContext, entry));
+            string location = UrlHelper.EntryUrl(HttpContext, entry);
             return base.Created(location, null);
         }
 
@@ -133,8 +132,7 @@ namespace SV.Maat.Micropub
 
             _entryBus.Publish(new AggregateEventMessage { Id = entry.Id, Version = entry.Version });
 
-            string location = SV.Maat.lib.UrlHelper.EntryUrl(HttpContext, entry);
-            //Response.Headers.Add("Location", UrlHelper.EntryUrl(HttpContext, entry));
+            string location = UrlHelper.EntryUrl(HttpContext, entry);
             return base.Created(location, null);
         }
 
