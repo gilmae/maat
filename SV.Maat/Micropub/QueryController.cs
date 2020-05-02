@@ -18,10 +18,10 @@ namespace SV.Maat.Micropub
     [Route("micropub")]
     public class QueryController : ControllerBase
     {
-        IProjection<Entry> _entryView;
+        IProjection<Entry, Guid> _entryView;
         ILogger<QueryController> _logger;
 
-        public QueryController(ILogger<QueryController> logger, IProjection<Entry> entryView)
+        public QueryController(ILogger<QueryController> logger, IProjection<Entry, Guid> entryView)
         {
             _logger = logger;
             _entryView = entryView;
@@ -31,10 +31,6 @@ namespace SV.Maat.Micropub
         [Authorize(AuthenticationSchemes =IndieAuthTokenHandler.SchemeName)]
         public IActionResult Query([FromQuery] QueryModel query)
         {
-            //if (!IndieAuth.IndieAuth.VerifyAccessToken(Request.Headers["Authorization"]))
-            //{
-            //    return Unauthorized();
-            //}
             QueryType q = (QueryType)Enum.Parse(typeof(QueryType), query.Query);
             if (q == QueryType.config)
             {

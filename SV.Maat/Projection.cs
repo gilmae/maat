@@ -6,23 +6,24 @@ using System.Threading;
 using System.Threading.Tasks;
 using Events;
 using libEnbilulu;
+using StrangeVanilla.Blogging.Events;
 using SV.Maat.lib.MessageBus;
 
 namespace SV.Maat
 {
-    public class MemoryProjection<T> : IProjection<T> where T : Aggregate
+    public class EntryProjection : IProjection<Entry, Guid>
     {
-        ConcurrentDictionary<Guid, T> projections = new ConcurrentDictionary<Guid, T>();
+        ConcurrentDictionary<Guid, Entry> projections = new ConcurrentDictionary<Guid, Entry>();
 
-        public MemoryProjection(IEventStore<T> _aggregateRepository)
+        public EntryProjection(IEventStore<Entry> _aggregateRepository)
         {
 
             var events = _aggregateRepository.Retrieve().GroupBy(e => e.AggregateId);
 
-            foreach (IGrouping<Guid, Event<T>> a in events)
+            foreach (IGrouping<Guid, Event<Entry>> a in events)
             {
-                T aggregate = (T)Activator.CreateInstance(typeof(T), a.Key);
-                foreach (Event<T> e in a)
+                Entry aggregate = (Entry)Activator.CreateInstance(typeof(Entry), a.Key);
+                foreach (Event<Entry> e in a)
                 {
                     e.Apply(aggregate);
                 }
@@ -33,7 +34,7 @@ namespace SV.Maat
             Task.Run(() =>
             {
                 var _client = new Client(Environment.GetEnvironmentVariable("ENBILULUHOST"), int.Parse(Environment.GetEnvironmentVariable("ENBILULUPORT")));
-                var streamName = typeof(T).Name;
+                var streamName = typeof(Entry).Name;
                 var lastPoint = 0;
                 var stream = _client.GetStream(streamName);
                 if (stream == null)
@@ -67,7 +68,7 @@ namespace SV.Maat
                             foreach (var id in aggregateIds)
                             {
 
-                                T aggregate = (T)Activator.CreateInstance(typeof(T), id);
+                                Entry aggregate = (Entry)Activator.CreateInstance(typeof(Entry), id);
                                 var events = _aggregateRepository.Retrieve(id);
                                 foreach (var e in events)
                                 {
@@ -84,12 +85,12 @@ namespace SV.Maat
             });
         }
 
-        public T Get(Guid id)
+        public Entry Get(Guid id)
         {
             return projections[id];
         }
 
-        public IEnumerable<T> Get()
+        public IEnumerable<Entry> Get()
         {
             return projections.Values;
         }

@@ -45,7 +45,7 @@ namespace SV.Maat
             services.AddSingleton<IEventStore<Media>, PgStore<Media>>();
             services.AddSingleton<IMessageBus<Entry>, EnbiluluBus<Entry>>();
 
-            services.AddSingleton<IProjection<Entry>, MemoryProjection<Entry>>();
+            services.AddSingleton<IProjection<Entry, Guid>, EntryProjection>();
 
             services.AddSingleton<IFileStore, FSStore>();
             services.AddTransient<IUserStore, UserStore>();

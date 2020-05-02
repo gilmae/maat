@@ -3,10 +3,10 @@ using System.Collections.Generic;
 
 namespace Events
 {
-    public interface IProjection<T> where T: Aggregate
+    public interface IProjection<T, Tid>
     {
-        T Get(Guid id);
+        T Get(Tid id);
         IEnumerable<T> Get();
-
+       
     }
 }
