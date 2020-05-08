@@ -38,7 +38,8 @@ namespace SV.Maat.Micropub
                     Data = fileData
                 }.Execute();
 
-                return Created(HttpContext.MediaUrl(media), null);
+                //return Created(HttpContext.MediaUrl(media), null);
+                return Created(this.Url.ActionLink("GetMediaFile", "Media", new { id = media.Id }), null);
             }
 
         }

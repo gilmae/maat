@@ -37,6 +37,7 @@
     <Folder Include="IndieAuth\Models\" />
     <Folder Include="IndieAuth\Views\" />
     <Folder Include="IndieAuth\Middleware\" />
+    <Folder Include="Media\" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Users\Views\View.cshtml">

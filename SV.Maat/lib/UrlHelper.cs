@@ -35,10 +35,9 @@ namespace SV.Maat.lib
             return Guid.Empty;
         }
 
-        public static string MediaUrl(this HttpContext ctx, Media e)
+        public static string MediaUrl(this IUrlHelper ctx, Media e)
         {
-            var path = ctx.Request.Scheme + "://" +  Path.Join(ctx.Request.Host.ToString(), ctx.Request.PathBase, "media", e.Id.ToString());
-            return path;
+            return ctx.ActionLink("GetMediaFile", "Media", new { id = e.Id });
         }
 
         public static Guid GetMediaIdFromUrl(this HttpContext ctx, string url)
