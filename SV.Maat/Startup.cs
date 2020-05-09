@@ -19,6 +19,8 @@ using SV.Maat.IndieAuth.Models;
 using SV.Maat.lib.FileStore;
 using SV.Maat.lib.MessageBus;
 using SV.Maat.lib.Repository;
+using SV.Maat.Syndications;
+using SV.Maat.Syndications.Models;
 using SV.Maat.Users;
 
 namespace SV.Maat
@@ -41,6 +43,10 @@ namespace SV.Maat
             services.AddControllers()
                 .AddNewtonsoftJson();
 
+            var syndicationNetworksSection =
+                Configuration.GetSection("SyndicationNetworks");
+            services.Configure<SyndicationNetworks>(syndicationNetworksSection);
+
             services.AddSingleton<IEventStore<Entry>, PgStore<Entry>>();
             services.AddSingleton<IEventStore<Media>, PgStore<Media>>();
             services.AddSingleton<IMessageBus<Entry>, EnbiluluBus<Entry>>();
@@ -50,6 +56,7 @@ namespace SV.Maat
 
             services.AddSingleton<IFileStore, FSStore>();
             services.AddTransient<IUserStore, UserStore>();
+            services.AddTransient<ISyndicationStore, SyndicationStore>();
             services.AddTransient<IAuthenticationRequestStore, AuthenticationRequestStore>();
             services.AddTransient<IRepository<AccessToken>, AccessTokenStore>();
 

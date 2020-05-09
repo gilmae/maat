@@ -38,6 +38,8 @@
     <Folder Include="IndieAuth\Views\" />
     <Folder Include="IndieAuth\Middleware\" />
     <Folder Include="Media\" />
+    <Folder Include="Syndications\" />
+    <Folder Include="Syndications\Models\" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Users\Views\View.cshtml">
