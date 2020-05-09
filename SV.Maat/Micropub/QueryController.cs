@@ -6,10 +6,13 @@ using Events;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using StrangeVanilla.Blogging.Events;
 using SV.Maat.IndieAuth.Middleware;
 using SV.Maat.lib;
 using SV.Maat.Micropub.Models;
+using SV.Maat.Syndications;
+using SV.Maat.Syndications.Models;
 using static StrangeVanilla.Blogging.Events.Entry;
 
 namespace SV.Maat.Micropub
@@ -20,11 +23,15 @@ namespace SV.Maat.Micropub
     {
         IProjection<Entry> _entryView;
         ILogger<QueryController> _logger;
+        readonly ISyndicationStore _syndicationStore;
+        private readonly SyndicationNetworks _networks;
 
-        public QueryController(ILogger<QueryController> logger, IProjection<Entry> entryView)
+        public QueryController(ILogger<QueryController> logger, IProjection<Entry> entryView, ISyndicationStore syndicationStore, IOptions<SyndicationNetworks> networkOptions)
         {
             _logger = logger;
             _entryView = entryView;
+            _syndicationStore = syndicationStore;
+            _networks = networkOptions.Value;
         }
 
         [HttpGet]
@@ -49,9 +56,18 @@ namespace SV.Maat.Micropub
 
         private Config GetConfig()
         {
+            var userId = this.UserId();
+            var syndications = _syndicationStore.FindByUser(userId ?? -1);
+            var networks = _networks.Networks;
+            var networksSupported = from s in syndications
+                                     join n in networks on s.Network equals n.Key
+                                     select new { name = $"{s.AccountName} on {n.Value.name}", uid = string.Format(n.Value.uidformat, s.AccountName), network = new { n.Value.name, n.Value.url, n.Value.photo } };
+
+            
             return new Config {
                 MediaEndpoint = Url.ActionLink("CreateMedia", "Micropub"),
-                SupportedQueries = new[] { "config", "source" }
+                SupportedQueries = new[] { "config", "source" },
+                SupportedSyndicationNetworks = networksSupported.ToArray()
             };
         }
 

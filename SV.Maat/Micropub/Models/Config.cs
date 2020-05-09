@@ -10,6 +10,9 @@ namespace SV.Maat.Micropub.Models
         [JsonProperty("q")]
         public string[] SupportedQueries { get; set; }
 
+        [JsonProperty("syndicate_to")]
+        public object[] SupportedSyndicationNetworks { get; set; }
+
     }
 
 

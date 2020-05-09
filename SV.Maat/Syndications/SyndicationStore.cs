@@ -17,7 +17,7 @@ namespace SV.Maat.Syndications
         public IEnumerable<Syndication> FindByUser(int userId) {
             using (Connection)
             {
-                return Connection.Query<Syndication>("select * from Syndications where userid=@userID", new { userId });
+                return Connection.Query<Syndication>("select * from Syndications where \"UserId\"=@userId", new { userId });
             }
         }
     }
