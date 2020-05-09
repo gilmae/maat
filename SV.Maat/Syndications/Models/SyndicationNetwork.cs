@@ -13,6 +13,6 @@ namespace SV.Maat.Syndications.Models
 
     public class SyndicationNetworks
     {
-        public Dictionary<SyndicationTarget, SyndicationNetwork> Networks { get; set; }
+        public Dictionary<string, SyndicationNetwork> Networks { get; set; }
     }
 }

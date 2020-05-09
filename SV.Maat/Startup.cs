@@ -45,7 +45,8 @@ namespace SV.Maat
 
             var syndicationNetworksSection =
                 Configuration.GetSection("SyndicationNetworks");
-            services.Configure<SyndicationNetworks>(syndicationNetworksSection);
+            services.Configure<SyndicationNetworks>(Configuration.GetSection("syndicationNetworks"));
+
 
             services.AddSingleton<IEventStore<Entry>, PgStore<Entry>>();
             services.AddSingleton<IEventStore<Media>, PgStore<Media>>();

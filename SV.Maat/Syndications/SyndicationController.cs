@@ -15,7 +15,7 @@ namespace SV.Maat.Syndications
     {
         readonly ISyndicationStore _syndicationStore;
         readonly IConfiguration _config;
-        readonly SyndicationNetworks _networks;
+        private readonly SyndicationNetworks _networks;
 
         public SyndicationController(IConfiguration config, ISyndicationStore syndicationStore, IOptions<SyndicationNetworks> networkOptions)
         {
@@ -28,7 +28,7 @@ namespace SV.Maat.Syndications
         [Route("networks")]
         public ActionResult ListNetworks()
         {
-            return Ok(Enum.GetNames(typeof(SyndicationTarget)).ToArray<string>());
+            return Ok(_networks.Networks.Keys);
         }
 
         [HttpPost]
