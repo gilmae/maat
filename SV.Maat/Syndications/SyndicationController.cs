@@ -14,13 +14,11 @@ namespace SV.Maat.Syndications
     public class SyndicationController : ControllerBase
     {
         readonly ISyndicationStore _syndicationStore;
-        readonly IConfiguration _config;
         private readonly SyndicationNetworks _networks;
 
-        public SyndicationController(IConfiguration config, ISyndicationStore syndicationStore, IOptions<SyndicationNetworks> networkOptions)
+        public SyndicationController(ISyndicationStore syndicationStore, IOptions<SyndicationNetworks> networkOptions)
         {
             _syndicationStore = syndicationStore;
-            _config = config;
             _networks = networkOptions.Value; 
         }
 
