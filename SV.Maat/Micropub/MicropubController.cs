@@ -86,7 +86,7 @@ namespace SV.Maat.Micropub
 
                 var photo = mediaProcessor.Execute();
 
-                media = new List<Entry.MediaLink> { new Entry.MediaLink { Url = SV.Maat.lib.UrlHelper.MediaUrl(HttpContext, photo), Type = photo.Name } };
+                media = new List<Entry.MediaLink> { new Entry.MediaLink { Url = this.Url.MediaUrl(photo), Type = photo.Name } };
             }
 
             string postStatus = post.PostStatus;
