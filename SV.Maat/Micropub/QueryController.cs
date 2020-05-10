@@ -35,7 +35,7 @@ namespace SV.Maat.Micropub
         }
 
         [HttpGet]
-        [Authorize(AuthenticationSchemes =IndieAuthTokenHandler.SchemeName)]
+        [Authorize(AuthenticationSchemes = IndieAuthTokenHandler.SchemeName)]
         public IActionResult Query([FromQuery] QueryModel query)
         {
             //if (!IndieAuth.IndieAuth.VerifyAccessToken(Request.Headers["Authorization"]))
@@ -56,20 +56,7 @@ namespace SV.Maat.Micropub
 
         private Config GetConfig()
         {
-            var networksSupported = from s in _syndicationStore.FindByUser(this.UserId() ?? -1)
-                                    join n in _networks.Networks on s.Network equals n.Key
-                                    select new
-                                    {
-                                        name = $"{s.AccountName} on {n.Value.name}",
-                                        uid = string.Format(n.Value.uidformat, s.AccountName),
-                                        network = new
-                                        {
-                                            n.Value.name,
-                                            n.Value.url,
-                                            n.Value.photo
-                                        }
-                                    };
-
+            IEnumerable<SupportedNetwork> networksSupported = GetSupportedNetworks();
 
             return new Config
             {
@@ -77,6 +64,30 @@ namespace SV.Maat.Micropub
                 SupportedQueries = new[] { "config", "source" },
                 SupportedSyndicationNetworks = networksSupported.ToArray()
             };
+        }
+
+        private IEnumerable<SupportedNetwork> GetSupportedNetworks()
+        {
+            IEnumerable<SupportedNetwork> networksSupported = null;
+            int? userId = this.UserId();
+            if (userId.HasValue)
+            {
+                networksSupported = from s in _syndicationStore.FindByUser(this.UserId() ?? -1)
+                                    join n in _networks.Networks on s.Network equals n.Key
+                                    select new SupportedNetwork
+                                    {
+                                        Name = $"{s.AccountName} on {n.Value.name}",
+                                        Uid = string.Format(n.Value.uidformat, s.AccountName),
+                                        Network = new NetworkDetails
+                                        {
+                                            Name = n.Value.name,
+                                            Url = n.Value.url,
+                                            Photo = n.Value.photo
+                                        }
+                                    };
+            }
+
+            return networksSupported;
         }
 
         private IActionResult GetSourceQuery(string url, string[] properties)
