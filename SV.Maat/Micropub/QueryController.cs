@@ -56,15 +56,23 @@ namespace SV.Maat.Micropub
 
         private Config GetConfig()
         {
-            var userId = this.UserId();
-            var syndications = _syndicationStore.FindByUser(userId ?? -1);
-            var networks = _networks.Networks;
-            var networksSupported = from s in syndications
-                                     join n in networks on s.Network equals n.Key
-                                     select new { name = $"{s.AccountName} on {n.Value.name}", uid = string.Format(n.Value.uidformat, s.AccountName), network = new { n.Value.name, n.Value.url, n.Value.photo } };
+            var networksSupported = from s in _syndicationStore.FindByUser(this.UserId() ?? -1)
+                                    join n in _networks.Networks on s.Network equals n.Key
+                                    select new
+                                    {
+                                        name = $"{s.AccountName} on {n.Value.name}",
+                                        uid = string.Format(n.Value.uidformat, s.AccountName),
+                                        network = new
+                                        {
+                                            n.Value.name,
+                                            n.Value.url,
+                                            n.Value.photo
+                                        }
+                                    };
 
-            
-            return new Config {
+
+            return new Config
+            {
                 MediaEndpoint = Url.ActionLink("CreateMedia", "Micropub"),
                 SupportedQueries = new[] { "config", "source" },
                 SupportedSyndicationNetworks = networksSupported.ToArray()
