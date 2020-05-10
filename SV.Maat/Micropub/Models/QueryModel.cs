@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc;
+
 
 namespace SV.Maat.Micropub.Models
 {
@@ -15,10 +16,10 @@ namespace SV.Maat.Micropub.Models
         public string[] Properties { get; set; }
     }
 
-
-    public enum QueryType
+    public class QueryType
     {
-        config,
-        source
+        public static readonly string config = "config";
+        public static readonly string source = "source";
+        public static readonly string syndicateTo = "syndicate-to";
     }
 }

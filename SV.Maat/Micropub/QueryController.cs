@@ -42,10 +42,14 @@ namespace SV.Maat.Micropub
             //{
             //    return Unauthorized();
             //}
-            QueryType q = (QueryType)Enum.Parse(typeof(QueryType), query.Query);
+            string q = query.Query;
             if (q == QueryType.config)
             {
                 return Ok(GetConfig());
+            }
+            else if(q == QueryType.syndicateTo)
+            {
+                return Ok(new SyndicateToModel { SyndicateTo = GetSupportedNetworks()?.ToArray() });
             }
             else if (q == QueryType.source)
             {
@@ -62,7 +66,7 @@ namespace SV.Maat.Micropub
             {
                 MediaEndpoint = Url.ActionLink("CreateMedia", "Micropub"),
                 SupportedQueries = new[] { "config", "source" },
-                SupportedSyndicationNetworks = networksSupported.ToArray()
+                SupportedSyndicationNetworks = networksSupported?.ToArray()
             };
         }
 
