@@ -46,14 +46,16 @@ namespace SV.Maat.IndieAuth
             model.ClientId = CanonicaliseUrl(model.ClientId);
 
             var app = GetApp(model.ClientId);
-            if (app == null)
+            if (app != null)
             {
-                return BadRequest();
-            }
-            
-            model.ClientLogo = app.Logo;
-            model.ClientName = app.Name;
 
+                model.ClientLogo = app.Logo;
+                model.ClientName = app.Name;
+            }
+            else
+            {
+                model.ClientName = model.ClientId;
+            }
             model.AuthorisationCode = "";
             model.AuthCodeExpiresAt = DateTime.UtcNow;
             model.UserId =  this.Url.GetUserIdFromUrl(model.UserProfileUrl);
