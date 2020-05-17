@@ -34,7 +34,7 @@ namespace SV.Maat
 
         public IList<Event<T>> Retrieve(Guid id)
         {
-            string sql = $"select body, event_type from Events where aggregate_id = @id and type=@type";
+            string sql = $"select id, aggregate_id, type, body, event_type, version from Events where aggregate_id = @id and type=@type";
             using (var conn = new NpgsqlConnection(_connectionString)) {
                 conn.Open();
 
@@ -46,7 +46,7 @@ namespace SV.Maat
 
         public IList<Event<T>> Retrieve()
         {
-            string sql = $"select body, event_type from Events where type=@type";
+            string sql = $"select id, aggregate_id, type, body, event_type, version from Events where type=@type";
             using (var conn = new NpgsqlConnection(_connectionString))
             {
                 conn.Open();
@@ -57,12 +57,28 @@ namespace SV.Maat
             }
         }
 
+        public IList<Event<T>> RetrieveAfter(int id)
+        {
+            string sql = $"select id, aggregate_id, type, body, event_type, version from Events where id > @id and type=@type";
+            using (var conn = new NpgsqlConnection(_connectionString))
+            {
+                conn.Open();
+
+                IEnumerable<dynamic> bodies = conn.Query<dynamic>(sql, new { id, type = _type });
+
+                return bodies.Select(Deserialise).OrderBy(e => e.Version).ToList();
+            }
+        }
+
         private Event<T> Deserialise(dynamic data)
         {
             Type event_type = _validTypes.FirstOrDefault(t => t.Name == data.event_type);
             if (event_type != null)
             {
-                return System.Text.Json.JsonSerializer.Deserialize(data.body, event_type);
+                var e = System.Text.Json.JsonSerializer.Deserialize(data.body, event_type) as Event<T>;
+                e.Id = data.id;
+                e.Version = data.version;
+                return e;
             }
             return null;
         }

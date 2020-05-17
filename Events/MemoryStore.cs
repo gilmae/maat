@@ -25,6 +25,11 @@ namespace Events
             return _events.OrderBy(e=>e.AggregateId).OrderBy(e => e.Version).ToList();
         }
 
+        public IList<Event<T>> RetrieveAfter(int id)
+        {
+            return _events.Where(e=>e.Id > id).OrderBy(e => e.AggregateId).OrderBy(e => e.Version).ToList();
+        }
+
         public long StoreEvent(Event<T> e)
         {
             return StoreEvent(new[] { e });
