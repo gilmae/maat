@@ -5,21 +5,25 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Events;
-using libEnbilulu;
-using SV.Maat.lib.MessageBus;
+using Microsoft.Extensions.Logging;
 
 namespace SV.Maat
 {
     public class MemoryProjection<T> : IProjection<T> where T : Aggregate
     {
         ConcurrentDictionary<Guid, T> projections = new ConcurrentDictionary<Guid, T>();
+        ILogger<MemoryProjection<T>> _logger;
+        Mutex m = new Mutex();
+        int lastIdProcessed = -1;
 
-        public MemoryProjection(IEventStore<T> _aggregateRepository)
+        public MemoryProjection(ILogger<MemoryProjection<T>> logger, IEventStore<T> _aggregateRepository)
         {
+            _logger = logger;
 
-            var events = _aggregateRepository.Retrieve().GroupBy(e => e.AggregateId);
+            var events = _aggregateRepository.Retrieve();
+            var groupedEvents = events.GroupBy(e => e.AggregateId);
 
-            foreach (IGrouping<Guid, Event<T>> a in events)
+            foreach (IGrouping<Guid, Event<T>> a in groupedEvents)
             {
                 T aggregate = (T)Activator.CreateInstance(typeof(T), a.Key);
                 foreach (Event<T> e in a)
@@ -29,56 +33,46 @@ namespace SV.Maat
 
                 projections.AddOrUpdate(aggregate.Id, aggregate, (key, oldValue) => aggregate);
             }
+            lastIdProcessed = events.Max(e => e.Id);
+            _logger.LogTrace("{0} memory projection created, last id processed: {1}", typeof(T).Name, lastIdProcessed);
 
             Task.Run(() =>
             {
-                var _client = new Client(Environment.GetEnvironmentVariable("ENBILULUHOST"), int.Parse(Environment.GetEnvironmentVariable("ENBILULUPORT")));
-                var streamName = typeof(T).Name;
-                var lastPoint = 0;
-                var stream = _client.GetStream(streamName);
-                if (stream == null)
-                {
-                    stream = _client.CreateStream(streamName);
-                }
-                if (stream.Points == 0)
-                {
-                    lastPoint = stream.Last_Point;
-                }
-                else
-                {
-                    lastPoint = stream.Last_Point + 1;
-                }
-
                 while (true)
                 {
-                    var records = _client.GetRecordsFrom(streamName, lastPoint, 10);
-
-                    if (records.Records.Count() == 0)
+                    int sleepTime = 5;
+                    try
                     {
-                        Thread.Sleep(TimeSpan.FromSeconds(5));
-                    }
-                    else
-                    {
-                        var payloadData = records.Records.Select(p => System.Text.Json.JsonSerializer.Deserialize<AggregateEventMessage>(p.Payload)).ToList();
-                        var aggregateIds = payloadData.Select(i => i.Id).Distinct();
+                        var records = _aggregateRepository.RetrieveAfter(lastIdProcessed);
 
-                        if (aggregateIds.Count() > 0)
+                        if (records.Count() == 0)
                         {
-                            foreach (var id in aggregateIds)
-                            {
-
-                                T aggregate = (T)Activator.CreateInstance(typeof(T), id);
-                                var events = _aggregateRepository.Retrieve(id);
-                                foreach (var e in events)
-                                {
-                                    e.Apply(aggregate);
-                                }
-                                projections.AddOrUpdate(aggregate.Id, aggregate, (key, oldValue) => aggregate);
-
-                            }
+                            sleepTime = 5;
                         }
-
-                        lastPoint = records.LastPoint.Value + 1;
+                        else
+                        {
+                            _logger.LogTrace("Processing {0} new {1} events", records.Count(), typeof(T).Name);
+                            foreach (Event<T> e in records)
+                            {
+                                if (!projections.TryGetValue(e.AggregateId, out T aggregate))
+                                {
+                                    aggregate = (T)Activator.CreateInstance(typeof(T), e.AggregateId);
+                                }
+                                e.Apply(aggregate);
+                                projections.AddOrUpdate(aggregate.Id, aggregate, (key, oldValue) => aggregate);
+                                lastIdProcessed = records.Max(e => e.Id);
+                            }
+                            _logger.LogTrace("{0} memory projection updated, last id processed: {1}", typeof(T).Name, lastIdProcessed);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex.Message);
+                        _logger.LogError(ex.StackTrace);
+                    }
+                    finally
+                    {
+                        Thread.Sleep(TimeSpan.FromSeconds(sleepTime));
                     }
                 }
             });
