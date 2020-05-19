@@ -1,6 +1,11 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SV.Maat.lib;
 using SV.Maat.Users.Models;
@@ -12,7 +17,7 @@ namespace SV.Maat.Users
     public class UsersController : Controller
     {
         IUserStore _userStore;
-
+        
         public UsersController(IUserStore userStore)
         {
             _userStore = userStore;
@@ -20,6 +25,7 @@ namespace SV.Maat.Users
 
         [HttpGet]
         [Route("{id}")]
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
         public ActionResult View(long id)
         {
             var user = _userStore.Find(id);
@@ -37,6 +43,49 @@ namespace SV.Maat.Users
             var user = new User { Username = model.Username, Name = model.Username, HashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password) };
             _userStore.Insert(user);
             return Ok(user);
+        }
+
+        [HttpGet]
+        [Route("signin")]
+        public IActionResult SigninForm([FromQuery] string returnUrl)
+        {
+            ViewBag.returnUrl = returnUrl;
+            return View();
+        }
+
+        [HttpPost]
+        [Route("signin")]
+        public async Task<IActionResult> SigninAsync([FromForm]string username, [FromForm] string password, [FromForm] string returnUrl = "")
+        {
+            var users = _userStore.FindByUsername(username);
+            //var user = users.First();
+            //user.HashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
+            //_userStore.Update(user);
+            var user=users.FirstOrDefault(u => BCrypt.Net.BCrypt.Verify(password, u.HashedPassword));
+            
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.Sid, user.id.ToString()),
+            };
+
+            ClaimsIdentity identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            ClaimsPrincipal principal = new ClaimsPrincipal(identity);
+
+            await this.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+            return RedirectToAction("View", "Users", new { user.id });
+        }
+
+        [HttpPost]
+        [Route("signout")]
+        public async Task<IActionResult> Signout()
+        {
+            await this.HttpContext.SignOutAsync();
+            return RedirectToAction("SigninForm", "User", null);
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Events;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -37,6 +38,26 @@ namespace SV.Maat
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<RazorViewEngineOptions>(o =>
+            {
+                o.ViewLocationFormats.Add("/{1}/Views/{0}" + RazorViewEngine.ViewExtension);
+                o.ViewLocationFormats.Add("/Shared/Views/{0}" + RazorViewEngine.ViewExtension);
+            });
+
+            services.AddAuthentication(
+                CookieAuthenticationDefaults.AuthenticationScheme
+            ).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme,
+                options =>
+                {
+                    options.LoginPath = "/User/signin";
+                    options.LogoutPath = "/User/signout";
+                });
+
+            services.AddAuthentication(opt => {
+                opt.DefaultScheme = IndieAuthTokenHandler.SchemeName;
+            }).AddScheme<IndieAuthOptions, IndieAuthTokenHandler>(IndieAuthTokenHandler.SchemeName, op => { });
+
+
             services.AddMvc().AddNewtonsoftJson();
             services.AddRazorPages()
                 .AddNewtonsoftJson();
@@ -60,18 +81,6 @@ namespace SV.Maat
             services.AddTransient<ISyndicationStore, SyndicationStore>();
             services.AddTransient<IAuthenticationRequestStore, AuthenticationRequestStore>();
             services.AddTransient<IRepository<AccessToken>, AccessTokenStore>();
-
-
-            services.Configure<RazorViewEngineOptions>(o =>
-            {
-                o.ViewLocationFormats.Add("/{1}/Views/{0}" + RazorViewEngine.ViewExtension);
-                o.ViewLocationFormats.Add("/Shared/Views/{0}" + RazorViewEngine.ViewExtension);
-            });
-
-            services.AddAuthentication(opt => {
-                opt.DefaultScheme = IndieAuthTokenHandler.SchemeName;
-            })
-                .AddScheme<IndieAuthOptions, IndieAuthTokenHandler>(IndieAuthTokenHandler.SchemeName, op => { });
         }
 
        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

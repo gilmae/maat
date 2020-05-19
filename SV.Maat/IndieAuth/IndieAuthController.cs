@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SV.Maat.IndieAuth.Middleware;
@@ -31,6 +32,7 @@ namespace SV.Maat.IndieAuth
 
         // Used for both AuthenticationRequest and AuthorizationRequest
         [HttpGet]
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
         public IActionResult AuthenticationRequest([FromQuery]AuthenticationRequest model)
         {
             if (string.IsNullOrEmpty(model.ResponseType))
