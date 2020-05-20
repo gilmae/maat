@@ -20,10 +20,10 @@ namespace SV.Maat.IndieAuth
         const string DefaultScope = "create update delete query media";
         
         IAuthenticationRequestStore _authenticationRequestStore;
-        IRepository<AccessToken> _accessTokenStore;
+        IAccessTokenStore _accessTokenStore;
         MicroformatParser mfparser = new MicroformatParser();
 
-        public IndieAuthController(IAuthenticationRequestStore authenticationRequestStore, IRepository<AccessToken> accessTokenStore)
+        public IndieAuthController(IAuthenticationRequestStore authenticationRequestStore, IAccessTokenStore accessTokenStore)
         {
             _authenticationRequestStore = authenticationRequestStore;
             _accessTokenStore = accessTokenStore;
@@ -201,6 +201,7 @@ namespace SV.Maat.IndieAuth
 
         }
 
+        
         private string CanonicaliseUrl(string url)
         {
             return new Uri(url).ToString().ToLower();

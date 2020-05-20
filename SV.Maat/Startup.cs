@@ -80,7 +80,7 @@ namespace SV.Maat
             services.AddTransient<IUserStore, UserStore>();
             services.AddTransient<ISyndicationStore, SyndicationStore>();
             services.AddTransient<IAuthenticationRequestStore, AuthenticationRequestStore>();
-            services.AddTransient<IRepository<AccessToken>, AccessTokenStore>();
+            services.AddTransient<IAccessTokenStore, AccessTokenStore>();
         }
 
        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
