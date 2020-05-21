@@ -26,7 +26,6 @@ namespace SV.Maat.Users
         }
 
         [HttpGet]
-        [Route("tokens")]
         [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
         public ActionResult Tokens()
         {
@@ -37,7 +36,6 @@ namespace SV.Maat.Users
         }
 
         [HttpPost]
-        [Route("tokens")]
         [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
         public ActionResult Create([FromForm] string name)
         {
