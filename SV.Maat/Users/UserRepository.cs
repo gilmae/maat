@@ -1,95 +1,28 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using SV.Maat.IndieAuth;
-using SV.Maat.IndieAuth.Models;
-using SV.Maat.lib;
+using SV.Maat.lib.Repository;
 using SV.Maat.Users.Models;
-
+using Dapper.Contrib.Extensions;
+using Dapper;
+using System.Collections.Generic;
+using System.Data;
+using Microsoft.Extensions.Configuration;
+using Npgsql;
 
 namespace SV.Maat.Users
 {
-    [Route("user")]
-    public class UsersController : Controller
+    public class UserStore : RepositoryBase<User>, IUserStore
     {
-        IUserStore _userStore;
-        IAccessTokenStore _accessTokenStore;
-
-        public UsersController(IUserStore userStore, IAccessTokenStore accessTokenStore)
+        public UserStore(IConfiguration config) : base(config.GetConnectionString("Users"))
         {
-            _userStore = userStore;
-            _accessTokenStore = accessTokenStore;
+
         }
 
-        [HttpGet]
-        [Route("{id}")]
-        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
-        public ActionResult View(long id)
+        public IEnumerable<User> FindByUsername(string username)
         {
-            var user = _userStore.Find(id);
-            ViewBag.auth_endpoint = this.Url.ActionLink("AuthenticationRequest", "IndieAuth"); //"https://" + Path.Join(HttpContext.Request.Host.ToString(), "auth");
-            ViewBag.token_endpoint = "https://" + Path.Join(HttpContext.Request.Host.ToString(), "auth/token");
-
-
-            return View(user);
-        }
-
-        [HttpPost]
-        [Route("create")]
-        public IActionResult Create([FromBody]Credentials model)
-        {
-            var user = new User { Username = model.Username, Name = model.Username, HashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password) };
-            _userStore.Insert(user);
-            return Ok(user);
-        }
-
-        [HttpGet]
-        [Route("signin")]
-        public IActionResult SigninForm([FromQuery] string returnUrl)
-        {
-            ViewBag.returnUrl = returnUrl;
-            return View();
-        }
-
-        [HttpPost]
-        [Route("signin")]
-        public async Task<IActionResult> SigninAsync([FromForm]string username, [FromForm] string password, [FromForm] string returnUrl = "")
-        {
-            var users = _userStore.FindByUsername(username);
-            //var user = users.First();
-            //user.HashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
-            //_userStore.Update(user);
-            var user = users.FirstOrDefault(u => BCrypt.Net.BCrypt.Verify(password, u.HashedPassword));
-
-            var claims = new[]
+            using (Connection)
             {
-                new Claim(ClaimTypes.Sid, user.id.ToString()),
-            };
-
-            ClaimsIdentity identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            ClaimsPrincipal principal = new ClaimsPrincipal(identity);
-
-            await this.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
-            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-            {
-                return Redirect(returnUrl);
+                return Connection.Query<User>("select * from users where \"Username\"=@username", new { username });
             }
-            return RedirectToAction("View", "Users", new { user.id });
-        }
-
-        [HttpPost]
-        [Route("signout")]
-        public async Task<IActionResult> Signout()
-        {
-            await this.HttpContext.SignOutAsync();
-            return RedirectToAction("SigninForm", "User", null);
         }
     }
 }
