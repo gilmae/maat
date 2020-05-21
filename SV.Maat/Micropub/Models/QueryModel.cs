@@ -16,7 +16,13 @@ namespace SV.Maat.Micropub.Models
         public string[] Properties { get; set; }
 
         [BindProperty(Name="limit")]
-        public int Limit { get; set; }
+        public int? Limit { get; set; }
+
+        [BindProperty(Name = "after")]
+        public string After { get; set; }
+
+        [BindProperty(Name = "before")]
+        public string Before { get; set; }
     }
 
     public class QueryType

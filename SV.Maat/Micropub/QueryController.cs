@@ -90,16 +90,9 @@ namespace SV.Maat.Micropub
             return networksSupported;
         }
 
-        private IActionResult GetSourceQuery(string url, string[] properties, int limit)
+        private IActionResult GetSourceQuery(string url, string[] properties, int? limit)
         {
-            if (limit < 1)
-            {
-                limit = 1;
-            }
-            else if (limit > 100)
-            {
-                limit = 100;
-            }
+            int postLimit = GetLimit(limit);
 
             bool includeType = false;
             bool includeUrl = true;
@@ -112,25 +105,65 @@ namespace SV.Maat.Micropub
 
             if (!string.IsNullOrEmpty(url))
             {
-                includeUrl = false;
-                Guid entryId = HttpContext.GetEntryIdFromUrl(url);
-
-                if (entryId == Guid.Empty)
-                {
-                    entries = entries.Where(e => (e.Syndications?.Contains(url)).GetValueOrDefault());
-                }
-                else
-                {
-                    entries = entries.Where(e => e.Id == entryId);
-                }
+                return GetSingleItem(url, properties);
             }
 
-            var pagedEntries = entries.OrderByDescending(i => i.PublishedAt).Take(limit);
+            var pagedEntries = entries.OrderByDescending(i => i.PublishedAt).Take(postLimit);
             EntryToMicropubConverter converter = new EntryToMicropubConverter(properties);
 
             var micropubEntries = pagedEntries.Select(e => MicropubEnricher(e, converter.ToDictionary(e), includeUrl, includeType));
 
-            return Ok(micropubEntries);
+            if (!string.IsNullOrEmpty(url))
+            {
+                return Ok(micropubEntries.FirstOrDefault());
+            }
+
+            var envelope = new
+            {
+                items = micropubEntries,
+                paging = new
+                {
+                    before = pagedEntries.Last().Id,
+                    after = pagedEntries.First().Id
+                }
+            };
+            return Ok(envelope);
+        }
+
+        private ActionResult GetSingleItem(string url, string[] properties)
+        {
+            Guid entryId = HttpContext.GetEntryIdFromUrl(url);
+            if (entryId == Guid.Empty)
+            {
+                return BadRequest(new
+                {
+                    error = "invalid_request",
+                    error_description = "The post with the requested URL was not found"
+                });
+            }
+
+            Entry entry = _entryView.Get(entryId);
+            EntryToMicropubConverter converter = new EntryToMicropubConverter(properties);
+            return Ok(MicropubEnricher(entry, converter.ToDictionary(entry), false, properties.IsEmpty()));
+        }
+
+        private int GetLimit(int? limit)
+        {
+            int postLimit = 20;
+            if (limit.HasValue)
+            {
+                postLimit = limit.Value;
+            }
+            if (postLimit < 1)
+            {
+                postLimit = 1;
+            }
+            else if (postLimit > 20)
+            {
+                postLimit = 20;
+            }
+
+            return postLimit;
         }
 
         private dynamic MicropubEnricher(Entry entry, Dictionary<string, object> properties, bool includeUrl, bool includeType)
