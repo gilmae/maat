@@ -14,6 +14,9 @@ namespace SV.Maat.Micropub.Models
 
         [BindProperty(Name ="properties[]")]
         public string[] Properties { get; set; }
+
+        [BindProperty(Name="limit")]
+        public int Limit { get; set; }
     }
 
     public class QueryType

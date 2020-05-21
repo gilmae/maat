@@ -38,10 +38,6 @@ namespace SV.Maat.Micropub
         [Authorize(AuthenticationSchemes = IndieAuthTokenHandler.SchemeName)]
         public IActionResult Query([FromQuery] QueryModel query)
         {
-            //if (!IndieAuth.IndieAuth.VerifyAccessToken(Request.Headers["Authorization"]))
-            //{
-            //    return Unauthorized();
-            //}
             string q = query.Query;
             if (q == QueryType.config)
             {
@@ -53,7 +49,7 @@ namespace SV.Maat.Micropub
             }
             else if (q == QueryType.source)
             {
-                return GetSourceQuery(query.Url, query.Properties);
+                return GetSourceQuery(query.Url, query.Properties, query.Limit);
             }
             return Ok();
         }
@@ -94,8 +90,17 @@ namespace SV.Maat.Micropub
             return networksSupported;
         }
 
-        private IActionResult GetSourceQuery(string url, string[] properties)
+        private IActionResult GetSourceQuery(string url, string[] properties, int limit)
         {
+            if (limit < 1)
+            {
+                limit = 1;
+            }
+            else if (limit > 100)
+            {
+                limit = 100;
+            }
+
             bool includeType = false;
             bool includeUrl = true;
             if (properties == null || properties.Count() == 0)
@@ -120,7 +125,7 @@ namespace SV.Maat.Micropub
                 }
             }
 
-            var pagedEntries = entries.OrderByDescending(i => i.PublishedAt).Take(20);
+            var pagedEntries = entries.OrderByDescending(i => i.PublishedAt).Take(limit);
             EntryToMicropubConverter converter = new EntryToMicropubConverter(properties);
 
             var micropubEntries = pagedEntries.Select(e => MicropubEnricher(e, converter.ToDictionary(e), includeUrl, includeType));
