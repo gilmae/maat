@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SV.Maat.IndieAuth;
+using SV.Maat.IndieAuth.Models;
 using SV.Maat.lib;
 using SV.Maat.Users.Models;
 
@@ -17,7 +19,7 @@ namespace SV.Maat.Users
     public class UsersController : Controller
     {
         IUserStore _userStore;
-        
+
         public UsersController(IUserStore userStore)
         {
             _userStore = userStore;
@@ -58,11 +60,8 @@ namespace SV.Maat.Users
         public async Task<IActionResult> SigninAsync([FromForm]string username, [FromForm] string password, [FromForm] string returnUrl = "")
         {
             var users = _userStore.FindByUsername(username);
-            //var user = users.First();
-            //user.HashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
-            //_userStore.Update(user);
-            var user=users.FirstOrDefault(u => BCrypt.Net.BCrypt.Verify(password, u.HashedPassword));
-            
+            var user = users.FirstOrDefault(u => BCrypt.Net.BCrypt.Verify(password, u.HashedPassword));
+
             var claims = new[]
             {
                 new Claim(ClaimTypes.Sid, user.id.ToString()),

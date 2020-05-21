@@ -40,6 +40,8 @@
     <Folder Include="Media\" />
     <Folder Include="Syndications\" />
     <Folder Include="Syndications\Models\" />
+    <Folder Include="Tokens\" />
+    <Folder Include="Tokens\Views\" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Users\Views\View.cshtml">
@@ -55,6 +57,15 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="IndieAuth\Views\UserTokens.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Users\Views\Tokens %28copy%29.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Tokens\Views\_token.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Tokens\Views\Tokens.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

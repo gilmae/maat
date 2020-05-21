@@ -40,6 +40,7 @@ CREATE TABLE public.accesstokens
     "Name" character varying(128) COLLATE pg_catalog."default" NOT NULL,
     "ClientId" character varying(128) COLLATE pg_catalog."default" NOT NULL,
     "Scope" character varying(128) COLLATE pg_catalog."default" NOT NULL,
+    "Salt"  character varying(64) COLLATE pg_catalog."default" NOT NULL,
     CONSTRAINT accesstokens_pkey PRIMARY KEY (id)
 )
 WITH (

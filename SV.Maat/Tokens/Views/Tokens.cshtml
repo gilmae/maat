@@ -1,0 +1,35 @@
+﻿@page
+@model IEnumerable<SV.Maat.Users.Models.AccessTokenViewModel>
+@{
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="authorization_endpoint" href="@ViewBag.auth_endpoint">
+    <link rel="token_endpoint" href="@ViewBag.token_endpoint">
+    <link rel="micropub" href="@Url.Action("Publish", "Micropub")">
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Token</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (SV.Maat.Users.Models.AccessTokenViewModel v in ViewBag.tokens)
+            {
+                await Html.RenderPartialAsync("_token", v);
+                }
+        </tbody>
+    </table>
+
+    <form method="POST">
+        <p><label for="name">Name</label><br /><input name="name" /></p>
+        <input type="submit" value="create" />
+    </form>
+</body>
+</html>
+
+

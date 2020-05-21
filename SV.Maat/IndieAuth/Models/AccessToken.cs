@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Text.Json.Serialization;
+using System.Text;
+using System.Text.Json;
 using SV.Maat.lib.Repository;
 
 namespace SV.Maat.IndieAuth.Models
@@ -20,5 +22,19 @@ namespace SV.Maat.IndieAuth.Models
 
         [JsonIgnore]
         public string ClientId { get; set; }
+
+        public string Salt { get; set; }
+
+        public AccessToken()
+        {
+            Salt = Guid.NewGuid().ToString();
+        }
+
+        public string Token()
+        {
+            return Convert.ToBase64String(
+                Encoding.ASCII.GetBytes(
+                    JsonSerializer.Serialize(this)));
+        }
     }
 }
