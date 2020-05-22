@@ -92,17 +92,6 @@ namespace SV.Maat.Micropub
 
         private IActionResult GetSourceQuery(string url, string[] properties, int? limit, string before, string after)
         {
-            int postLimit = GetLimit(limit);
-
-            bool includeType = false;
-            bool includeUrl = true;
-            if (properties == null || properties.Count() == 0)
-            {
-                includeType = true;
-            }
-
-            var entries = _entryView.Get();
-
             if (!string.IsNullOrEmpty(url))
             {
                 return GetSingleItem(url, properties);
@@ -118,12 +107,12 @@ namespace SV.Maat.Micropub
             var entries = _entryView.Get();
             if (!string.IsNullOrEmpty(before))
             {
-                entries = entries.Where(e => e.PublishedAt < before.FromBase64String<DateTime>());
+                entries = entries.Where(e => e.CreatedAt < before.FromBase64String<DateTime>());
             }
 
             if (!string.IsNullOrEmpty(after))
             {
-                entries = entries.Where(e => e.PublishedAt > after.FromBase64String<DateTime>());
+                entries = entries.Where(e => e.CreatedAt > after.FromBase64String<DateTime>());
             }
 
             if (!entries.Any())
@@ -131,7 +120,7 @@ namespace SV.Maat.Micropub
                 return Ok(new { items = entries.ToArray() });
             }
 
-            entries = entries.OrderByDescending(i => i.PublishedAt).Take(GetLimit(limit));
+            entries = entries.OrderByDescending(i => i.CreatedAt).Take(GetLimit(limit));
 
             EntryToMicropubConverter converter = new EntryToMicropubConverter(properties);
 
@@ -142,8 +131,8 @@ namespace SV.Maat.Micropub
                 items = micropubEntries,
                 paging = new
                 {
-                    before = entries.Last().PublishedAt.ToBase64String(),
-                    after = entries.First().PublishedAt.ToBase64String()
+                    before = entries.Last().CreatedAt.ToBase64String(),
+                    after = entries.First().CreatedAt.ToBase64String()
                 }
             });
         }

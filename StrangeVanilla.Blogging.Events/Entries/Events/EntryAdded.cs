@@ -9,8 +9,9 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
         public string Body { get; set; }
         public string BookmarkOf { get; set; }
         public string ReplyTo { get; set; }
+        public DateTime CreatedAt { get; set; }
 
-        public EntryAdded() { }
+        public EntryAdded() { CreatedAt = DateTime.UtcNow; }
         public EntryAdded(Guid entryId)
         {
             AggregateId = entryId;
@@ -23,6 +24,7 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
             aggregate.Title = Title;
             aggregate.BookmarkOf = BookmarkOf;
             aggregate.ReplyTo = ReplyTo;
+            aggregate.CreatedAt = CreatedAt;
         }
     }
 }

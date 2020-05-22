@@ -15,6 +15,7 @@ namespace StrangeVanilla.Blogging.Events
         public IList<MediaLink> AssociatedMedia { get; set; }
         public string BookmarkOf { get; set; }
         public string ReplyTo { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         public DateTime? DeletedAt { get; set; }
 
