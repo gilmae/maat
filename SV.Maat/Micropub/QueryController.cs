@@ -49,7 +49,7 @@ namespace SV.Maat.Micropub
             }
             else if (q == QueryType.source)
             {
-                return GetSourceQuery(query.Url, query.Properties, query.Limit);
+                return GetSourceQuery(query.Url, query.Properties, query.Limit, query.Before, query.After);
             }
             return Ok();
         }
@@ -90,7 +90,7 @@ namespace SV.Maat.Micropub
             return networksSupported;
         }
 
-        private IActionResult GetSourceQuery(string url, string[] properties, int? limit)
+        private IActionResult GetSourceQuery(string url, string[] properties, int? limit, string before, string after)
         {
             int postLimit = GetLimit(limit);
 
@@ -107,27 +107,45 @@ namespace SV.Maat.Micropub
             {
                 return GetSingleItem(url, properties);
             }
-
-            var pagedEntries = entries.OrderByDescending(i => i.PublishedAt).Take(postLimit);
-            EntryToMicropubConverter converter = new EntryToMicropubConverter(properties);
-
-            var micropubEntries = pagedEntries.Select(e => MicropubEnricher(e, converter.ToDictionary(e), includeUrl, includeType));
-
-            if (!string.IsNullOrEmpty(url))
+            else
             {
-                return Ok(micropubEntries.FirstOrDefault());
+                return GetMulipleItems(properties, limit, before, after);
+            }
+        }
+
+        private ActionResult GetMulipleItems(string[] properties, int? limit, string before, string after)
+        {
+            var entries = _entryView.Get();
+            if (!string.IsNullOrEmpty(before))
+            {
+                entries = entries.Where(e => e.PublishedAt < before.FromBase64String<DateTime>());
             }
 
-            var envelope = new
+            if (!string.IsNullOrEmpty(after))
+            {
+                entries = entries.Where(e => e.PublishedAt > after.FromBase64String<DateTime>());
+            }
+
+            if (!entries.Any())
+            {
+                return Ok(new { items = entries.ToArray() });
+            }
+
+            entries = entries.OrderByDescending(i => i.PublishedAt).Take(GetLimit(limit));
+
+            EntryToMicropubConverter converter = new EntryToMicropubConverter(properties);
+
+            var micropubEntries = entries.Select(e => MicropubEnricher(e, converter.ToDictionary(e), true, properties.IsEmpty()));
+
+            return Ok(new
             {
                 items = micropubEntries,
                 paging = new
                 {
-                    before = pagedEntries.Last().Id,
-                    after = pagedEntries.First().Id
+                    before = entries.Last().PublishedAt.ToBase64String(),
+                    after = entries.First().PublishedAt.ToBase64String()
                 }
-            };
-            return Ok(envelope);
+            });
         }
 
         private ActionResult GetSingleItem(string url, string[] properties)
