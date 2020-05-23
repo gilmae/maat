@@ -117,11 +117,16 @@ namespace SV.Maat.Micropub
 
             string inReplyTo = post.Properties.GetValueOrDefault("in-reply-to")?[0]?.ToString();
             string postStatus = post.Properties.GetValueOrDefault("post-status")?[0]?.ToString();
+            string[] categories = new string[0];
+            if (post.Properties.GetValueOrDefault("category") != null)
+            {
+                categories = (post.Properties.GetValueOrDefault("category") as object[]).Select(x => x.ToString()).ToArray();
+            }
             CreateEntryCommand command = new CreateEntryCommand(_entryRepository)
             {
                 Content = post.Properties.GetValueOrDefault("content")?[0]?.ToString(),
                 Name = post.Properties.GetValueOrDefault("name")?[0]?.ToString(),
-                Categories = (post.Properties.GetValueOrDefault("category") as object[]).Select(x => x.ToString()).ToArray(),
+                Categories = categories,
                 Media = photos,
                 BookmarkOf = post.Properties.GetValueOrDefault("bookmark-of")?[0]?.ToString(),
                 Published = postStatus == null || postStatus != "draft",
