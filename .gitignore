@@ -406,3 +406,8 @@ ASALocalRun/
 
 maat
 .envrc
+
+*.pem
+*.pfx
+*.crt
+*.key
