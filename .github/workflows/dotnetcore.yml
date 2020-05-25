@@ -19,7 +19,7 @@ jobs:
         dotnet-version: 3.1.101
     - name: Install dependencies
       run: |
-        dotnet nuget add source -name "gilmae_github" -Source https://nuget.pkg.github.com/gilmae/index.json -StorePasswordInClearText -Username gilmae -Password ${env:GILMAE_GITHUB_NUGET_PASSWORD}
+        dotnet nuget add source https://nuget.pkg.github.com/gilmae/index.json --name "gilmae_github" --store-password-in-clear-text --username gilmae --password ${env:GILMAE_GITHUB_NUGET_PASSWORD}
         dotnet restore
     - name: Build
       run: dotnet build --configuration Release --no-restore
