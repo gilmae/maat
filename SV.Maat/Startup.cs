@@ -64,10 +64,8 @@ namespace SV.Maat
             services.AddControllers()
                 .AddNewtonsoftJson();
 
-            var syndicationNetworksSection =
-                Configuration.GetSection("SyndicationNetworks");
             services.Configure<SyndicationNetworks>(Configuration.GetSection("syndicationNetworks"));
-
+            services.Configure<CertificateStorage>(Configuration.GetSection("CertificateStorage"));
 
             services.AddSingleton<IEventStore<Entry>, PgStore<Entry>>();
             services.AddSingleton<IEventStore<Media>, PgStore<Media>>();
@@ -81,6 +79,7 @@ namespace SV.Maat
             services.AddTransient<ISyndicationStore, SyndicationStore>();
             services.AddTransient<IAuthenticationRequestStore, AuthenticationRequestStore>();
             services.AddTransient<IAccessTokenStore, AccessTokenStore>();
+            services.AddSingleton(typeof(TokenSigning));
         }
 
        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

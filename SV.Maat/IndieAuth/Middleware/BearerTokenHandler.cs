@@ -15,22 +15,39 @@ namespace SV.Maat.IndieAuth.Middleware
     public class IndieAuthTokenHandler : AuthenticationHandler<IndieAuthOptions>
     {
         public const string SchemeName = "IndieAuth";
+        public TokenSigning _tokenSigner;
 
         public IndieAuthTokenHandler(
             IOptionsMonitor<IndieAuthOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,
-            ISystemClock clock)
+            ISystemClock clock,
+            TokenSigning tokenSigner)
             : base(options, logger, encoder, clock)
         {
-           
+            _tokenSigner = tokenSigner;
         }
 
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             try
             {
-                AccessToken token = System.Text.Json.JsonSerializer.Deserialize<AccessToken>(Convert.FromBase64String(ReadToken()));
+                string encryptedToken = ReadToken();
+                if (string.IsNullOrEmpty(encryptedToken))
+                {
+                    return Task.FromResult(AuthenticateResult.Fail("Token not found"));
+                }
+
+                AccessToken token = null;
+                try
+                {
+                    token = _tokenSigner.Decrypt(encryptedToken);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex.Message, ex);
+                    return Task.FromResult(AuthenticateResult.Fail("Token could not be decrypted"));
+                }
 
                 var claims = new[]
                 {

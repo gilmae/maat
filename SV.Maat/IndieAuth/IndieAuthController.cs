@@ -22,11 +22,13 @@ namespace SV.Maat.IndieAuth
         IAuthenticationRequestStore _authenticationRequestStore;
         IAccessTokenStore _accessTokenStore;
         MicroformatParser mfparser = new MicroformatParser();
+        TokenSigning _tokenSigner;
 
-        public IndieAuthController(IAuthenticationRequestStore authenticationRequestStore, IAccessTokenStore accessTokenStore)
+        public IndieAuthController(IAuthenticationRequestStore authenticationRequestStore, IAccessTokenStore accessTokenStore, TokenSigning tokenSigner)
         {
             _authenticationRequestStore = authenticationRequestStore;
             _accessTokenStore = accessTokenStore;
+            _tokenSigner = tokenSigner;
         }
 
 
@@ -160,8 +162,10 @@ namespace SV.Maat.IndieAuth
             _accessTokenStore.Insert(token);
 
             string access_token = Convert.ToBase64String(
-                System.Text.Encoding.ASCII.GetBytes(System.Text.Json.JsonSerializer.Serialize(token))
-                );
+                    _tokenSigner.Encrypt(
+                        System.Text.Encoding.ASCII.GetBytes(
+                               System.Text.Json.JsonSerializer.Serialize(token)
+                        )));
 
             _authenticationRequestStore.Update(request);
 
