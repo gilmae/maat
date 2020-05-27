@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 using StrangeVanilla.Blogging.Events;
 using SV.Maat.Commands;
 using SV.Maat.lib.FileStore;
-using SV.Maat.lib.MessageBus;
 using SV.Maat.Micropub.Models;
 using SV.Maat.lib;
 using Microsoft.AspNetCore.Authorization;
@@ -25,21 +24,18 @@ namespace SV.Maat.Micropub
 
         private readonly ILogger<MicropubController> _logger;
         IEventStore<Entry> _entryRepository;
-        IMessageBus<Entry> _entryBus;
         IEventStore<Media> _mediaRepository;
         IFileStore _fileStore;
 
         public MicropubController(ILogger<MicropubController> logger,
             IEventStore<Entry> entryRepository,
             IEventStore<Media> mediaRepository,
-            IMessageBus<Entry> entryBus,
             IFileStore fileStore
             )
         {
             _logger = logger;
             _entryRepository = entryRepository;
             _mediaRepository = mediaRepository;
-            _entryBus = entryBus;
             _fileStore = fileStore;
         }
         
@@ -103,8 +99,6 @@ namespace SV.Maat.Micropub
 
             var entry = command.Execute();
 
-            _entryBus.Publish(new AggregateEventMessage { Id = entry.Id, Version = entry.Version });
-
             string location = UrlHelper.EntryUrl(HttpContext, entry);
             return base.Created(location, null);
         }
@@ -134,8 +128,6 @@ namespace SV.Maat.Micropub
             };
 
             var entry = command.Execute();
-
-            _entryBus.Publish(new AggregateEventMessage { Id = entry.Id, Version = entry.Version });
 
             string location = UrlHelper.EntryUrl(HttpContext, entry);
             return base.Created(location, null);
@@ -214,8 +206,6 @@ namespace SV.Maat.Micropub
             if (command != null)
             {
                 entry = command.Execute();
-
-                _entryBus.Publish(new AggregateEventMessage { Id = entry.Id, Version = entry.Version });
             }
 
             return Created(HttpContext.EntryUrl(entry), null);

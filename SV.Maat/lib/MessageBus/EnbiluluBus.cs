@@ -1,17 +1,19 @@
 ﻿using System;
 using libEnbilulu;
+using Microsoft.Extensions.Configuration;
 
 namespace SV.Maat.lib.MessageBus
 {
     public class EnbiluluBus : IMessageBus
     {
-        public Enbilulu client;
+        public Client client;
         public string _streamName;
         
-        public EnbiluluBus(string streamName)
+        public EnbiluluBus(string streamName, IConfiguration configuration)
         {
             _streamName = streamName;
-            client = new Enbilulu();//Environment.GetEnvironmentVariable("MattEnbiluluServer"));
+            Uri enbiluluUri = new Uri(configuration.GetConnectionString("Enbilulu"));
+            client = new Client(enbiluluUri.Host, enbiluluUri.Port);
             var stream = client.GetStream(_streamName);
             if (stream == null)
             {
