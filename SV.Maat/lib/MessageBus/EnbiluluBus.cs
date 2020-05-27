@@ -3,24 +3,25 @@ using libEnbilulu;
 
 namespace SV.Maat.lib.MessageBus
 {
-    public class EnbiluluBus<T> : IMessageBus<T> 
+    public class EnbiluluBus : IMessageBus
     {
-        public Client client;
-        public string streamName = typeof(T).Name;
-
-        public EnbiluluBus()
+        public Enbilulu client;
+        public string _streamName;
+        
+        public EnbiluluBus(string streamName)
         {
-            client = new Client("http://localhost", 6700);//Environment.GetEnvironmentVariable("MattEnbiluluServer"));
-            var stream = client.GetStream(streamName);
+            _streamName = streamName;
+            client = new Enbilulu();//Environment.GetEnvironmentVariable("MattEnbiluluServer"));
+            var stream = client.GetStream(_streamName);
             if (stream == null)
             {
-                client.CreateStream(streamName);
+                client.CreateStream(_streamName);
             }
         }
 
         public void Publish(dynamic message)
         {
-            client.PutRecord(streamName, message);
+            client.PutRecord(_streamName, message);
         }
     }
 }
