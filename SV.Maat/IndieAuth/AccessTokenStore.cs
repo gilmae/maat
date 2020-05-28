@@ -10,7 +10,7 @@ namespace SV.Maat.IndieAuth
 {
     public class AccessTokenStore : RepositoryBase<AccessToken>, IAccessTokenStore
     {
-        public AccessTokenStore(IConfiguration config) : base(config.GetConnectionString("Users"))
+        public AccessTokenStore(IConfiguration config) : base(config.GetConnectionString("maat"))
         {
         }
 

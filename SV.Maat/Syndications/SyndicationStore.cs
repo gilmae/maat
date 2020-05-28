@@ -9,7 +9,7 @@ namespace SV.Maat.Syndications
 {
     public class SyndicationStore : RepositoryBase<Syndication>, ISyndicationStore
     {
-        public SyndicationStore(IConfiguration config) : base(config.GetConnectionString("Syndications"))
+        public SyndicationStore(IConfiguration config) : base(config.GetConnectionString("maat"))
         {
 
         }

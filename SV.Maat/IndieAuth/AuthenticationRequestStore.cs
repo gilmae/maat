@@ -10,7 +10,7 @@ namespace SV.Maat.IndieAuth
 {
     public class AuthenticationRequestStore : RepositoryBase<AuthenticationRequest>, IAuthenticationRequestStore
     {
-        public AuthenticationRequestStore(IConfiguration config) : base(config.GetConnectionString("Users"))
+        public AuthenticationRequestStore(IConfiguration config) : base(config.GetConnectionString("maat"))
         {
         }
 

@@ -17,7 +17,7 @@ namespace SV.Maat
 
         public PgStore(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("Events");
+            _connectionString = configuration.GetConnectionString("maat");
             _validTypes = AppDomain.CurrentDomain.GetAssemblies()
                                    .SelectMany(x => x.GetTypes())
                                    .Where(x => x.IsSubclassOf(typeof(Event<T>))).ToList();

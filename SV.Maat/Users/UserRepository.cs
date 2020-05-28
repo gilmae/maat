@@ -12,7 +12,7 @@ namespace SV.Maat.Users
 {
     public class UserStore : RepositoryBase<User>, IUserStore
     {
-        public UserStore(IConfiguration config) : base(config.GetConnectionString("Users"))
+        public UserStore(IConfiguration config) : base(config.GetConnectionString("maat"))
         {
 
         }
