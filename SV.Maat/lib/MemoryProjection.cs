@@ -21,19 +21,23 @@ namespace SV.Maat
             _logger = logger;
 
             var events = _aggregateRepository.Retrieve();
-            var groupedEvents = events.GroupBy(e => e.AggregateId);
-
-            foreach (IGrouping<Guid, Event<T>> a in groupedEvents)
+            if (events.Any())
             {
-                T aggregate = (T)Activator.CreateInstance(typeof(T), a.Key);
-                foreach (Event<T> e in a)
+                var groupedEvents = events.GroupBy(e => e.AggregateId);
+
+                foreach (IGrouping<Guid, Event<T>> a in groupedEvents)
                 {
-                    e.Apply(aggregate);
+                    T aggregate = (T)Activator.CreateInstance(typeof(T), a.Key);
+                    foreach (Event<T> e in a)
+                    {
+                        e.Apply(aggregate);
+                    }
+
+                    projections.AddOrUpdate(aggregate.Id, aggregate, (key, oldValue) => aggregate);
                 }
 
-                projections.AddOrUpdate(aggregate.Id, aggregate, (key, oldValue) => aggregate);
+                lastIdProcessed = events.Max(e => e.Id);
             }
-            lastIdProcessed = events.Max(e => e.Id);
             _logger.LogTrace("{0} memory projection created, last id processed: {1}", typeof(T).Name, lastIdProcessed);
 
             Task.Run(() =>
@@ -45,11 +49,7 @@ namespace SV.Maat
                     {
                         var records = _aggregateRepository.RetrieveAfter(lastIdProcessed);
 
-                        if (records.Count() == 0)
-                        {
-                            sleepTime = 5;
-                        }
-                        else
+                        if (records.Any())
                         {
                             _logger.LogTrace("Processing {0} new {1} events", records.Count(), typeof(T).Name);
                             foreach (Event<T> e in records)
@@ -63,6 +63,7 @@ namespace SV.Maat
                                 lastIdProcessed = records.Max(e => e.Id);
                             }
                             _logger.LogTrace("{0} memory projection updated, last id processed: {1}", typeof(T).Name, lastIdProcessed);
+                            sleepTime = 0;
                         }
                     }
                     catch (Exception ex)
