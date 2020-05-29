@@ -23,13 +23,6 @@ namespace SV.Maat.IndieAuth.Models
         [JsonIgnore]
         public string ClientId { get; set; }
 
-        public string Salt { get; set; }
-
-        public AccessToken()
-        {
-            Salt = Guid.NewGuid().ToString();
-        }
-
         public string Token()
         {
             return Convert.ToBase64String(

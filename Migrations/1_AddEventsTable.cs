@@ -14,7 +14,7 @@ namespace SV.Maat.Micropub
         public override void Up()
         {
             Create.Table("events")
-                .WithColumn("Id").AsInt64().PrimaryKey().Identity()
+                .WithColumn("id").AsInt32().PrimaryKey().Identity()
                 .WithColumn("aggregate_id").AsGuid()
                 .WithColumn("type").AsString(128)
                 .WithColumn("Body").AsString()

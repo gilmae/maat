@@ -6,16 +6,17 @@ namespace Migrations
     {
         public override void Down()
         {
-            Delete.Table("Users");
+            Delete.Table("users");
         }
 
         public override void Up()
         {
-            Create.Table("Users")
-                .WithColumn("id").AsInt64().PrimaryKey().Identity()
+            Create.Table("users")
+                .WithColumn("id").AsInt32().PrimaryKey().Identity()
                 .WithColumn("Name").AsString(128)
-                .WithColumn("Email").AsString(128)
-                .WithColumn("Url").AsString(256)
+                .WithColumn("Username").AsString(128)
+                .WithColumn("Email").AsString(128).Nullable()
+                .WithColumn("Url").AsString(256).Nullable()
                 .WithColumn("HashedPassword").AsString(128).NotNullable();
         }
     }

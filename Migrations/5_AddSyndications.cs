@@ -6,16 +6,16 @@ namespace Migrations
     {
         public override void Down()
         {
-            Delete.Table("Syndications");
+            Delete.Table("syndications");
         }
 
         public override void Up()
         {
-            Create.Table("Syndications")
-                .WithColumn("Id").AsInt64().PrimaryKey().Identity()
+            Create.Table("syndications")
+                .WithColumn("id").AsInt32().PrimaryKey().Identity()
                 .WithColumn("AccountName").AsString(128).NotNullable()
                 .WithColumn("Network").AsString(128).NotNullable()
-                .WithColumn("UserId").AsInt64().NotNullable();
+                .WithColumn("UserId").AsInt32().NotNullable();
         }
     }
 }
