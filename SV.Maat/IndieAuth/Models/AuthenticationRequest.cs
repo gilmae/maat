@@ -31,7 +31,7 @@ namespace SV.Maat.IndieAuth.Models
 
         public DateTime? AuthCodeExpiresAt { get; set; }
 
-        public string State { get; set; }
+        public string Status { get; set; }
 
         public string AccessToken { get; set; }
 

@@ -3,7 +3,7 @@ using FluentMigrator;
 namespace SV.Maat.Micropub
 {
 
-    [Migration(1)]
+    [Migration(4)]
     public class AddEventsTable : Migration
     {
         public override void Down()
@@ -17,7 +17,7 @@ namespace SV.Maat.Micropub
                 .WithColumn("id").AsInt32().PrimaryKey().Identity()
                 .WithColumn("aggregate_id").AsGuid()
                 .WithColumn("type").AsString(128)
-                .WithColumn("Body").AsString()
+                .WithColumn("body").AsString()
                 .WithColumn("event_type").AsString(128)
                 .WithColumn("version").AsInt32().NotNullable();
         }

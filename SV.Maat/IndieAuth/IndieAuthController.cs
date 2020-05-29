@@ -103,12 +103,12 @@ namespace SV.Maat.IndieAuth
                 return NotFound();
             }
 
-            if (!string.IsNullOrEmpty(request.State))
+            if (!string.IsNullOrEmpty(request.Status))
             {
                 return BadRequest("Request already finalised.");
             }
 
-            request.State = action;
+            request.Status = action;
             if (action == "reject")
             {
                 _authenticationRequestStore.Update(request);

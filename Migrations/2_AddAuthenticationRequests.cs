@@ -2,7 +2,7 @@
 using FluentMigrator;
 namespace Migrations
 {
-    [Migration(3)]
+    [Migration(2)]
     public class AddAuthenticationRequests : Migration
     {
         public override void Down()
@@ -24,7 +24,7 @@ namespace Migrations
                 .WithColumn("ClientLogo").AsString(128).Nullable()
                 .WithColumn("Scope").AsString(128).Nullable()
                 .WithColumn("AuthCodeExpiresAt").AsDateTime2().Nullable()
-                .WithColumn("State").AsString(128).Nullable()
+                .WithColumn("Status").AsString(128).Nullable()
                 .WithColumn("AccessToken").AsString(128).Nullable()
                 .WithColumn("UserId").AsInt32();
         }
