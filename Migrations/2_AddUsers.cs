@@ -1,7 +1,7 @@
 ﻿using FluentMigrator;
 namespace Migrations
 {
-    [Migration(202004261035)]
+    [Migration(2)]
     public class AddUsers : Migration
     {
         public override void Down()

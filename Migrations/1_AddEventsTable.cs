@@ -3,7 +3,7 @@ using FluentMigrator;
 namespace SV.Maat.Micropub
 {
 
-    [Migration(202004261035)]
+    [Migration(1)]
     public class AddEventsTable : Migration
     {
         public override void Down()

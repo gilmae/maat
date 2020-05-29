@@ -2,7 +2,7 @@
 using FluentMigrator;
 namespace Migrations
 {
-    [Migration(202005211937)]
+    [Migration(3)]
     public class AddAuthenticationRequests : Migration
     {
         public override void Down()

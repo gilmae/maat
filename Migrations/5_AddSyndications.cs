@@ -1,7 +1,7 @@
 ﻿using FluentMigrator;
 namespace Migrations
 {
-    [Migration(202005091815)]
+    [Migration(5)]
     public class AddSyndications : Migration
     {
         public override void Down()

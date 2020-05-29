@@ -2,7 +2,7 @@
 using FluentMigrator;
 namespace Migrations
 {
-    [Migration(202005211938)]
+    [Migration(4)]
     public class AddAccessTokens : Migration
     {
         public override void Down()
