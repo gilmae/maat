@@ -85,6 +85,8 @@ namespace SV.Maat
 
             app.UseAuthorization();
 
+            app.UseRequestLogger();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
