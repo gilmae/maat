@@ -27,7 +27,6 @@ namespace SV.Maat.Users
 
         [HttpGet]
         [Route("{id}")]
-        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
         public ActionResult View(long id)
         {
             var user = _userStore.Find(id);
