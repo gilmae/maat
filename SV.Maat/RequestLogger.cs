@@ -25,14 +25,13 @@ namespace SV.Maat
             if (endpoint != null)
             {
                 routeTemplate = endpoint.RoutePattern.RawText;
+
+                _logger.LogInformation(System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    EndPoint = $"{context.Request.Method.ToUpper()} {routeTemplate}",
+                    DateRequested = DateTime.UtcNow
+                }));
             }
-
-            _logger.LogInformation(System.Text.Json.JsonSerializer.Serialize(new
-            {
-                EndPoint = $"{context.Request.Method.ToUpper()} {routeTemplate}",
-                DateRequested = DateTime.UtcNow
-            }));
-
             await _next(context);
         }
     }
