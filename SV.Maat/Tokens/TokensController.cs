@@ -19,10 +19,12 @@ namespace SV.Maat.Users
     public class TokensController : Controller
     {
         IAccessTokenStore _accessTokenStore;
+        TokenSigning _tokenSigning;
 
-        public TokensController(IAccessTokenStore accessTokenStore)
+        public TokensController(IAccessTokenStore accessTokenStore, TokenSigning tokenSigning)
         {
             _accessTokenStore = accessTokenStore;
+            _tokenSigning = tokenSigning;
         }
 
         [HttpGet]
@@ -30,7 +32,12 @@ namespace SV.Maat.Users
         public ActionResult Tokens()
         {
             int userId = this.UserId().GetValueOrDefault();
-            var tokens = _accessTokenStore.FindByUser(userId).Select(x => new AccessTokenViewModel { Name = x.Name, Token = x.Token() });
+            var tokens = _accessTokenStore.FindByUser(userId).Select(x => new AccessTokenViewModel { Name = x.Name, Token = Convert.ToBase64String(
+                    _tokenSigning.Encrypt(
+                        System.Text.Encoding.ASCII.GetBytes(
+                               System.Text.Json.JsonSerializer.Serialize(x)
+                        )))
+            });
             ViewBag.tokens = tokens;
             return View(tokens);
         }

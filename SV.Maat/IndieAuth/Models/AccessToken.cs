@@ -23,11 +23,5 @@ namespace SV.Maat.IndieAuth.Models
         [JsonIgnore]
         public string ClientId { get; set; }
 
-        public string Token()
-        {
-            return Convert.ToBase64String(
-                Encoding.ASCII.GetBytes(
-                    JsonSerializer.Serialize(this)));
-        }
     }
 }

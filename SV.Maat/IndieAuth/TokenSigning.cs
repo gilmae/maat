@@ -31,7 +31,7 @@ namespace SV.Maat.IndieAuth
             }
         }
 
-        public string Encrypt(AccessTokenStore token)
+        public string Encrypt(AccessToken token)
         {
             return Convert.ToBase64String(
                     Encrypt(
