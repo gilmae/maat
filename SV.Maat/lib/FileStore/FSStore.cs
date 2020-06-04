@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Microsoft.Extensions.Configuration;
 
 namespace SV.Maat.lib.FileStore
 {
@@ -7,9 +8,9 @@ namespace SV.Maat.lib.FileStore
     {
         string _rootPath;
 
-        public FSStore()
+        public FSStore(IConfiguration configuration)
         {
-            _rootPath = Path.GetFullPath(Environment.GetEnvironmentVariable("FSSTORECONNSTR"));
+            _rootPath = Path.GetFullPath(configuration.GetConnectionString("Media"));
         }
 
         public byte[] Get(string filename)
