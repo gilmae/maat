@@ -15,4 +15,19 @@ namespace Events
         int? GetCurrentVersion(Guid id);
 
     }
+
+    public interface IEventStore
+    {
+        long StoreEvent(Event e);
+
+        IList<Event> Retrieve();
+        IList<Event> Retrieve(EventScope scope);
+    }
+
+    public struct EventScope
+    {
+        public int? After { get; set; }
+        public Type AggregateType { get; set; }
+        public Guid? AggregateId { get; set; }
+    }
 }

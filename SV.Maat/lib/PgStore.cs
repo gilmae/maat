@@ -5,84 +5,35 @@ using Npgsql;
 using Dapper;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
+using SV.Maat.lib;
 
 namespace SV.Maat
 {
-    public class PgStore<T> : IEventStore<T> where T : Aggregate
+    public class PgStore<T> : PgStoreBase, IEventStore<T>  where T : Aggregate
     {
-        string _connectionString;
         readonly string _type = typeof(T).Name;
-        List<Type> _validTypes;
 
-
-        public PgStore(IConfiguration configuration)
+        public PgStore(IConfiguration configuration) : base(configuration)
         {
-            _connectionString = configuration.GetConnectionString("maat");
-            _validTypes = AppDomain.CurrentDomain.GetAssemblies()
-                                   .SelectMany(x => x.GetTypes())
-                                   .Where(x => x.IsSubclassOf(typeof(Event<T>))).ToList();
-        }
-
-        public int? GetCurrentVersion(Guid id)
-        {
-            using (var conn = new NpgsqlConnection(_connectionString))
-            {
-                conn.Open();
-                return conn.Query<int?>("select max(Version) from Events where aggregate_id = @id and type=@type", new { id, type = _type }).FirstOrDefault();
-            }
         }
 
         public IList<Event<T>> Retrieve(Guid id)
         {
-            string sql = $"select id, aggregate_id, type, body, event_type, version from Events where aggregate_id = @id and type=@type";
-            using (var conn = new NpgsqlConnection(_connectionString)) {
-                conn.Open();
-
-                IEnumerable<dynamic> bodies = conn.Query<dynamic>(sql, new { id, type = _type });
-
-                return bodies.Select(Deserialise).OrderBy(e=>e.Version).ToList();
-            }
+            return base.Retrieve(new EventScope { AggregateType = typeof(T), AggregateId = id })
+                .Select(x => (Event<T>)x).ToList();
         }
 
-        public IList<Event<T>> Retrieve()
+        public new IList<Event<T>> Retrieve()
         {
-            string sql = $"select id, aggregate_id, type, body, event_type, version from Events where type=@type";
-            using (var conn = new NpgsqlConnection(_connectionString))
-            {
-                conn.Open();
-
-                IEnumerable<dynamic> bodies = conn.Query<dynamic>(sql, new { type = _type });
-
-                return bodies.Select(Deserialise).OrderBy(e => e.AggregateId).OrderBy(e => e.Version).ToList();
-            }
+            return base.Retrieve(new EventScope { AggregateType = typeof(T) })
+               .Select(x => (Event<T>)x).ToList();
         }
 
         public IList<Event<T>> RetrieveAfter(int id)
         {
-            string sql = $"select id, aggregate_id, type, body, event_type, version from Events where id > @id and type=@type";
-            using (var conn = new NpgsqlConnection(_connectionString))
-            {
-                conn.Open();
-
-                IEnumerable<dynamic> bodies = conn.Query<dynamic>(sql, new { id, type = _type });
-
-                return bodies.Select(Deserialise).OrderBy(e => e.Version).ToList();
-            }
+            return base.Retrieve(new EventScope { AggregateType = typeof(T), After = id })
+               .Select(x => (Event<T>)x).ToList();
         }
-
-        private Event<T> Deserialise(dynamic data)
-        {
-            Type event_type = _validTypes.FirstOrDefault(t => t.Name == data.event_type);
-            if (event_type != null)
-            {
-                var e = System.Text.Json.JsonSerializer.Deserialize(data.body, event_type) as Event<T>;
-                e.Id = data.id;
-                e.Version = data.version;
-                return e;
-            }
-            return null;
-        }
-    
 
         public long StoreEvent(Event<T> e)
         {
@@ -91,20 +42,13 @@ namespace SV.Maat
 
         public long StoreEvent(IList<Event<T>> events)
         {
-            
-            string sql = $"insert into Events (aggregate_id, type, event_type, body, version) values(@aggregate_id, @type, @event_type, @body, @version)";
-            using (var conn = new NpgsqlConnection(_connectionString))
+            long lastVersion = 0;
+            foreach(var e in events)
             {
-                conn.Open();
-                foreach (Event<T> e in events)
-                {
-                    string body = System.Text.Json.JsonSerializer.Serialize(e as object);
-                    string eventType = e.GetType().Name;
-                    conn.Execute(sql, new { aggregate_id = e.AggregateId, type = _type, event_type = eventType, body, e.Version });
-                }
+                lastVersion = base.StoreEvent(e);
             }
 
-            return events.Last().Version;
+            return lastVersion;
         }
     }
 }
