@@ -43,6 +43,7 @@
     <Folder Include="Syndications\Models\" />
     <Folder Include="Tokens\" />
     <Folder Include="Tokens\Views\" />
+    <Folder Include="Projections\" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Users\Views\View.cshtml">

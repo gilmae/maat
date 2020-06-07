@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Events;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -14,6 +13,7 @@ using SV.Maat.Micropub.Models;
 using SV.Maat.Syndications;
 using SV.Maat.Syndications.Models;
 using static StrangeVanilla.Blogging.Events.Entry;
+using SV.Maat.Projections;
 
 namespace SV.Maat.Micropub
 {
@@ -21,12 +21,12 @@ namespace SV.Maat.Micropub
     [Route("micropub")]
     public class QueryController : ControllerBase
     {
-        IProjection<Entry> _entryView;
+        IEntryProjection _entryView;
         ILogger<QueryController> _logger;
         readonly ISyndicationStore _syndicationStore;
         private readonly SyndicationNetworks _networks;
 
-        public QueryController(ILogger<QueryController> logger, IProjection<Entry> entryView, ISyndicationStore syndicationStore, IOptions<SyndicationNetworks> networkOptions)
+        public QueryController(ILogger<QueryController> logger, IEntryProjection entryView, ISyndicationStore syndicationStore, IOptions<SyndicationNetworks> networkOptions)
         {
             _logger = logger;
             _entryView = entryView;
@@ -104,23 +104,25 @@ namespace SV.Maat.Micropub
 
         private ActionResult GetMulipleItems(string[] properties, int? limit, string before, string after)
         {
-            var entries = _entryView.Get();
+            IEnumerable<Entry> entries = null;
+            int pageSize = GetLimit(limit);
             if (!string.IsNullOrEmpty(before))
             {
-                entries = entries.Where(e => e.CreatedAt < before.FromBase64String<DateTime>());
+                entries = _entryView.GetBefore(pageSize, before.FromBase64String<DateTime>());
             }
-
-            if (!string.IsNullOrEmpty(after))
+            else if (!string.IsNullOrEmpty(after))
             {
-                entries = entries.Where(e => e.CreatedAt > after.FromBase64String<DateTime>());
+                entries = _entryView.GetAfter(pageSize, after.FromBase64String<DateTime>());
+            }
+            else
+            {
+                entries = _entryView.GetLatest(pageSize);
             }
 
             if (!entries.Any())
             {
                 return Ok(new { items = entries.ToArray() });
             }
-
-            entries = entries.OrderByDescending(i => i.CreatedAt).Take(GetLimit(limit));
 
             EntryToMicropubConverter converter = new EntryToMicropubConverter(properties);
 
@@ -150,6 +152,13 @@ namespace SV.Maat.Micropub
             }
 
             Entry entry = _entryView.Get(entryId);
+            if (entry == null)
+            {
+                return BadRequest(new {
+                    error = "invalid_request",
+                    error_description = "The post with the requested URL was not found"
+                });
+            }
             EntryToMicropubConverter converter = new EntryToMicropubConverter(properties);
             return Ok(MicropubEnricher(entry, converter.ToDictionary(entry), false, properties.IsEmpty()));
         }

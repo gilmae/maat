@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Events;
 using Microsoft.Extensions.Logging;
 
-namespace SV.Maat
+namespace SV.Maat.Projections
 {
     public class MemoryProjection<T> : IProjection<T> where T : Aggregate
     {

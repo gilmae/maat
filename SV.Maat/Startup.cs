@@ -13,6 +13,7 @@ using SV.Maat.lib.FileStore;
 using SV.Maat.Syndications;
 using SV.Maat.Syndications.Models;
 using SV.Maat.Users;
+using SV.Maat.Projections;
 
 namespace SV.Maat
 {
@@ -60,7 +61,7 @@ namespace SV.Maat
             services.AddSingleton<IEventStore<Entry>, PgStore<Entry>>();
             services.AddSingleton<IEventStore<Media>, PgStore<Media>>();
 
-            services.AddSingleton<IProjection<Entry>, MemoryProjection<Entry>>();
+            services.AddSingleton<IEntryProjection, EntryProjection>();
             services.AddSingleton<IProjection<Media>, MemoryProjection<Media>>();
 
             services.AddSingleton<IFileStore, FSStore>();
