@@ -9,7 +9,6 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
         public string Title { get; set; }
         public string Body { get; set; }
         public string BookmarkOf { get; set; }
-        public string ReplyTo { get; set; }
 
         public EntryUpdated() { }
         public EntryUpdated(Guid entryId)
@@ -34,11 +33,6 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
             if (BookmarkOf != null)
             {
                 aggregate.BookmarkOf = BookmarkOf;
-            }
-
-            if (ReplyTo != null)
-            {
-                aggregate.ReplyTo = ReplyTo;
             }
         }
     }

@@ -37,9 +37,13 @@ namespace SV.Maat.Commands
                 Body = Content ? "" : null,
                 Title = Name ? "" : null,
                 Version = version.Next(),
-                BookmarkOf = BookmarkOf ? "" : null,
-                ReplyTo = ReplyTo ? "" : null
+                BookmarkOf = BookmarkOf ? "" : null
             });
+
+            if (ReplyTo)
+            {
+                events.Add(new ReplyingTo(string.Empty, Entry.Id));
+            }
 
             if (Categories)
             {

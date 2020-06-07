@@ -37,9 +37,13 @@ namespace SV.Maat.Commands
                 Body = Content,
                 Title = Name,
                 Version = version.Next(),
-                BookmarkOf = BookmarkOf,
-                ReplyTo = ReplyTo
+                BookmarkOf = BookmarkOf
             });
+
+            if (!string.IsNullOrEmpty(ReplyTo))
+            {
+                events.Add(new ReplyingTo(ReplyTo, Entry.Id));
+            }
 
             if (Published)
             {
