@@ -30,5 +30,6 @@ namespace SV.Maat.Micropub.Models
         public static readonly string config = "config";
         public static readonly string source = "source";
         public static readonly string syndicateTo = "syndicate-to";
+        public static readonly string replies = "replies";
     }
 }

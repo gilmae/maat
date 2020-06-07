@@ -62,6 +62,7 @@ namespace SV.Maat
             services.AddSingleton<IEventStore<Media>, PgStore<Media>>();
 
             services.AddSingleton<IEntryProjection, EntryProjection>();
+            services.AddSingleton<IRepliesProjection, RepliesProjection>();
             services.AddSingleton<IProjection<Media>, MemoryProjection<Media>>();
 
             services.AddSingleton<IFileStore, FSStore>();

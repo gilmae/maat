@@ -25,13 +25,15 @@ namespace SV.Maat.Micropub
         ILogger<QueryController> _logger;
         readonly ISyndicationStore _syndicationStore;
         private readonly SyndicationNetworks _networks;
+        private readonly IRepliesProjection _repliesProjection;
 
-        public QueryController(ILogger<QueryController> logger, IEntryProjection entryView, ISyndicationStore syndicationStore, IOptions<SyndicationNetworks> networkOptions)
+        public QueryController(ILogger<QueryController> logger, IEntryProjection entryView, ISyndicationStore syndicationStore, IOptions<SyndicationNetworks> networkOptions, IRepliesProjection repliesProjection)
         {
             _logger = logger;
             _entryView = entryView;
             _syndicationStore = syndicationStore;
             _networks = networkOptions.Value;
+            _repliesProjection = repliesProjection;
         }
 
         [HttpGet]
@@ -51,6 +53,10 @@ namespace SV.Maat.Micropub
             {
                 return GetSourceQuery(query.Url, query.Properties, query.Limit, query.Before, query.After);
             }
+            else if (q == QueryType.replies)
+            {
+                return GetReplies(query.Url);
+            }
             return Ok();
         }
 
@@ -64,6 +70,16 @@ namespace SV.Maat.Micropub
                 SupportedQueries = new[] { "config", "source" },
                 SupportedSyndicationNetworks = networksSupported?.ToArray()
             };
+        }
+
+        public IActionResult GetReplies(string url)
+        {
+            var replies = _repliesProjection.GetReplyIds(url);
+            return Ok(new
+            {
+                replies = replies.Select(id => UrlHelper.EntryUrl(HttpContext, id))
+            });
+
         }
 
         private IEnumerable<SupportedNetwork> GetSupportedNetworks()

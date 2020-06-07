@@ -14,7 +14,7 @@ namespace SV.Maat.Projections
         ConcurrentDictionary<string, List<Guid>> repliesProjections = new ConcurrentDictionary<string, List<Guid>>();
         ConcurrentDictionary<Guid, string> isReplyIndex = new ConcurrentDictionary<Guid, string>();
 
-        public RepliesProjection(ILogger logger, IEventStore eventStore) : base(logger, eventStore) { }
+        public RepliesProjection(ILogger<RepliesProjection> logger, IEventStore<Entry> eventStore) : base(logger, eventStore) { }
 
         public IEnumerable<Guid> GetReplyIds(string url)
         {

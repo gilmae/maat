@@ -10,7 +10,12 @@ namespace SV.Maat.lib
     {
         public static string EntryUrl(this HttpContext ctx, Entry e)
         {
-             var path = ctx.Request.Scheme + "://" + Path.Join(ctx.Request.Host.ToString(), ctx.Request.PathBase, "entries", e.Id.ToString());
+            return EntryUrl(ctx, e.Id);
+        }
+
+        public static string EntryUrl(this HttpContext ctx, Guid id)
+        {
+            var path = ctx.Request.Scheme + "://" + Path.Join(ctx.Request.Host.ToString(), ctx.Request.PathBase, "entries", id.ToString());
             return path;
         }
 
