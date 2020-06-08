@@ -16,6 +16,7 @@ namespace StrangeVanilla.Blogging.Events
         public string BookmarkOf { get; set; }
         public string ReplyTo { get; set; }
         public DateTime CreatedAt { get; set; }
+        public IList<string> SyndicateTo { get; set; }
 
         public DateTime? DeletedAt { get; set; }
 

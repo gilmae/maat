@@ -228,7 +228,8 @@ namespace SV.Maat.Micropub
                 {"post-status", "Status" },
                 {"published", "PublishedAt" },
                 {"bookmark-of", "BookmarkOf" },
-                { "dt-deleted", "DeletedAt"}
+                { "dt-deleted", "DeletedAt"},
+                {"mp-syndicate-to", "SyndicateTo" }
             };
 
             public EntryToMicropubConverter() : this(null) { }
@@ -277,6 +278,7 @@ namespace SV.Maat.Micropub
                     case "category":
                     case "published":
                     case "dt-deleted":
+                    case "mp-syndicate-to":
                         return value;
                     case "photo":
                         var media = value as IList<MediaLink>;

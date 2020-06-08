@@ -95,6 +95,7 @@ namespace SV.Maat.Micropub
                 BookmarkOf = post.BookmarkOf,
                 Published = postStatus == null || postStatus != "draft",
                 ReplyTo = post.ReplyTo,
+                SyndicateTo = post.SyndicateTo
             };
 
             var entry = command.Execute();
@@ -282,7 +283,8 @@ namespace SV.Maat.Micropub
                 Categories = post.Add.GetValueOrDefault("category") as string[],
                 Media = ParseMediaReference(post.Add.GetValueOrDefault("photo"), "photo"),
                 BookmarkOf = post.Add.GetValueOrDefault("bookmark-of")?[0]?.ToString(),
-                Published = post.Add.GetValueOrDefault("post-status")?[0]?.ToString() != "draft"
+                Published = post.Add.GetValueOrDefault("post-status")?[0]?.ToString() != "draft",
+                SyndicateTo = post.Add.GetValueOrDefault("mp-syndicate-to") as string[]
             };
 
             return addCommand;

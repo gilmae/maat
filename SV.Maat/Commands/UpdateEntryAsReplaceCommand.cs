@@ -20,7 +20,7 @@ namespace SV.Maat.Commands
         public string BookmarkOf { get; set; }
         public bool Published { get; set; }
         public string ReplyTo { get; set; }
-
+        
         public UpdateEntryAsReplaceCommand(IEventStore<Entry> entryStore)
         {
             _entryStore = entryStore;

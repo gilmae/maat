@@ -35,5 +35,8 @@ namespace SV.Maat.Micropub.Models
 
         [BindProperty(Name = "photo")]
         public IFormFile Photo { get; set; }
+
+        [BindProperty(Name = "mp-syndicate-to")]
+        public string[] SyndicateTo { get; set; }
     }
 }

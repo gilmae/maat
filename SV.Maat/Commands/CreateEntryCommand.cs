@@ -20,6 +20,7 @@ namespace SV.Maat.Commands
         public string BookmarkOf { get; set; }
         public bool Published { get; set; }
         public string ReplyTo { get; set; }
+        public string[] SyndicateTo { get; set; }
 
         public CreateEntryCommand(IEventStore<Entry> entryStore)
         {
@@ -59,6 +60,11 @@ namespace SV.Maat.Commands
             if (Media != null)
             {
                 events.AddRange(Media.Select(m => new MediaAssociated(entry.Id, m.Url, m.Type, m.Description) { Version = version.Next() }));
+            }
+
+            if (SyndicateTo != null)
+            {
+                events.AddRange(SyndicateTo.Select(s => new Syndicated(entry.Id, s)));
             }
 
             _entryStore.StoreEvent(events);
