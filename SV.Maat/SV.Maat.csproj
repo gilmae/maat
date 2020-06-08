@@ -45,6 +45,7 @@
     <Folder Include="Tokens\Views\" />
     <Folder Include="Projections\" />
     <Folder Include="lib\Pipelines\" />
+    <Folder Include="Reactors\" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Users\Views\View.cshtml">

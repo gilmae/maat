@@ -14,6 +14,7 @@ using SV.Maat.Micropub.Models;
 using SV.Maat.lib;
 using Microsoft.AspNetCore.Authorization;
 using SV.Maat.IndieAuth.Middleware;
+using SV.Maat.lib.Pipelines;
 
 namespace SV.Maat.Micropub
 {
@@ -26,17 +27,20 @@ namespace SV.Maat.Micropub
         IEventStore<Entry> _entryRepository;
         IEventStore<Media> _mediaRepository;
         IFileStore _fileStore;
+        Pipeline _pipeline;
 
         public MicropubController(ILogger<MicropubController> logger,
             IEventStore<Entry> entryRepository,
             IEventStore<Media> mediaRepository,
-            IFileStore fileStore
+            IFileStore fileStore,
+            Pipeline pipeline
             )
         {
             _logger = logger;
             _entryRepository = entryRepository;
             _mediaRepository = mediaRepository;
             _fileStore = fileStore;
+            _pipeline = pipeline;
         }
         
         [HttpPost]
@@ -86,7 +90,7 @@ namespace SV.Maat.Micropub
             }
 
             string postStatus = post.PostStatus;
-            CreateEntryCommand command = new CreateEntryCommand(_entryRepository)
+            CreateEntryCommand command = new CreateEntryCommand(_entryRepository, _pipeline)
             {
                 Content = post.Content,
                 Name = post.Title,
@@ -117,7 +121,7 @@ namespace SV.Maat.Micropub
             {
                 categories = (post.Properties.GetValueOrDefault("category") as object[]).Select(x => x.ToString()).ToArray();
             }
-            CreateEntryCommand command = new CreateEntryCommand(_entryRepository)
+            CreateEntryCommand command = new CreateEntryCommand(_entryRepository, _pipeline)
             {
                 Content = post.Properties.GetValueOrDefault("content")?[0]?.ToString(),
                 Name = post.Properties.GetValueOrDefault("name")?[0]?.ToString(),
@@ -275,7 +279,7 @@ namespace SV.Maat.Micropub
 
         private BaseCommand<Entry> GetAddCommand(MicropubPublishModel post, Entry entry)
         {
-            var addCommand = new UpdateEntryAsAddCommand(_entryRepository)
+            var addCommand = new UpdateEntryAsAddCommand(_entryRepository, _pipeline)
             {
                 Entry = entry,
                 Name = post.Add.GetValueOrDefault("name")?[0]?.ToString(),

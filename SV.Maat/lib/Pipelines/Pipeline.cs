@@ -5,51 +5,17 @@ using Events;
 
 namespace SV.Maat.lib.Pipelines
 {
-    public class Pipeline
+    public class Pipeline 
     {
-        private readonly IList<Func<AggregateDelegate, AggregateDelegate>> _components = new List<Func<AggregateDelegate, AggregateDelegate>>();
+        private readonly IList<Func<EventDelegate, EventDelegate>> _components = new List<Func<EventDelegate, EventDelegate>>();
 
-        public Pipeline Use(Func<AggregateDelegate, AggregateDelegate> component)
+        public Pipeline Use(Func<EventDelegate, EventDelegate> component)
         {
             _components.Add(component);
             return this;
         }
 
-        public Pipeline Use(Func<Aggregate, Func<Task>, Task> component)
-        {
-            return this.Use(next =>
-            {
-                return aggregate =>
-                {
-                    Func<Task> simpleNext = () => next(aggregate);
-                    return component(aggregate, simpleNext);
-                };
-            });
-        }
-
-        public AggregateDelegate Build()
-        {
-            AggregateDelegate app = obj => Task.CompletedTask;
-
-            foreach (var component in _components)
-            {
-                app = component(app);
-            }
-            return app;
-        }
-    }
-
-    public class EventPipeline<T> where T:Aggregate
-    {
-        private readonly IList<Func<EventDelegate<T>, EventDelegate<T>>> _components = new List<Func<EventDelegate<T>, EventDelegate<T>>>();
-
-        public EventPipeline<T> Use(Func<EventDelegate<T>, EventDelegate<T>> component)
-        {
-            _components.Add(component);
-            return this;
-        }
-
-        public EventPipeline<T> Use(Func<Event<T>, Func<Task>, Task> component)
+        public Pipeline Use(Func<Event, Func<Task>, Task> component)
         {
             return this.Use(next =>
             {
@@ -61,9 +27,9 @@ namespace SV.Maat.lib.Pipelines
             });
         }
 
-        public EventDelegate<T> Build()
+        public EventDelegate Build()
         {
-            EventDelegate<T> app = obj => Task.CompletedTask;
+            EventDelegate app = obj => Task.CompletedTask;
 
             foreach (var component in _components)
             {
@@ -72,7 +38,7 @@ namespace SV.Maat.lib.Pipelines
             return app;
         }
 
-        public void Run(Event<T> e)
+        public void Run(Event e)
         {
             var app = this.Build();
            
@@ -82,8 +48,4 @@ namespace SV.Maat.lib.Pipelines
             });
         }
     }
-
-
-
-
 }

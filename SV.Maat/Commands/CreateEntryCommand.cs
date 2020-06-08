@@ -6,12 +6,14 @@ using Events;
 using StrangeVanilla.Blogging.Events;
 using StrangeVanilla.Blogging.Events.Entries.Events;
 using SV.Maat.lib;
+using SV.Maat.lib.Pipelines;
 
 namespace SV.Maat.Commands
 {
     public class CreateEntryCommand : BaseCommand<Entry>
     {
         IEventStore<Entry> _entryStore;
+        Pipeline _pipeline;
 
         public string Name { get; set; }
         public string Content { get; set; }
@@ -22,9 +24,10 @@ namespace SV.Maat.Commands
         public string ReplyTo { get; set; }
         public string[] SyndicateTo { get; set; }
 
-        public CreateEntryCommand(IEventStore<Entry> entryStore)
+        public CreateEntryCommand(IEventStore<Entry> entryStore, Pipeline pipeline)
         {
             _entryStore = entryStore;
+            _pipeline = pipeline;
         }
 
         public override Entry Execute()
@@ -72,6 +75,7 @@ namespace SV.Maat.Commands
             foreach (var e in events)
             {
                 e.Apply(entry);
+                _pipeline.Run(e);
             }
 
             return entry;
