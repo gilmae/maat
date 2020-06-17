@@ -6,10 +6,7 @@ namespace SV.Maat.Syndications.Models
 {
     public class RegisterSyndicationModel
     {
-        [BindProperty(Name = "name")]
-        public string  Name { get; set; }
-
         [BindProperty(Name = "network")]
-        public SyndicationTarget Network { get; set; }
+        public string Network { get; set; }
     }
 }

@@ -16,6 +16,7 @@ using SV.Maat.Users;
 using SV.Maat.Projections;
 using SV.Maat.lib.Pipelines;
 using SV.Maat.Reactors;
+using SV.Maat.ExternalNetworks;
 
 namespace SV.Maat
 {
@@ -57,7 +58,6 @@ namespace SV.Maat
             services.AddControllers()
                 .AddNewtonsoftJson();
 
-            services.Configure<SyndicationNetworks>(Configuration.GetSection("syndicationNetworks"));
             services.Configure<CertificateStorage>(Configuration.GetSection("CertificateStorage"));
 
             services.AddSingleton<IEventStore<Entry>, PgStore<Entry>>();
@@ -73,6 +73,9 @@ namespace SV.Maat
             services.AddTransient<IAuthenticationRequestStore, AuthenticationRequestStore>();
             services.AddTransient<IAccessTokenStore, AccessTokenStore>();
             services.AddSingleton(typeof(TokenSigning));
+
+            services.AddTransient<ISyndicationNetwork, Twitter>();
+            services.AddTransient<ISyndicationNetwork, Mastodon>();
 
             services.AddPipelines();
         }

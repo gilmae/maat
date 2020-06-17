@@ -14,6 +14,7 @@ using SV.Maat.Syndications;
 using SV.Maat.Syndications.Models;
 using static StrangeVanilla.Blogging.Events.Entry;
 using SV.Maat.Projections;
+using SV.Maat.ExternalNetworks;
 
 namespace SV.Maat.Micropub
 {
@@ -24,15 +25,15 @@ namespace SV.Maat.Micropub
         IEntryProjection _entryView;
         ILogger<QueryController> _logger;
         readonly ISyndicationStore _syndicationStore;
-        private readonly SyndicationNetworks _networks;
+        private readonly IEnumerable<ISyndicationNetwork> _externalNetworks;
         private readonly IRepliesProjection _repliesProjection;
 
-        public QueryController(ILogger<QueryController> logger, IEntryProjection entryView, ISyndicationStore syndicationStore, IOptions<SyndicationNetworks> networkOptions, IRepliesProjection repliesProjection)
+        public QueryController(ILogger<QueryController> logger, IEntryProjection entryView, ISyndicationStore syndicationStore, IEnumerable<ISyndicationNetwork> externalNetworks, IRepliesProjection repliesProjection)
         {
             _logger = logger;
             _entryView = entryView;
             _syndicationStore = syndicationStore;
-            _networks = networkOptions.Value;
+            _externalNetworks = externalNetworks;
             _repliesProjection = repliesProjection;
         }
 
@@ -89,16 +90,16 @@ namespace SV.Maat.Micropub
             if (userId.HasValue)
             {
                 networksSupported = from s in _syndicationStore.FindByUser(this.UserId() ?? -1)
-                                    join n in _networks.Networks on s.Network equals n.Key
+                                    join n in _externalNetworks on s.Network.ToLower() equals n.Name.ToLower()
                                     select new SupportedNetwork
                                     {
-                                        Name = $"{s.AccountName} on {n.Value.name}",
-                                        Uid = string.Format(n.Value.uidformat, s.AccountName),
+                                        Name = $"{s.AccountName} on {n.Name}",
+                                        Uid = string.Format(s.AccountName),
                                         Network = new NetworkDetails
                                         {
-                                            Name = n.Value.name,
-                                            Url = n.Value.url,
-                                            Photo = n.Value.photo
+                                            Name = n.Name,
+                                            Url = n.Url,
+                                            Photo = n.Photo
                                         }
                                     };
             }

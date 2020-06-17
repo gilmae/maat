@@ -25,6 +25,7 @@
     <PackageReference Include="AngleSharp" Version="1.0.0-alpha-819" />
     <PackageReference Include="Flurl" Version="3.0.0-pre3" />
     <PackageReference Include="NLog" Version="4.7.2" />
+    <PackageReference Include="CoreTweet" Version="1.0.0.483" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="lib\" />
@@ -46,6 +47,8 @@
     <Folder Include="Projections\" />
     <Folder Include="lib\Pipelines\" />
     <Folder Include="Reactors\" />
+    <Folder Include="ExternalNetworks\" />
+    <Folder Include="Syndications\Views\" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Users\Views\View.cshtml">
@@ -70,6 +73,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="Tokens\Views\Tokens.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Syndications\Views\Register.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

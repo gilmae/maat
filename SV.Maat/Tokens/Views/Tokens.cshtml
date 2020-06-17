@@ -21,7 +21,7 @@
             @foreach (SV.Maat.Users.Models.AccessTokenViewModel v in ViewBag.tokens)
             {
                 await Html.RenderPartialAsync("_token", v);
-                }
+            }
         </tbody>
     </table>
 

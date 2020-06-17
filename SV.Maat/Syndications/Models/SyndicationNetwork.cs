@@ -10,9 +10,4 @@ namespace SV.Maat.Syndications.Models
         public string photo { get; set; }
         public string uidformat { get; set; }
     }
-
-    public class SyndicationNetworks
-    {
-        public Dictionary<string, SyndicationNetwork> Networks { get; set; }
-    }
 }
