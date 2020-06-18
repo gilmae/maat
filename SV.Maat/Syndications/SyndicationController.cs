@@ -39,11 +39,14 @@ namespace SV.Maat.Syndications
         }
 
         [HttpGet]
-        [Route("register")]
+        [Route("")]
         [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
-        public ActionResult Register()
+        public ActionResult Index()
         {
-            ViewBag.networks = _externalNetworks.Select(n => new SyndicationNetwork { name = n.Name, url=n.Url, photo=n.Photo }).ToList();
+            int userId = int.Parse(this.User.Claims.First(c => c.Type == ClaimTypes.Sid)?.Value);
+            ViewBag.Syndications = _syndicationStore.FindByUser(userId);
+            ViewBag.networks = _externalNetworks.Select(n => new SyndicationNetwork { name = n.Name, url = n.Url, photo = n.Photo }).ToList();
+
             return View();
         }
 
@@ -100,7 +103,7 @@ namespace SV.Maat.Syndications
 
             _syndicationStore.Update(syndication);
 
-            return Redirect(Url.ActionLink("Register"));
+            return Redirect(Url.ActionLink("Index"));
         }
 
         [HttpGet]
@@ -160,7 +163,7 @@ namespace SV.Maat.Syndications
 
             _syndicationStore.Update(syndication);
 
-            return Redirect(Url.ActionLink("Register"));
+            return Redirect(Url.ActionLink("Index"));
         }
     }
 }

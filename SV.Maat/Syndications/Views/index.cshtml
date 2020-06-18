@@ -1,0 +1,48 @@
+﻿@page
+@using SV.Maat.Syndications.Models;
+@model IList<SyndicationNetwork>
+
+@{
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="authorization_endpoint" href="@ViewBag.auth_endpoint">
+    <link rel="token_endpoint" href="@ViewBag.token_endpoint">
+    <link rel="micropub" href="@Url.Action("Publish", "Micropub")">
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>Network</th>
+                <th>Account Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Syndication s in ViewBag.Syndications)
+            {
+            <tr>
+                <td>@s.Network</td>
+                <td>@s.AccountName</td>
+            </tr>
+            }
+        </tbody>
+    </table>
+
+    <form method="POST" action="register">
+        <p>
+            <label for="network">Add Subscription to:</label><br />
+            <select name="network">
+                @foreach (var n in ViewBag.networks)
+                {
+                    <option value="@n.name">@n.name</option>
+                }
+
+            </select>
+        </p>
+        <input type="submit" value="subscribe" />
+    </form>
+</body>
+</html>
