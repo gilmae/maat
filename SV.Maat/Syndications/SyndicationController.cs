@@ -56,10 +56,24 @@ namespace SV.Maat.Syndications
             Syndication syndication = new Syndication { AccountName = "Pending", Network = model.Network.ToString(), UserId = userId };
             var id = _syndicationStore.Insert(syndication);
 
-            var network = _externalNetworks.First(n => n.Name.ToLower() == model.Network.ToString().ToLower()) as IRequiresOAuthRegistration;
-            var returnUrl = network.GetAuthorizeLink(Url.ActionLink("CompleteRegistration", "Syndications", new { id })).AbsoluteUri;
+            var network = _externalNetworks.First(n => n.Name.ToLower() == model.Network.ToString().ToLower());
 
-            return new RedirectResult(returnUrl);
+            if (network is IRequiresFederatedInstance)
+            {
+                return new RedirectToActionResult("EnterInstance", "Syndications", new { id });
+            }
+            else if (network is IRequiresOAuthRegistration)
+            {
+                var returnUrl = (network as IRequiresOAuthRegistration).GetAuthorizeLink(Url.ActionLink("CompleteRegistration", "Syndications", new { id })).AbsoluteUri;
+                return new RedirectResult(returnUrl);
+            }
+            else if (network is IRequiresCredentialEntry)
+            {
+                return new RedirectResult(Url.ActionLink("EnterCredentials", "Syndications", new { id }));
+            }
+
+            return Ok();
+            
         }
 
         [HttpGet]
@@ -71,10 +85,78 @@ namespace SV.Maat.Syndications
             var network = _externalNetworks.First(n => n.Name.ToLower() == syndication.Network.ToLower()) as IRequiresOAuthRegistration;
 
             var tokens = network.GetToken(Url.ActionLink("CompleteRegistration", "Syndications", new { id }), oauth_token, oauth_verifier);
-            byte[] data = System.Text.Encoding.ASCII.GetBytes(System.Text.Json.JsonSerializer.Serialize(tokens));
 
-            syndication.Credentials = Convert.ToBase64String(_tokenSigning.Encrypt(data));
+            Credentials credentials = new Credentials();
+            if (!string.IsNullOrEmpty(syndication.Credentials))
+            {
+                credentials = _tokenSigning.Decrypt<Credentials>(syndication.Credentials);
+            }
+
+            credentials.Uid = tokens.Uid;
+            credentials.Secret = tokens.Secret;
+
+            syndication.Credentials = _tokenSigning.Encrypt(credentials);
             syndication.AccountName = network.GetProfileUrl(tokens);
+
+            _syndicationStore.Update(syndication);
+
+            return Redirect(Url.ActionLink("Register"));
+        }
+
+        [HttpGet]
+        [Route("register/instance")]
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
+        public ActionResult EnterInstance([FromQuery] int id)
+        {
+            ViewBag.id = id;
+            return View();
+        }
+
+        [HttpPost]
+        [Route("register/instance")]
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
+        public ActionResult EnterInstance([FromForm] int id, [FromForm] string instanceName)
+        {
+            Syndication syndication = _syndicationStore.Find(id);
+
+            syndication.Credentials = _tokenSigning.Encrypt(new Credentials { Instance = instanceName });
+            
+            _syndicationStore.Update(syndication);
+
+            var network = _externalNetworks.First(n => n.Name.ToLower() == syndication.Network.ToLower()) as IRequiresOAuthRegistration;
+
+            if (network is IRequiresOAuthRegistration)
+            {
+                var returnUrl = network.GetAuthorizeLink(Url.ActionLink("CompleteRegistration", "Syndications", new { id })).AbsoluteUri;
+                return new RedirectResult(returnUrl);
+            }
+            else if (network is IRequiresCredentialEntry)
+            {
+                return new RedirectResult(Url.ActionLink("EnterCredentials", "Syndications", new { id }));
+            }
+
+            return Ok();
+        }
+
+        [HttpGet]
+        [Route("register/credentials")]
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
+        public ActionResult EnterCredentials([FromQuery] int id)
+        {
+            ViewBag.id = id;
+            return View();
+        }
+
+        [HttpPost]
+        [Route("register/credentials")]
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
+        public ActionResult EnterCredentials([FromForm] int id, [FromForm] string name, [FromForm] string uid, [FromForm] string secret)
+        {
+            Syndication syndication = _syndicationStore.Find(id);
+
+            var credentials = new Credentials { Uid = uid, Secret = secret };
+            syndication.Credentials = _tokenSigning.Encrypt(credentials);
+            syndication.AccountName = name;
 
             _syndicationStore.Update(syndication);
 

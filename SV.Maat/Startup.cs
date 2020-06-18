@@ -76,6 +76,7 @@ namespace SV.Maat
 
             services.AddTransient<ISyndicationNetwork, Twitter>();
             services.AddTransient<ISyndicationNetwork, Mastodon>();
+            services.AddTransient<ISyndicationNetwork, Pinboard>();
 
             services.AddPipelines();
         }

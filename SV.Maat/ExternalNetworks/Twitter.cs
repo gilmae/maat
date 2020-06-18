@@ -40,65 +40,45 @@ namespace SV.Maat.ExternalNetworks
             return context.AuthorizeUri;
         }
 
-        public OAuthAccessToken GetToken(string redirectUri, string oauth_token, string oauth_verifier)
+        public Credentials GetToken(string redirectUri, string oauth_token, string oauth_verifier)
         {
             OAuth.OAuthSession context = new OAuth.OAuthSession() { RequestToken = oauth_token, ConsumerKey = ConsumerKey, ConsumerSecret = ConsumerKeySecret };
             var tokens =  context.GetTokens(oauth_verifier);
             
-            return new OAuthAccessToken { AccessToken = tokens.AccessToken, AccessTokenSecret = tokens.AccessTokenSecret };
+            return new Credentials { Uid = tokens.AccessToken, Secret = tokens.AccessTokenSecret };
         }
 
-        public string GetProfileUrl(OAuthAccessToken token)
+        public string GetProfileUrl(Credentials token)
         {
 
             Tokens tokens = new Tokens
             {
                 ConsumerKey = ConsumerKey,
                 ConsumerSecret = ConsumerKeySecret,
-                AccessToken = token.AccessToken,
-                AccessTokenSecret = token.AccessTokenSecret
+                AccessToken = token.Uid,
+                AccessTokenSecret = token.Secret
             };
             var client = tokens.Account.VerifyCredentials();
             
             return $"{Url}/{client.ScreenName}";
         }
 
-        public long Syndicate(OAuthAccessToken token, Entry entry)
+        public string Syndicate(Credentials credentials, Entry entry)
         {
             Tokens tokens = new Tokens
             {
                 ConsumerKey = ConsumerKey,
                 ConsumerSecret = ConsumerKeySecret,
-                AccessToken = token.AccessToken,
-                AccessTokenSecret = token.AccessTokenSecret
+                AccessToken = credentials.Uid,
+                AccessTokenSecret = credentials.Secret
             };
-            var client = tokens.Account.VerifyCredentials();
+            tokens.Account.VerifyCredentials();
 
             var response = tokens.Statuses.Update(entry.Body);
 
-            return response.Id;
+            return $"{Url}/{tokens.ScreenName}/statuses/{response.Id}";
 
         }
 
-    }
-
-    public struct OAuthAccessToken
-    {
-        public string AccessToken { get; set; }
-        public string AccessTokenSecret { get; set; }
-    }
-
-    public interface IRequiresOAuthRegistration : ISyndicationNetwork
-    {
-        Uri GetAuthorizeLink(string redirectUri);
-        OAuthAccessToken GetToken(string redirectUri, string oauth_token, string oauth_verifier);
-        string GetProfileUrl(OAuthAccessToken token);
-    }
-
-    public interface ISyndicationNetwork
-    {
-        string Name { get; }
-        string Photo { get; }
-        string Url { get; }
     }
 }

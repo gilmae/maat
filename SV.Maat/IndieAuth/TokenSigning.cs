@@ -31,7 +31,7 @@ namespace SV.Maat.IndieAuth
             }
         }
 
-        public string Encrypt(AccessToken token)
+        public string Encrypt<T>(T token)
         {
             return Convert.ToBase64String(
                     Encrypt(
@@ -48,9 +48,9 @@ namespace SV.Maat.IndieAuth
             }
         }
 
-        public AccessToken Decrypt(string data)
+        public T Decrypt<T>(string data)
         {
-            return System.Text.Json.JsonSerializer.Deserialize<AccessToken>(Decrypt(Convert.FromBase64String(data)));
+            return System.Text.Json.JsonSerializer.Deserialize<T>(Decrypt(Convert.FromBase64String(data)));
         }
 
     }

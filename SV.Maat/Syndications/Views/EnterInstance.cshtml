@@ -1,0 +1,24 @@
+﻿@page
+
+
+@{
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="authorization_endpoint" href="@ViewBag.auth_endpoint">
+    <link rel="token_endpoint" href="@ViewBag.token_endpoint">
+    <link rel="micropub" href="@Url.Action("Publish", "Micropub")">
+</head>
+<body>
+    <form method="POST">
+        <input type="hidden" name="id" value="@ViewBag.id" />
+        <p>
+            <label for="instance">Instance Name</label><br />
+            <input name="instance" />
+        </p>
+        <input type="submit" value="save" />
+    </form>
+</body>
+</html>

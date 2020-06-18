@@ -41,7 +41,7 @@ namespace SV.Maat.IndieAuth.Middleware
                 AccessToken token = null;
                 try
                 {
-                    token = _tokenSigner.Decrypt(encryptedToken);
+                    token = _tokenSigner.Decrypt<AccessToken>(encryptedToken);
                 }
                 catch (Exception ex)
                 {
