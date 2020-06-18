@@ -75,7 +75,7 @@ namespace SV.Maat
             services.AddSingleton(typeof(TokenSigning));
 
             services.AddTransient<ISyndicationNetwork, Twitter>();
-            services.AddTransient<ISyndicationNetwork, Mastodon>();
+            //services.AddTransient<ISyndicationNetwork, Mastodon>();
             services.AddTransient<ISyndicationNetwork, Pinboard>();
 
             services.AddPipelines();

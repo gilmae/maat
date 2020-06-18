@@ -3,7 +3,7 @@ using StrangeVanilla.Blogging.Events;
 
 namespace SV.Maat.ExternalNetworks
 {
-    public class Mastodon// : IRequiresOAuthRegistration, IRequiresFederatedInstance
+    public class Mastodon : IRequiresOAuthRegistration, IRequiresFederatedInstance
 
     {
         public Mastodon()
