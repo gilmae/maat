@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Dapper;
 using Microsoft.Extensions.Configuration;
 using SV.Maat.lib.Repository;
@@ -18,6 +19,14 @@ namespace SV.Maat.Syndications
             using (Connection)
             {
                 return Connection.Query<Syndication>("select * from Syndications where \"UserId\"=@userId", new { userId });
+            }
+        }
+
+        public Syndication FindByAccountName(string accountName)
+        {
+            using (Connection)
+            {
+                return Connection.Query<Syndication>("select * from Syndications where \"AccountName\"=@accountName", new { accountName }).FirstOrDefault();
             }
         }
     }
