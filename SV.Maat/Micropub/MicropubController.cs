@@ -45,7 +45,15 @@ namespace SV.Maat.Micropub
             _pipeline = pipeline;
             _commandHandler = commandHandler;
         }
-        
+
+        [HttpGet]
+        [Authorize(AuthenticationSchemes = IndieAuthTokenHandler.SchemeName)]
+        [Route("/entry/{id}")]
+        public IActionResult Entry([FromRoute] Guid id)
+        {
+            return Ok();
+        }
+
         [HttpPost]
         [Consumes("application/json")]
         [Authorize(AuthenticationSchemes = IndieAuthTokenHandler.SchemeName)]
@@ -82,8 +90,8 @@ namespace SV.Maat.Micropub
                     post.Photo.CopyToAsync(stream);
                 }
                 string filePath = _fileStore.Save(fileData);
-                Media m = new Media(Guid.NewGuid());
-                if (!_commandHandler.Handle<Media>(m,
+                Guid id = Guid.NewGuid();
+                if (!_commandHandler.Handle<Media>(id,
                     new CreateMedia {
                         Name = post.Photo.Name,
                         MimeType = post.Photo.ContentType,
@@ -93,7 +101,7 @@ namespace SV.Maat.Micropub
                     return BadRequest("Could not upload file");
                 }
 
-                media = new List<Entry.MediaLink> { new Entry.MediaLink { Url = this.Url.MediaUrl(m), Type = post.Photo.Name } };
+                media = new List<Entry.MediaLink> { new Entry.MediaLink { Url = this.Url.ActionLink("GetMediaFile", "Media", new { id }), Type = post.Photo.Name } };
             }
 
             string postStatus = post.PostStatus;
@@ -139,8 +147,7 @@ namespace SV.Maat.Micropub
             string postStatus,
             string[] syndicateTo)
         {
-            Entry entry = new Entry(Guid.NewGuid());
-
+            Guid id = Guid.NewGuid();
             List<ICommand> commands = new List<ICommand> { new CreateEntry() };
             commands.Add(new SetContent { Name = name, Content = content, BookmarkOf = bookmark });
             if (categories != null)
@@ -168,13 +175,13 @@ namespace SV.Maat.Micropub
 
             foreach (ICommand command in commands)
             {
-                if (!_commandHandler.Handle<Entry>(entry, command))
+                if (!_commandHandler.Handle<Entry>(id, command))
                 {
                     return BadRequest($"Could not {command.GetType().Name}");
                 }
             }
 
-            string location = UrlHelper.EntryUrl(HttpContext, entry);
+            string location = this.Url.ActionLink("Entry", "Micropub", new { id });
             return base.Created(location, null);
         }
 
@@ -200,8 +207,7 @@ namespace SV.Maat.Micropub
                 });
             }
 
-            var entry = new Entry(entryId);
-            _commandHandler.Handle<Entry>(entry, new DeleteEntry());
+            _commandHandler.Handle<Entry>(entryId, new DeleteEntry());
 
             return Ok();
         }
@@ -227,17 +233,16 @@ namespace SV.Maat.Micropub
                 });
             }
 
-            var entry = new Entry(entryId);
             try
             {
                 if (model.Add?.Count() > 0) {
-                    return HandleAddUpdate(model, entry);
+                    return HandleAddUpdate(model, entryId);
                 }
                 else if (model.Replace?.Count() > 0) {
-                    return HandleReplaceUpdate(model, entry);
+                    return HandleReplaceUpdate(model, entryId);
                 }
                 else if (model.Remove?.Count() > 0) { 
-                    return HandleRemoveUpdate(model, entry);
+                    return HandleRemoveUpdate(model, entryId);
                 }
             }
             catch (Exception ex)
@@ -279,7 +284,7 @@ namespace SV.Maat.Micropub
             return media;
         }
 
-        private ActionResult HandleRemoveUpdate(MicropubPublishModel post, Entry entry)
+        private ActionResult HandleRemoveUpdate(MicropubPublishModel post, Guid id)
         {
             List<ICommand> commands = new List<ICommand> { };
             if (post.Remove.Contains("name") || post.Remove.Contains("content") || post.Remove.Contains("bookmark-of"))
@@ -304,16 +309,16 @@ namespace SV.Maat.Micropub
 
             foreach (ICommand command in commands)
             {
-                if (!_commandHandler.Handle<Entry>(entry, command))
+                if (!_commandHandler.Handle<Entry>(id, command))
                 {
                     return BadRequest($"Could not {command.GetType().Name}");
                 }
             }
 
-            return Created(HttpContext.EntryUrl(entry), null);
+            return Created(this.Url.ActionLink("Entry", "Micropub", new { id }), null);
         }
 
-        private ActionResult HandleReplaceUpdate(MicropubPublishModel post, Entry entry)
+        private ActionResult HandleReplaceUpdate(MicropubPublishModel post, Guid id)
         {
             List<ICommand> commands = new List<ICommand> { };
             commands.Add(new SetContent
@@ -351,16 +356,16 @@ namespace SV.Maat.Micropub
 
             foreach (ICommand command in commands)
             {
-                if (!_commandHandler.Handle<Entry>(entry, command))
+                if (!_commandHandler.Handle<Entry>(id, command))
                 {
                     return BadRequest($"Could not {command.GetType().Name}");
                 }
             }
 
-            return Created(HttpContext.EntryUrl(entry), null);
+            return Created(this.Url.ActionLink("Entry", "Micropub", new { id }), null);
         }
 
-        private ActionResult HandleAddUpdate(MicropubPublishModel post, Entry entry)
+        private ActionResult HandleAddUpdate(MicropubPublishModel post, Guid id)
         {
             List<ICommand> commands = new List<ICommand> { };
             commands.Add(new SetContent
@@ -393,13 +398,13 @@ namespace SV.Maat.Micropub
 
             foreach (ICommand command in commands)
             {
-                if (!_commandHandler.Handle<Entry>(entry, command))
+                if (!_commandHandler.Handle<Entry>(id, command))
                 {
                     return BadRequest($"Could not {command.GetType().Name}");
                 }
             }
 
-            return Created(HttpContext.EntryUrl(entry), null);
+            return Created(this.Url.ActionLink("Entry", "Micropub", new { id }), null);
         }
 
         private byte[] ReadStream(Stream data)

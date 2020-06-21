@@ -7,6 +7,7 @@ using Events;
 using Microsoft.Extensions.Logging;
 using StrangeVanilla.Blogging.Events;
 using StrangeVanilla.Blogging.Events.Entries.Events;
+using SV.Maat.Commands;
 using SV.Maat.ExternalNetworks;
 using SV.Maat.IndieAuth;
 using SV.Maat.lib;
@@ -24,26 +25,24 @@ namespace SV.Maat.Reactors
         private readonly IEnumerable<ISyndicationNetwork> _externalNetworks;
         readonly ISyndicationStore _syndicationStore;
         private readonly TokenSigning _tokenSigning;
-        private readonly IEventStore _eventStore;
-        private readonly Pipeline _pipeline;
+        private CommandHandler _commandHandler;
 
         public SyndicateEntry(ILogger<SyndicateEntry> logger,
             EventDelegate next,
             IEntryProjection entries,
             IEnumerable<ISyndicationNetwork> externalNetworks,
             ISyndicationStore syndicationStore,
-            IEventStore eventStore,
             TokenSigning tokenSigning,
-            Pipeline pipeline)
+            CommandHandler commandHandler)
         {
             _logger = logger;
             _next = next;
             _entries = entries;
             _syndicationStore = syndicationStore;
-            _eventStore = eventStore;
+            
             _tokenSigning = tokenSigning;
             _externalNetworks = externalNetworks; _externalNetworks = externalNetworks;
-            _pipeline = pipeline;
+            _commandHandler = commandHandler;
         }
 
         public async Task InvokeAsync(Event e)
@@ -84,10 +83,8 @@ namespace SV.Maat.Reactors
                 }
 
                 var syndicatedUrl = network.Syndicate(credentials, entry);
-
-                var syndicationPublished = new SyndicationPublished(e.AggregateId, syndicatedUrl);
-                _eventStore.StoreEvent(e);
-                _pipeline.Run(syndicationPublished);
+                
+                _commandHandler.Handle<Entry>(e.AggregateId, new PublishSyndication { SyndicationUrl = syndicatedUrl });
             }
 
             await _next(e);

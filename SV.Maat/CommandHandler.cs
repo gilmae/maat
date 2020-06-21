@@ -16,9 +16,11 @@ namespace SV.Maat
             _pipeline = pipeline;
         }
 
-        public bool Handle<T>(Aggregate aggregate, ICommand command) where T : Aggregate
+        public bool Handle<T>(Guid aggregateId, ICommand command) where T : Aggregate
         {
-            var events = _eventStore.Retrieve(new EventScope() {AggregateType=aggregate.GetType(), AggregateId=aggregate.Id });
+            var events = _eventStore.Retrieve(new EventScope() {AggregateType=typeof(T), AggregateId=aggregateId });
+            T aggregate = (T)Activator.CreateInstance(typeof(T), aggregateId);
+
             aggregate.ReplayEvents(events);
 
             (Event newEvent, bool success) = aggregate.AttemptCommand(command);

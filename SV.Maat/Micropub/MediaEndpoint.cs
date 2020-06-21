@@ -33,8 +33,8 @@ namespace SV.Maat.Micropub
                     file.CopyToAsync(stream);
                 }
                 string filePath = _fileStore.Save(fileData);
-                Media m = new Media(Guid.NewGuid());
-                if (!_commandHandler.Handle<Media>(m,
+                Guid id = Guid.NewGuid();
+                if (!_commandHandler.Handle<Media>(id,
                     new CreateMedia
                     {
                         Name = file.Name,
@@ -46,7 +46,7 @@ namespace SV.Maat.Micropub
                 }
 
                 //return Created(HttpContext.MediaUrl(media), null);
-                return Created(this.Url.ActionLink("GetMediaFile", "Media", new { id = m.Id }), null);
+                return Created(this.Url.ActionLink("GetMediaFile", "Media", new { id }), null);
             }
 
         }
