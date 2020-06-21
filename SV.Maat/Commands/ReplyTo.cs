@@ -1,26 +1,28 @@
-﻿using System;
+﻿
+using System;
 using Events;
 using StrangeVanilla.Blogging.Events;
 using StrangeVanilla.Blogging.Events.Entries.Events;
 
 namespace SV.Maat.Commands
 {
-    public class AddToCategory : ICommand
+    public class ReplyTo : ICommand
     {
-        public string Category { get; set; }
+        public string ReplyToUrl { get; set; }
 
-        public AddToCategory()
+        public ReplyTo()
         {
         }
 
         public Event GetEvent(int version)
         {
-            return new EntryCategorised() { Version = version, Category = Category };
+            return new ReplyingTo() { Version = version, ReplyTo = ReplyToUrl };
         }
 
         public bool IsValid(Aggregate aggregate)
         {
-            return aggregate is Entry && !((Entry)aggregate).Categories.Contains(Category);
+            return aggregate is Entry;
         }
     }
 }
+

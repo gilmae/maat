@@ -20,7 +20,11 @@ namespace SV.Maat.Commands
 
         public bool IsValid(Aggregate aggregate)
         {
-            return aggregate is Entry && !((Entry)aggregate).Syndications.Contains(SyndicationAccount);
+            return aggregate is Entry
+                && (
+                    ((Entry)aggregate).Syndications == null
+                    || ((Entry)aggregate).Syndications.Contains(SyndicationAccount)
+                );
         }
     }
 }

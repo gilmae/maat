@@ -5,22 +5,22 @@ using StrangeVanilla.Blogging.Events.Entries.Events;
 
 namespace SV.Maat.Commands
 {
-    public class ReplyTo : ICommand
+    public class AddToCategory : ICommand
     {
-        public string ReplyToUrl { get; set; }
+        public string Category { get; set; }
 
-        public ReplyTo()
+        public AddToCategory()
         {
         }
 
         public Event GetEvent(int version)
         {
-            return new ReplyingTo() { Version = version, ReplyTo = ReplyToUrl };
+            return new EntryCategorised() { Version = version, Category = Category };
         }
 
         public bool IsValid(Aggregate aggregate)
         {
-            return aggregate is Entry;
+            return aggregate is Entry && (((Entry)aggregate).Categories == null || ((Entry)aggregate).Categories.Contains(Category));
         }
     }
 }

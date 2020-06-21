@@ -20,7 +20,9 @@ namespace SV.Maat.Commands
 
         public bool IsValid(Aggregate aggregate)
         {
-            return aggregate is Entry && ((Entry)aggregate).Categories.Contains(Category);
+            return aggregate is Entry
+                && ((Entry)aggregate).Categories != null
+                && ((Entry)aggregate).Categories.Contains(Category);
         }
     }
 }

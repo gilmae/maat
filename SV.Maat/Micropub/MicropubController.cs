@@ -48,7 +48,7 @@ namespace SV.Maat.Micropub
 
         [HttpGet]
         [Authorize(AuthenticationSchemes = IndieAuthTokenHandler.SchemeName)]
-        [Route("/entry/{id}")]
+        [Route("/entries/{id}")]
         public IActionResult Entry([FromRoute] Guid id)
         {
             return Ok();
@@ -236,13 +236,13 @@ namespace SV.Maat.Micropub
             try
             {
                 if (model.Add?.Count() > 0) {
-                    return HandleAddUpdate(model, entryId);
+                    return HandleAddUpdate(model.Add, entryId);
                 }
                 else if (model.Replace?.Count() > 0) {
-                    return HandleReplaceUpdate(model, entryId);
+                    return HandleReplaceUpdate(model.Replace, entryId);
                 }
                 else if (model.Remove?.Count() > 0) { 
-                    return HandleRemoveUpdate(model, entryId);
+                    return HandleRemoveUpdate(model.Remove, entryId);
                 }
             }
             catch (Exception ex)
@@ -284,25 +284,25 @@ namespace SV.Maat.Micropub
             return media;
         }
 
-        private ActionResult HandleRemoveUpdate(MicropubPublishModel post, Guid id)
+        private ActionResult HandleRemoveUpdate(string[] values, Guid id)
         {
             List<ICommand> commands = new List<ICommand> { };
-            if (post.Remove.Contains("name") || post.Remove.Contains("content") || post.Remove.Contains("bookmark-of"))
+            if (values.Contains("name") || values.Contains("content") || values.Contains("bookmark-of"))
             {
                 commands.Add(new SetContent
                 {
-                    Name = post.Remove.Contains("name") ? "" : null,
-                    Content = post.Remove.Contains("content") ? "" : null,
-                    BookmarkOf = post.Remove.Contains("bookmark-of") ? "" : null
+                    Name = values.Contains("name") ? "" : null,
+                    Content = values.Contains("content") ? "" : null,
+                    BookmarkOf = values.Contains("bookmark-of") ? "" : null
                 });
             }
 
-            if (post.Remove.Contains("reply-to"))
+            if (values.Contains("reply-to"))
             {
                 commands.Add(new ReplyTo { ReplyToUrl = string.Empty });
             }
 
-            if (post.Remove.Contains("category"))
+            if (values.Contains("category"))
             {
                 commands.Add(new ClearCategoriesFromEntry());
             }
@@ -318,24 +318,24 @@ namespace SV.Maat.Micropub
             return Created(this.Url.ActionLink("Entry", "Micropub", new { id }), null);
         }
 
-        private ActionResult HandleReplaceUpdate(MicropubPublishModel post, Guid id)
+        private ActionResult HandleReplaceUpdate(Dictionary<string, string[]> values, Guid id)
         {
             List<ICommand> commands = new List<ICommand> { };
             commands.Add(new SetContent
             {
-                Name = post.Add.GetValueOrDefault("name")?[0]?.ToString(),
-                Content = post.Add.GetValueOrDefault("content")?[0]?.ToString(),
-                BookmarkOf = post.Add.GetValueOrDefault("bookmark-of")?[0]?.ToString()
+                Name = values.GetValueOrDefault("name")?[0]?.ToString(),
+                Content = values.GetValueOrDefault("content")?[0]?.ToString(),
+                BookmarkOf = values.GetValueOrDefault("bookmark-of")?[0]?.ToString()
             });
 
-            if (post.Properties.GetValueOrDefault("category") != null)
+            if (values.GetValueOrDefault("category") != null)
             {
                 commands.Add(new ClearCategoriesFromEntry());
-                string[] categories = (post.Properties.GetValueOrDefault("category") as object[]).Select(x => x.ToString()).ToArray();
+                string[] categories = (values.GetValueOrDefault("category") as object[]).Select(x => x.ToString()).ToArray();
                 commands.AddRange(categories.Select(c => new AddToCategory { Category = c }));
             }
 
-            var media = ParseMediaReference(post.Add.GetValueOrDefault("photo"), "photo");
+            var media = ParseMediaReference(values.GetValueOrDefault("photo"), "photo");
             if (media.Any())
             {
                 commands.Add(new ClearMediaFromEntry());
@@ -365,32 +365,32 @@ namespace SV.Maat.Micropub
             return Created(this.Url.ActionLink("Entry", "Micropub", new { id }), null);
         }
 
-        private ActionResult HandleAddUpdate(MicropubPublishModel post, Guid id)
+        private ActionResult HandleAddUpdate(Dictionary<string, string[]> values, Guid id)
         {
             List<ICommand> commands = new List<ICommand> { };
             commands.Add(new SetContent
             {
-                Name = post.Add.GetValueOrDefault("name")?[0]?.ToString(),
-                Content = post.Add.GetValueOrDefault("content")?[0]?.ToString(),
-                BookmarkOf = post.Add.GetValueOrDefault("bookmark-of")?[0]?.ToString()
+                Name = values.GetValueOrDefault("name")?[0]?.ToString(),
+                Content = values.GetValueOrDefault("content")?[0]?.ToString(),
+                BookmarkOf = values.GetValueOrDefault("bookmark-of")?[0]?.ToString()
             });
 
-            if (post.Properties.GetValueOrDefault("category") != null)
+            if (values.GetValueOrDefault("category") != null)
             {
-                string[] categories = (post.Properties.GetValueOrDefault("category") as object[]).Select(x => x.ToString()).ToArray();
+                string[] categories = (values.GetValueOrDefault("category") as object[]).Select(x => x.ToString()).ToArray();
                 commands.AddRange(categories.Select(c => new AddToCategory { Category = c }));
             }
 
-            var media = ParseMediaReference(post.Add.GetValueOrDefault("photo"), "photo");
+            var media = ParseMediaReference(values.GetValueOrDefault("photo"), "photo");
             commands.AddRange(media.Select(m => new AttachMediaToEntry { Description = m.Description, Type = m.Type, Url = m.Url }));
 
-            if (post.Properties.GetValueOrDefault("mp-syndicate-to") != null)
+            if (values.GetValueOrDefault("mp-syndicate-to") != null)
             {
-                string[] syndicateTo = (post.Properties.GetValueOrDefault("mp-syndicate-to") as object[]).Select(x => x.ToString()).ToArray();
+                string[] syndicateTo = (values.GetValueOrDefault("mp-syndicate-to") as object[]).Select(x => x.ToString()).ToArray();
                 commands.AddRange(syndicateTo.Select(c => new Syndicate { SyndicationAccount=c}));
             }
 
-            string postStatus = post.Properties.GetValueOrDefault("post-status")?[0]?.ToString();
+            string postStatus = values.GetValueOrDefault("post-status")?[0]?.ToString();
             if (postStatus == null || postStatus != "draft")
             {
                 commands.Add(new PublishEntry());

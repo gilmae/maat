@@ -23,7 +23,9 @@ namespace SV.Maat.Commands
 
         public bool IsValid(Aggregate aggregate)
         {
-            return aggregate is Entry && !((Entry)aggregate).AssociatedMedia.Any(m=>m.Url == Url);
+            return aggregate is Entry
+                && (((Entry)aggregate).AssociatedMedia == null
+                || ((Entry)aggregate).AssociatedMedia.Any(m=>m.Url == Url));
         }
     }
 }

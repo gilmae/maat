@@ -12,7 +12,7 @@ namespace SV.Maat.Commands
         
         public bool IsValid(Aggregate aggregate)
         {
-            throw new NotImplementedException();
+            return true;
         }
 
         public Event GetEvent(int version)
