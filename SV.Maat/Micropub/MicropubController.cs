@@ -28,12 +28,14 @@ namespace SV.Maat.Micropub
         IEventStore<Media> _mediaRepository;
         IFileStore _fileStore;
         Pipeline _pipeline;
+        CommandHandler _commandHandler;
 
         public MicropubController(ILogger<MicropubController> logger,
             IEventStore<Entry> entryRepository,
             IEventStore<Media> mediaRepository,
             IFileStore fileStore,
-            Pipeline pipeline
+            Pipeline pipeline,
+            CommandHandler commandHandler
             )
         {
             _logger = logger;
@@ -41,6 +43,7 @@ namespace SV.Maat.Micropub
             _mediaRepository = mediaRepository;
             _fileStore = fileStore;
             _pipeline = pipeline;
+            _commandHandler = commandHandler;
         }
         
         [HttpPost]
@@ -68,47 +71,35 @@ namespace SV.Maat.Micropub
         [HttpPost]
         [Consumes("application/x-www-form-urlencoded", "multipart/form-data")]
         [Authorize(AuthenticationSchemes = IndieAuthTokenHandler.SchemeName)]
-        public IActionResult CreateFromForm([FromForm]MicropubFormCreateModel post)
+        public IActionResult CreateFromForm([FromForm] MicropubFormCreateModel post)
         {
-            ProcessMediaUpload mediaProcessor = new ProcessMediaUpload(_mediaRepository, _fileStore);
             IEnumerable<Entry.MediaLink> media = new List<Entry.MediaLink>();
             if (post.Photo != null)
             {
-
                 byte[] fileData = new byte[post.Photo.Length];
                 using (var stream = new MemoryStream(fileData))
                 {
                     post.Photo.CopyToAsync(stream);
                 }
-                mediaProcessor.Name = post.Photo.Name;
-                mediaProcessor.MimeType = post.Photo.ContentType;
-                mediaProcessor.Data = fileData;
+                string filePath = _fileStore.Save(fileData);
+                Media m = new Media(Guid.NewGuid());
+                if (!_commandHandler.Handle<Media>(m,
+                    new CreateMedia {
+                        Name = post.Photo.Name,
+                        MimeType = post.Photo.ContentType,
+                        SavePath = filePath
+                    }))
+                {
+                    return BadRequest("Could not upload file");
+                }
 
-                var photo = mediaProcessor.Execute();
-
-                media = new List<Entry.MediaLink> { new Entry.MediaLink { Url = this.Url.MediaUrl(photo), Type = photo.Name } };
+                media = new List<Entry.MediaLink> { new Entry.MediaLink { Url = this.Url.MediaUrl(m), Type = post.Photo.Name } };
             }
 
             string postStatus = post.PostStatus;
-            CreateEntryCommand command = new CreateEntryCommand(_entryRepository, _pipeline)
-            {
-                Content = post.Content,
-                Name = post.Title,
-                Categories = post.Categories,
-                Media = media,
-                BookmarkOf = post.BookmarkOf,
-                Published = postStatus == null || postStatus != "draft",
-                ReplyTo = post.ReplyTo,
-                SyndicateTo = post.SyndicateTo
-            };
 
-            var entry = command.Execute();
-
-            string location = UrlHelper.EntryUrl(HttpContext, entry);
-            return base.Created(location, null);
+            return HandleCreate(post.Content, post.Title, post.Categories, media, post.BookmarkOf, post.ReplyTo, postStatus, post.SyndicateTo);
         }
-
-        
 
         private IActionResult Create(MicropubPublishModel post)
         {
@@ -121,18 +112,67 @@ namespace SV.Maat.Micropub
             {
                 categories = (post.Properties.GetValueOrDefault("category") as object[]).Select(x => x.ToString()).ToArray();
             }
-            CreateEntryCommand command = new CreateEntryCommand(_entryRepository, _pipeline)
-            {
-                Content = post.Properties.GetValueOrDefault("content")?[0]?.ToString(),
-                Name = post.Properties.GetValueOrDefault("name")?[0]?.ToString(),
-                Categories = categories,
-                Media = photos,
-                BookmarkOf = post.Properties.GetValueOrDefault("bookmark-of")?[0]?.ToString(),
-                Published = postStatus == null || postStatus != "draft",
-                ReplyTo = inReplyTo,
-            };
 
-            var entry = command.Execute();
+            string[] syndicateTo = new string[0];
+            if (post.Properties.GetValueOrDefault("mp-syndicate-to") != null)
+            {
+                syndicateTo = (post.Properties.GetValueOrDefault("mp-syndicate-to") as object[]).Select(x => x.ToString()).ToArray();
+            }
+
+            return HandleCreate(post.Properties.GetValueOrDefault("content")?[0]?.ToString(),
+                post.Properties.GetValueOrDefault("name")?[0]?.ToString(),
+                categories,
+                photos,
+                post.Properties.GetValueOrDefault("bookmark-of")?[0]?.ToString(),
+                inReplyTo,
+                postStatus,
+                syndicateTo
+                );
+        }
+
+        private ActionResult HandleCreate(string content,
+            string name,
+            string[] categories,
+            IEnumerable<Entry.MediaLink> media,
+            string bookmark,
+            string replyTo,
+            string postStatus,
+            string[] syndicateTo)
+        {
+            Entry entry = new Entry(Guid.NewGuid());
+
+            List<ICommand> commands = new List<ICommand> { new CreateEntry() };
+            commands.Add(new SetContent { Name = name, Content = content, BookmarkOf = bookmark });
+            if (categories != null)
+            {
+                commands.AddRange(categories.Select(c => new AddToCategory { Category = c }));
+            }
+            if (media != null)
+            {
+                commands.AddRange(media.Select(m => new AttachMediaToEntry { Description = m.Description, Url = m.Url, Type = m.Type }));
+            }
+            if (!string.IsNullOrEmpty(replyTo))
+            {
+                commands.Add(new ReplyTo { ReplyToUrl = replyTo });
+            }
+
+            if (syndicateTo != null)
+            {
+                commands.AddRange(syndicateTo.Select(s => new Syndicate { SyndicationAccount = s }));
+            }
+
+            if (postStatus == null || postStatus != "draft")
+            {
+                commands.Add(new PublishEntry());
+            }
+
+            foreach (ICommand command in commands)
+            {
+                if (!_commandHandler.Handle<Entry>(entry, command))
+                {
+                    return BadRequest($"Could not {command.GetType().Name}");
+                }
+            }
 
             string location = UrlHelper.EntryUrl(HttpContext, entry);
             return base.Created(location, null);
@@ -161,9 +201,7 @@ namespace SV.Maat.Micropub
             }
 
             var entry = new Entry(entryId);
-
-            var command = new DeleteEntry(_entryRepository) { Entry = entry };
-            command.Execute();
+            _commandHandler.Handle<Entry>(entry, new DeleteEntry());
 
             return Ok();
         }
@@ -190,17 +228,16 @@ namespace SV.Maat.Micropub
             }
 
             var entry = new Entry(entryId);
-            BaseCommand<Entry> command = null;
             try
             {
                 if (model.Add?.Count() > 0) {
-                    command = GetAddCommand(model, entry);
+                    return HandleAddUpdate(model, entry);
                 }
-                else if (model.Replace?.Count() > 0) { 
-                        command = GetReplaceCommand(model, entry);
+                else if (model.Replace?.Count() > 0) {
+                    return HandleReplaceUpdate(model, entry);
                 }
                 else if (model.Remove?.Count() > 0) { 
-                        command = GetRemoveCommand(model, entry);
+                    return HandleRemoveUpdate(model, entry);
                 }
             }
             catch (Exception ex)
@@ -208,12 +245,7 @@ namespace SV.Maat.Micropub
                 throw ex;
             }
 
-            if (command != null)
-            {
-                entry = command.Execute();
-            }
-
-            return Created(HttpContext.EntryUrl(entry), null);
+            return Ok();
         }
 
         private IEnumerable<Entry.MediaLink> ParseMediaReference(IEnumerable<dynamic> items, string type)
@@ -247,51 +279,141 @@ namespace SV.Maat.Micropub
             return media;
         }
 
-        private BaseCommand<Entry> GetRemoveCommand(MicropubPublishModel post, Entry entry)
+        private ActionResult HandleRemoveUpdate(MicropubPublishModel post, Entry entry)
         {
-            var removeCommand = new UpdateEntryAsRemoveCommand(_entryRepository)
+            List<ICommand> commands = new List<ICommand> { };
+            if (post.Remove.Contains("name") || post.Remove.Contains("content") || post.Remove.Contains("bookmark-of"))
             {
-                Entry = entry,
-                Name = post.Remove.Contains("name"),
-                Content = post.Remove.Contains("content"),
-                Categories = post.Remove.Contains("category"),
-                Media = post.Remove.Contains("photo"),
-                BookmarkOf = post.Remove.Contains("bookmark-of")
-            };
-            return removeCommand;
+                commands.Add(new SetContent
+                {
+                    Name = post.Remove.Contains("name") ? "" : null,
+                    Content = post.Remove.Contains("content") ? "" : null,
+                    BookmarkOf = post.Remove.Contains("bookmark-of") ? "" : null
+                });
+            }
+
+            if (post.Remove.Contains("reply-to"))
+            {
+                commands.Add(new ReplyTo { ReplyToUrl = string.Empty });
+            }
+
+            if (post.Remove.Contains("category"))
+            {
+                commands.Add(new ClearCategoriesFromEntry());
+            }
+
+            foreach (ICommand command in commands)
+            {
+                if (!_commandHandler.Handle<Entry>(entry, command))
+                {
+                    return BadRequest($"Could not {command.GetType().Name}");
+                }
+            }
+
+            return Created(HttpContext.EntryUrl(entry), null);
         }
 
-        private BaseCommand<Entry> GetReplaceCommand(MicropubPublishModel post, Entry entry)
+        private ActionResult HandleReplaceUpdate(MicropubPublishModel post, Entry entry)
         {
-            var replaceCommand = new UpdateEntryAsReplaceCommand(_entryRepository)
+            List<ICommand> commands = new List<ICommand> { };
+            commands.Add(new SetContent
             {
-                Entry = entry,
-                Name = post.Replace.GetValueOrDefault("name")?[0]?.ToString(),
-                Content = post.Replace.GetValueOrDefault("content")?[0]?.ToString(),
-                Categories = post.Replace.GetValueOrDefault("category") as string[],
-                Media = ParseMediaReference(post.Replace.GetValueOrDefault("photo"), "photo"),
-                BookmarkOf = post.Replace.GetValueOrDefault("bookmark-of")?[0]?.ToString(),
-                Published = post.Replace.GetValueOrDefault("post-status")?[0]?.ToString() != "draft"
-            };
-
-            return replaceCommand;
-        }
-
-        private BaseCommand<Entry> GetAddCommand(MicropubPublishModel post, Entry entry)
-        {
-            var addCommand = new UpdateEntryAsAddCommand(_entryRepository, _pipeline)
-            {
-                Entry = entry,
                 Name = post.Add.GetValueOrDefault("name")?[0]?.ToString(),
                 Content = post.Add.GetValueOrDefault("content")?[0]?.ToString(),
-                Categories = post.Add.GetValueOrDefault("category") as string[],
-                Media = ParseMediaReference(post.Add.GetValueOrDefault("photo"), "photo"),
-                BookmarkOf = post.Add.GetValueOrDefault("bookmark-of")?[0]?.ToString(),
-                Published = post.Add.GetValueOrDefault("post-status")?[0]?.ToString() != "draft",
-                SyndicateTo = post.Add.GetValueOrDefault("mp-syndicate-to") as string[]
-            };
+                BookmarkOf = post.Add.GetValueOrDefault("bookmark-of")?[0]?.ToString()
+            });
 
-            return addCommand;
+            if (post.Properties.GetValueOrDefault("category") != null)
+            {
+                commands.Add(new ClearCategoriesFromEntry());
+                string[] categories = (post.Properties.GetValueOrDefault("category") as object[]).Select(x => x.ToString()).ToArray();
+                commands.AddRange(categories.Select(c => new AddToCategory { Category = c }));
+            }
+
+            var media = ParseMediaReference(post.Add.GetValueOrDefault("photo"), "photo");
+            if (media.Any())
+            {
+                commands.Add(new ClearMediaFromEntry());
+                commands.AddRange(media.Select(m => new AttachMediaToEntry { Description = m.Description, Type = m.Type, Url = m.Url }));
+            }
+
+            //if (post.Properties.GetValueOrDefault("mp-syndicate-to") != null)
+            //{
+            //    string[] syndicateTo = (post.Properties.GetValueOrDefault("mp-syndicate-to") as object[]).Select(x => x.ToString()).ToArray();
+            //    commands.AddRange(syndicateTo.Select(c => new Syndicate { SyndicationAccount = c }));
+            //}
+
+            //string postStatus = post.Properties.GetValueOrDefault("post-status")?[0]?.ToString();
+            //if (postStatus == null || postStatus != "draft")
+            //{
+            //    commands.Add(new PublishEntry());
+            //}
+
+            foreach (ICommand command in commands)
+            {
+                if (!_commandHandler.Handle<Entry>(entry, command))
+                {
+                    return BadRequest($"Could not {command.GetType().Name}");
+                }
+            }
+
+            return Created(HttpContext.EntryUrl(entry), null);
+        }
+
+        private ActionResult HandleAddUpdate(MicropubPublishModel post, Entry entry)
+        {
+            List<ICommand> commands = new List<ICommand> { };
+            commands.Add(new SetContent
+            {
+                Name = post.Add.GetValueOrDefault("name")?[0]?.ToString(),
+                Content = post.Add.GetValueOrDefault("content")?[0]?.ToString(),
+                BookmarkOf = post.Add.GetValueOrDefault("bookmark-of")?[0]?.ToString()
+            });
+
+            if (post.Properties.GetValueOrDefault("category") != null)
+            {
+                string[] categories = (post.Properties.GetValueOrDefault("category") as object[]).Select(x => x.ToString()).ToArray();
+                commands.AddRange(categories.Select(c => new AddToCategory { Category = c }));
+            }
+
+            var media = ParseMediaReference(post.Add.GetValueOrDefault("photo"), "photo");
+            commands.AddRange(media.Select(m => new AttachMediaToEntry { Description = m.Description, Type = m.Type, Url = m.Url }));
+
+            if (post.Properties.GetValueOrDefault("mp-syndicate-to") != null)
+            {
+                string[] syndicateTo = (post.Properties.GetValueOrDefault("mp-syndicate-to") as object[]).Select(x => x.ToString()).ToArray();
+                commands.AddRange(syndicateTo.Select(c => new Syndicate { SyndicationAccount=c}));
+            }
+
+            string postStatus = post.Properties.GetValueOrDefault("post-status")?[0]?.ToString();
+            if (postStatus == null || postStatus != "draft")
+            {
+                commands.Add(new PublishEntry());
+            }
+
+            foreach (ICommand command in commands)
+            {
+                if (!_commandHandler.Handle<Entry>(entry, command))
+                {
+                    return BadRequest($"Could not {command.GetType().Name}");
+                }
+            }
+
+            return Created(HttpContext.EntryUrl(entry), null);
+        }
+
+        private byte[] ReadStream(Stream data)
+        {
+            var bytes = new byte[data.Length];
+
+            var index = 0;
+            while (index < data.Length)
+            {
+                data.Read(bytes, index, 1000);
+                index += 1000;
+            }
+
+            return bytes;
         }
     }
 }

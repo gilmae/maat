@@ -1,21 +1,25 @@
 ﻿using System;
+using System.Linq;
 using Events;
 using StrangeVanilla.Blogging.Events;
 using StrangeVanilla.Blogging.Events.Entries.Events;
-using SV.Maat.lib;
 
 namespace SV.Maat.Commands
 {
-    public class DeleteEntry : ICommand
+    public class ClearMediaFromEntry : ICommand
     {
+        public ClearMediaFromEntry()
+        {
+        }
+
         public Event GetEvent(int version)
         {
-            return new EntryDeleted();
+            return new MediaCleared();
         }
 
         public bool IsValid(Aggregate aggregate)
         {
-            return aggregate is Entry && ((Entry)aggregate).DeletedAt == null;
+            return aggregate is Entry;
         }
     }
 }

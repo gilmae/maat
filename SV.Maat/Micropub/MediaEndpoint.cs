@@ -3,6 +3,7 @@ using System.IO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using StrangeVanilla.Blogging.Events;
 using SV.Maat.Commands;
 using SV.Maat.IndieAuth.Middleware;
 using SV.Maat.lib;
@@ -31,15 +32,21 @@ namespace SV.Maat.Micropub
                 {
                     file.CopyToAsync(stream);
                 }
-                var media = new ProcessMediaUpload(_mediaRepository, _fileStore)
+                string filePath = _fileStore.Save(fileData);
+                Media m = new Media(Guid.NewGuid());
+                if (!_commandHandler.Handle<Media>(m,
+                    new CreateMedia
+                    {
+                        Name = file.Name,
+                        MimeType = file.ContentType,
+                        SavePath = filePath
+                    }))
                 {
-                    Name = file.Name,
-                    MimeType = file.ContentType,
-                    Data = fileData
-                }.Execute();
+                    return BadRequest("Could not upload file");
+                }
 
                 //return Created(HttpContext.MediaUrl(media), null);
-                return Created(this.Url.ActionLink("GetMediaFile", "Media", new { id = media.Id }), null);
+                return Created(this.Url.ActionLink("GetMediaFile", "Media", new { id = m.Id }), null);
             }
 
         }

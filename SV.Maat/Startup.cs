@@ -17,6 +17,7 @@ using SV.Maat.Projections;
 using SV.Maat.lib.Pipelines;
 using SV.Maat.Reactors;
 using SV.Maat.ExternalNetworks;
+using SV.Maat.lib;
 
 namespace SV.Maat
 {
@@ -62,6 +63,7 @@ namespace SV.Maat
 
             services.AddSingleton<IEventStore<Entry>, PgStore<Entry>>();
             services.AddSingleton<IEventStore<Media>, PgStore<Media>>();
+            services.AddSingleton<IEventStore, PgStoreBase>();
 
             services.AddSingleton<IEntryProjection, EntryProjection>();
             services.AddSingleton<IRepliesProjection, RepliesProjection>();
@@ -73,6 +75,8 @@ namespace SV.Maat
             services.AddTransient<IAuthenticationRequestStore, AuthenticationRequestStore>();
             services.AddTransient<IAccessTokenStore, AccessTokenStore>();
             services.AddSingleton(typeof(TokenSigning));
+
+            services.AddTransient(typeof(CommandHandler));
 
             services.AddTransient<ISyndicationNetwork, Twitter>();
             //services.AddTransient<ISyndicationNetwork, Mastodon>();
