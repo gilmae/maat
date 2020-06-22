@@ -26,8 +26,8 @@ namespace SV.Maat.Micropub.Models
         [BindProperty(Name = "add")]
         public Dictionary<string, string[]> Add { get; set; }
 
-        [JsonPropertyName("remove")]
-        [BindProperty(Name = "remove")]
+        [JsonPropertyName("delete")]
+        [BindProperty(Name = "delete")]
         public string[] Remove { get; set; }
 
         [JsonPropertyName("replace")]
