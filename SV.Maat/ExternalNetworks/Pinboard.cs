@@ -2,6 +2,7 @@
 using StrangeVanilla.Blogging.Events;
 using pinboard.net;
 using pinboard.net.Models;
+using SV.Maat.lib;
 
 namespace SV.Maat.ExternalNetworks
 {
@@ -23,8 +24,8 @@ namespace SV.Maat.ExternalNetworks
             {
                 Bookmark bookmark = new Bookmark();
                 bookmark.Url = entry.BookmarkOf;
-                bookmark.Description = entry.Title;
-                bookmark.Extended = entry.Body;
+                bookmark.Description = ContentHelper.GetPlainText(entry.Title);
+                bookmark.Extended = ContentHelper.GetPlainText(entry.Body);
                 bookmark.Tags.AddRange(entry.Categories);
 
                 var result = pb.Posts.Add(bookmark).Result;

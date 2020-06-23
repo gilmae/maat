@@ -6,8 +6,8 @@ namespace StrangeVanilla.Blogging.Events
 {
     public class Entry : Aggregate
     {
-        public string Title { get; set; }
-        public string Body { get; set; }
+        public string[] Title { get; set; }
+        public KeyValuePair<ContentType, string>[] Body { get; set; }
         public IList<string> Categories { get; set; }
         public DateTime? PublishedAt { get; set; }
         public string Uid { get; set; }
@@ -51,5 +51,12 @@ namespace StrangeVanilla.Blogging.Events
         draft,
         published,
         deleted
+    }
+
+    public enum ContentType
+    {
+        plaintext,
+        html,
+        markdown
     }
 }

@@ -273,7 +273,6 @@ namespace SV.Maat.Micropub
                 switch (columnName)
                 {
                     case "name":
-                    case "content":
                     case "in-reply-to":
                     case "bookmark-of":
                     case "category":
@@ -290,6 +289,28 @@ namespace SV.Maat.Micropub
                         return null;
                     case "post-status":
                         return value.ToString();
+                    case "content":
+                        var contents = new List<object>();
+                        var contentArray = (KeyValuePair<ContentType, string>[])value;
+                        foreach (var c in contentArray)
+                        {
+                            if (c.Key == ContentType.plaintext)
+                            {
+                                contents.Add(c.Value);
+                            }
+                            else
+                            {
+                                if (c.Key == ContentType.html)
+                                {
+                                    contents.Add(new { html = c.Value });
+                                }
+                                else if (c.Key == ContentType.markdown)
+                                {
+                                    contents.Add(new { markdown = c.Value });
+                                }
+                            }
+                        }
+                        return contents;
                     default:
                         return null;
 

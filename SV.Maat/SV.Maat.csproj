@@ -47,7 +47,6 @@
     <Folder Include="Tokens\Views\" />
     <Folder Include="Projections\" />
     <Folder Include="lib\Pipelines\" />
-    <Folder Include="Reactors\" />
     <Folder Include="ExternalNetworks\" />
     <Folder Include="Syndications\Views\" />
   </ItemGroup>

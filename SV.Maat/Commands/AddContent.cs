@@ -6,7 +6,7 @@ using StrangeVanilla.Blogging.Events.Entries.Events;
 
 namespace SV.Maat.Commands
 {
-    public class SetContent : ICommand
+    public class AddContent : ICommand
     {
         public string[] Name { get; set; }
         public KeyValuePair<ContentType, string>[] Content { get; set; }

@@ -106,7 +106,7 @@ namespace SV.Maat.Micropub
 
             string postStatus = post.PostStatus;
 
-            return HandleCreate(post.Content, post.Title, post.Categories, media, post.BookmarkOf, post.ReplyTo, postStatus, post.SyndicateTo);
+            return HandleCreate(new[] { new KeyValuePair<ContentType, string>(ContentType.plaintext, post.Content) }, new []{ post.Title}, post.Categories, media, post.BookmarkOf, post.ReplyTo, postStatus, post.SyndicateTo);
         }
 
         private IActionResult Create(MicropubPublishModel post)
@@ -127,8 +127,9 @@ namespace SV.Maat.Micropub
                 syndicateTo = (post.Properties.GetValueOrDefault("mp-syndicate-to") as object[]).Select(x => x.ToString()).ToArray();
             }
 
-            return HandleCreate(post.Properties.GetValueOrDefault("content")?[0]?.ToString(),
-                post.Properties.GetValueOrDefault("name")?[0]?.ToString(),
+            KeyValuePair<ContentType, string>[] content = ContentHelper.ParseContentArray(post.Properties.GetValueOrDefault("content"));
+            return HandleCreate(content,
+                (post.Properties.GetValueOrDefault("name") as object[])?.Select(x => x.ToString()).ToArray(),
                 categories,
                 photos,
                 post.Properties.GetValueOrDefault("bookmark-of")?[0]?.ToString(),
@@ -138,8 +139,8 @@ namespace SV.Maat.Micropub
                 );
         }
 
-        private ActionResult HandleCreate(string content,
-            string name,
+        private ActionResult HandleCreate(KeyValuePair<ContentType, string>[] content,
+            string[] name,
             string[] categories,
             IEnumerable<Entry.MediaLink> media,
             string bookmark,
@@ -291,8 +292,8 @@ namespace SV.Maat.Micropub
             {
                 commands.Add(new SetContent
                 {
-                    Name = values.Contains("name") ? "" : null,
-                    Content = values.Contains("content") ? "" : null,
+                    Name = values.Contains("name") ? new string[0] : null,
+                    Content = values.Contains("content") ? new KeyValuePair<ContentType, string>[0] : null,
                     BookmarkOf = values.Contains("bookmark-of") ? "" : null
                 });
             }
@@ -323,8 +324,8 @@ namespace SV.Maat.Micropub
             List<ICommand> commands = new List<ICommand> { };
             commands.Add(new SetContent
             {
-                Name = values.GetValueOrDefault("name")?[0]?.ToString(),
-                Content = values.GetValueOrDefault("content")?[0]?.ToString(),
+                Name = values.GetValueOrDefault("name"),
+                Content = ContentHelper.ParseContentArray(values.GetValueOrDefault("content")),
                 BookmarkOf = values.GetValueOrDefault("bookmark-of")?[0]?.ToString()
             });
 
@@ -368,10 +369,10 @@ namespace SV.Maat.Micropub
         private ActionResult HandleAddUpdate(Dictionary<string, string[]> values, Guid id)
         {
             List<ICommand> commands = new List<ICommand> { };
-            commands.Add(new SetContent
+            commands.Add(new AddContent
             {
-                Name = values.GetValueOrDefault("name")?[0]?.ToString(),
-                Content = values.GetValueOrDefault("content")?[0]?.ToString(),
+                Name = values.GetValueOrDefault("name"),
+                Content = ContentHelper.ParseContentArray(values.GetValueOrDefault("content")),
                 BookmarkOf = values.GetValueOrDefault("bookmark-of")?[0]?.ToString()
             });
 
@@ -388,12 +389,6 @@ namespace SV.Maat.Micropub
             {
                 string[] syndicateTo = (values.GetValueOrDefault("mp-syndicate-to") as object[]).Select(x => x.ToString()).ToArray();
                 commands.AddRange(syndicateTo.Select(c => new Syndicate { SyndicationAccount=c}));
-            }
-
-            string postStatus = values.GetValueOrDefault("post-status")?[0]?.ToString();
-            if (postStatus == null || postStatus != "draft")
-            {
-                commands.Add(new PublishEntry());
             }
 
             foreach (ICommand command in commands)

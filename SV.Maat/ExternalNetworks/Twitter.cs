@@ -4,6 +4,7 @@ using System.Linq;
 using CoreTweet;
 using Microsoft.Extensions.Configuration;
 using StrangeVanilla.Blogging.Events;
+using SV.Maat.lib;
 
 namespace SV.Maat.ExternalNetworks
 {
@@ -74,7 +75,7 @@ namespace SV.Maat.ExternalNetworks
             };
             tokens.Account.VerifyCredentials();
 
-            var response = tokens.Statuses.Update(entry.Body);
+            var response = tokens.Statuses.Update(ContentHelper.GetPlainText(entry.Body));
 
             return $"{Url}/{tokens.ScreenName}/statuses/{response.Id}";
 

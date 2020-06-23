@@ -1,17 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Events;
 
 namespace StrangeVanilla.Blogging.Events.Entries.Events
 {
-    public class EntryUpdated : Event<Entry>
+    public class ContentAdded : Event<Entry>
     {
 
-        public string Title { get; set; }
-        public string Body { get; set; }
+        public string[] Title { get; set; }
+        public KeyValuePair<ContentType, string>[] Body { get; set; }
         public string BookmarkOf { get; set; }
 
-        public EntryUpdated() { }
-        public EntryUpdated(Guid entryId)
+        public ContentAdded() { }
+        public ContentAdded(Guid entryId)
         {
             AggregateId = entryId;
         }
@@ -22,12 +24,12 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
 
             if (Body != null)
             {
-                aggregate.Body = Body;
+                aggregate.Body = aggregate.Body.Concat(Body).ToArray();
             }
 
             if (Title != null)
             {
-                aggregate.Title = Title;
+                aggregate.Title = aggregate.Title.Concat(Title).ToArray();
             }
 
             if (BookmarkOf != null)
