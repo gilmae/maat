@@ -106,7 +106,7 @@ namespace SV.Maat.Micropub
 
             string postStatus = post.PostStatus;
 
-            return HandleCreate(new[] { new KeyValuePair<ContentType, string>(ContentType.plaintext, post.Content) }, new []{ post.Title}, post.Categories, media, post.BookmarkOf, post.ReplyTo, postStatus, post.SyndicateTo);
+            return HandleCreate(new[] { new KeyValuePair<ContentType, string>(ContentType.plaintext, post.Content) }, new []{ post.Title}, post.GetCategories(), media, post.BookmarkOf, post.ReplyTo, postStatus, post.SyndicateTo);
         }
 
         private IActionResult Create(MicropubPublishModel post)

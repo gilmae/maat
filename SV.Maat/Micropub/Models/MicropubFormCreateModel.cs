@@ -21,6 +21,9 @@ namespace SV.Maat.Micropub.Models
         [BindProperty(Name = "category[]")]
         public string[] Categories { get; set; }
 
+        [BindProperty(Name = "category")]
+        public string[] Category { get; set; }
+
         [BindProperty(Name = "name")]
         public string Title { get; set; }
 
@@ -38,5 +41,20 @@ namespace SV.Maat.Micropub.Models
 
         [BindProperty(Name = "mp-syndicate-to")]
         public string[] SyndicateTo { get; set; }
+
+        public string[] GetCategories()
+        {
+            List<string> categories = new List<string>();
+            if (Category != null)
+            {
+                categories.AddRange(Category);
+            }
+            if (Categories != null)
+            {
+                categories.AddRange(Categories);
+            }
+
+            return categories.Distinct().ToArray();
+        }
     }
 }
