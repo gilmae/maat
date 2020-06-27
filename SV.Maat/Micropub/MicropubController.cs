@@ -242,8 +242,8 @@ namespace SV.Maat.Micropub
                 else if (model.Replace?.Count() > 0) {
                     return HandleReplaceUpdate(model.Replace, entryId);
                 }
-                else if (model.Remove?.Count() > 0) { 
-                    return HandleRemoveUpdate(model.Remove, entryId);
+                else if (model.Delete?.Count() > 0) { 
+                    return HandleRemoveUpdate(model.Delete, entryId);
                 }
             }
             catch (Exception ex)

@@ -28,7 +28,7 @@ namespace SV.Maat.Micropub.Models
 
         [JsonPropertyName("delete")]
         [BindProperty(Name = "delete")]
-        public string[] Remove { get; set; }
+        public string[] Delete { get; set; }
 
         [JsonPropertyName("replace")]
         [BindProperty(Name = "replace")]
