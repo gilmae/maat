@@ -47,47 +47,53 @@ namespace SV.Maat.Reactors
 
         public async Task InvokeAsync(Event e)
         {
-            Syndicated syndicated = e as Syndicated;
-            if (syndicated != null) // TODO - fix the SyndicationAccount detection
+            try
             {
-                var syndication = _syndicationStore.FindByAccountName(syndicated.SyndicationAccount);
-
-                if (syndication == null)
+                Syndicated syndicated = e as Syndicated;
+                if (syndicated != null) // TODO - fix the SyndicationAccount detection
                 {
-                    return;
+                    var syndication = _syndicationStore.FindByAccountName(syndicated.SyndicationAccount);
+
+                    if (syndication == null)
+                    {
+                        return;
+                    }
+
+                    var network = _externalNetworks.First(n => n.Name.ToLower() == syndication.Network.ToLower());
+
+                    if (network == null)
+                    {
+                        return;
+                    }
+
+                    var credentials = _tokenSigning.Decrypt<Credentials>(syndication.Credentials);
+
+                    _logger.LogTrace($"Syndicating {e.AggregateId} to {syndicated.SyndicationAccount}");
+                    Entry entry = null;
+                    int attempts = 0;
+
+                    while ((entry == null || entry.Version != e.Version) && attempts < 10)
+                    {
+                        entry = _entries.Get(e.AggregateId);
+                        attempts += 1;
+                        Thread.Sleep(TimeSpan.FromSeconds(1)); // Wait for the projection to be eventually consistent
+                    }
+
+                    if (entry == null)
+                    {
+                        _logger.LogTrace($"Could not find {e.AggregateId} in projection");
+                        return;
+                    }
+
+                    var syndicatedUrl = network.Syndicate(credentials, entry);
+                    _logger.LogTrace($"Syndicated {e.AggregateId} as {syndicatedUrl}");
+                    _commandHandler.Handle<Entry>(e.AggregateId, new PublishSyndication { SyndicationUrl = syndicatedUrl });
                 }
-
-                var network = _externalNetworks.First(n => n.Name.ToLower() == syndication.Network.ToLower());
-
-                if (network == null)
-                {
-                    return;
-                }
-
-                var credentials = _tokenSigning.Decrypt<Credentials>(syndication.Credentials);
-
-                _logger.LogTrace($"Syndicating {e.AggregateId} to {syndicated.SyndicationAccount}");
-                Entry entry = null;
-                int attempts = 0;
-
-                while (entry == null && entry.Version != e.Version && attempts < 10)
-                {
-                    entry = _entries.Get(e.AggregateId);
-                    attempts += 1;
-                    Thread.Sleep(TimeSpan.FromSeconds(1)); // Wait for the projection to be eventually consistent
-                }
-
-                if (entry == null)
-                {
-                    _logger.LogTrace($"Could not find {e.AggregateId} in projection");
-                    return;
-                }
-
-                var syndicatedUrl = network.Syndicate(credentials, entry);
-                _logger.LogTrace($"Syndicated {e.AggregateId} as {syndicatedUrl}");
-                _commandHandler.Handle<Entry>(e.AggregateId, new PublishSyndication { SyndicationUrl = syndicatedUrl });
             }
-
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+            }
             await _next(e);
         }
     }

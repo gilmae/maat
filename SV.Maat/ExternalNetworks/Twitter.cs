@@ -73,11 +73,11 @@ namespace SV.Maat.ExternalNetworks
                 AccessToken = credentials.Uid,
                 AccessTokenSecret = credentials.Secret
             };
-            tokens.Account.VerifyCredentials();
+            var client = tokens.Account.VerifyCredentials();
 
             var response = tokens.Statuses.Update(ContentHelper.GetPlainText(entry.Body));
 
-            return $"{Url}/{tokens.ScreenName}/statuses/{response.Id}";
+            return $"{Url}/{client.ScreenName}/statuses/{response.Id}";
 
         }
 
