@@ -79,11 +79,12 @@ namespace SV.Maat.Reactors
 
                 if (entry == null)
                 {
+                    _logger.LogTrace($"Could not find {e.AggregateId} in projection");
                     return;
                 }
 
                 var syndicatedUrl = network.Syndicate(credentials, entry);
-                
+                _logger.LogTrace($"Syndicated {e.AggregateId} as {syndicatedUrl}");
                 _commandHandler.Handle<Entry>(e.AggregateId, new PublishSyndication { SyndicationUrl = syndicatedUrl });
             }
 
