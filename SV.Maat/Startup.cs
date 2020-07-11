@@ -18,6 +18,7 @@ using SV.Maat.lib.Pipelines;
 using SV.Maat.Reactors;
 using SV.Maat.ExternalNetworks;
 using SV.Maat.lib;
+using SV.Maat.Mastodon;
 
 namespace SV.Maat
 {
@@ -74,12 +75,13 @@ namespace SV.Maat
             services.AddTransient<ISyndicationStore, SyndicationStore>();
             services.AddTransient<IAuthenticationRequestStore, AuthenticationRequestStore>();
             services.AddTransient<IAccessTokenStore, AccessTokenStore>();
+            
             services.AddSingleton(typeof(TokenSigning));
 
             services.AddTransient(typeof(CommandHandler));
 
-            services.AddTransient<ISyndicationNetwork, Twitter>();
-            //services.AddTransient<ISyndicationNetwork, Mastodon>();
+            services.AddTwitter();
+            services.AddTransient<ISyndicationNetwork, Mastodon.Mastodon>();
             services.AddTransient<ISyndicationNetwork, Pinboard>();
 
             services.AddPipelines();

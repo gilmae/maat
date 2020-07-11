@@ -61,22 +61,23 @@ namespace SV.Maat.Syndications
 
             var network = _externalNetworks.First(n => n.Name.ToLower() == model.Network.ToString().ToLower());
 
-            if (network is IRequiresFederatedInstance)
+            if (network is IRequiresFederatedInstance || network is IRequiresCredentialEntry || network is IRequiresBearerToken)
             {
-                return new RedirectToActionResult("EnterInstance", "Syndications", new { id });
+                ViewBag.id = id;
+                ViewBag.showInstance = network is IRequiresFederatedInstance;
+                ViewBag.showCredentials = network is IRequiresCredentialEntry;
+                ViewBag.showBearerToken = network is IRequiresBearerToken;
+
+                return View("EnterDetails");
             }
             else if (network is IRequiresOAuthRegistration)
             {
                 var returnUrl = (network as IRequiresOAuthRegistration).GetAuthorizeLink(Url.ActionLink("CompleteRegistration", "Syndications", new { id })).AbsoluteUri;
                 return new RedirectResult(returnUrl);
             }
-            else if (network is IRequiresCredentialEntry)
-            {
-                return new RedirectResult(Url.ActionLink("EnterCredentials", "Syndications", new { id }));
-            }
 
-            return Ok();
-            
+            return Redirect(Url.ActionLink("Index"));
+
         }
 
         [HttpGet]
@@ -107,38 +108,33 @@ namespace SV.Maat.Syndications
         }
 
         [HttpGet]
-        [Route("register/instance")]
+        [Route("register/details")]
         [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
-        public ActionResult EnterInstance([FromQuery] int id)
+        public ActionResult EnterDetails([FromQuery] int id)
         {
             ViewBag.id = id;
             return View();
         }
 
         [HttpPost]
-        [Route("register/instance")]
+        [Route("register/details")]
         [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
-        public ActionResult EnterInstance([FromForm] int id, [FromForm] string instanceName)
+        public ActionResult EnterDetails([FromForm] DetailsViewModel model)
         {
-            Syndication syndication = _syndicationStore.Find(id);
+            Syndication syndication = _syndicationStore.Find(model.id);
 
-            syndication.Credentials = _tokenSigning.Encrypt(new Credentials { Instance = instanceName });
-            
+            if (syndication == null)
+            {
+                return NotFound();
+            }
+
+            var credentials = new Credentials { Uid = model.identity, Secret = model.secret, Instance=model.instance };
+            syndication.Credentials = _tokenSigning.Encrypt(credentials);
+            syndication.AccountName = model.name;
+
             _syndicationStore.Update(syndication);
 
-            var network = _externalNetworks.First(n => n.Name.ToLower() == syndication.Network.ToLower()) as IRequiresOAuthRegistration;
-
-            if (network is IRequiresOAuthRegistration)
-            {
-                var returnUrl = network.GetAuthorizeLink(Url.ActionLink("CompleteRegistration", "Syndications", new { id })).AbsoluteUri;
-                return new RedirectResult(returnUrl);
-            }
-            else if (network is IRequiresCredentialEntry)
-            {
-                return new RedirectResult(Url.ActionLink("EnterCredentials", "Syndications", new { id }));
-            }
-
-            return Ok();
+            return Redirect(Url.ActionLink("Index"));
         }
 
         [HttpGet]

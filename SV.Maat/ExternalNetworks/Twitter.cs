@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CoreTweet;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using StrangeVanilla.Blogging.Events;
 using SV.Maat.lib;
 
@@ -74,12 +75,20 @@ namespace SV.Maat.ExternalNetworks
                 AccessTokenSecret = credentials.Secret
             };
             var client = tokens.Account.VerifyCredentials();
-
+            
             var response = tokens.Statuses.Update(ContentHelper.GetPlainText(entry.Body));
 
             return $"{Url}/{client.ScreenName}/statuses/{response.Id}";
 
         }
 
+    }
+
+    public static class ServicesExtensions
+    {
+        public static void AddTwitter(this IServiceCollection services)
+        {
+            services.AddTransient<ISyndicationNetwork, Twitter>();
+        }
     }
 }

@@ -9,7 +9,6 @@ namespace SV.Maat.lib.Pipelines
             Pipeline pipeline = new Pipeline();
             services.AddSingleton(typeof(Pipeline), pipeline);
             services.AddTransient(typeof(PipelineBuilder));
-
         }
     }
 
