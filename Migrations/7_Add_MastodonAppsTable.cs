@@ -8,12 +8,12 @@ namespace Migrations
     {
         public override void Down()
         {
-            Delete.Table("application");
+            Delete.Table("mastodonapps");
         }
 
         public override void Up()
         {
-            Create.Table("application")
+            Create.Table("mastodonapps")
                 .WithColumn("id").AsInt32().PrimaryKey().Identity()
                 .WithColumn("instance").AsString(256)
                 .WithColumn("authenticationclient").AsString();

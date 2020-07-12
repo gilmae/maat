@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using CoreTweet;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StrangeVanilla.Blogging.Events;
@@ -42,8 +43,11 @@ namespace SV.Maat.ExternalNetworks
             return context.AuthorizeUri;
         }
 
-        public Credentials GetToken(string redirectUri, string oauth_token, string oauth_verifier)
+        public Credentials GetToken(string redirectUri, IQueryCollection query)
         {
+            string oauth_token = query["oauth_token"].FirstOrDefault();
+            string oauth_verifier = query["oauth_verifier"].FirstOrDefault();
+
             OAuth.OAuthSession context = new OAuth.OAuthSession() { RequestToken = oauth_token, ConsumerKey = ConsumerKey, ConsumerSecret = ConsumerKeySecret };
             var tokens =  context.GetTokens(oauth_verifier);
             

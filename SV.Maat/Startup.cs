@@ -81,7 +81,7 @@ namespace SV.Maat
             services.AddTransient(typeof(CommandHandler));
 
             services.AddTwitter();
-            services.AddTransient<ISyndicationNetwork, Mastodon.Mastodon>();
+            services.AddMastodon();
             services.AddTransient<ISyndicationNetwork, Pinboard>();
 
             services.AddPipelines();

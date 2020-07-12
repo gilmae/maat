@@ -83,12 +83,19 @@ namespace SV.Maat.Syndications
         [HttpGet]
         [Route("register/complete")]
         [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
-        public ActionResult CompleteRegistration([FromQuery] int id, [FromQuery] string oauth_token, [FromQuery] string oauth_verifier)
+        public ActionResult CompleteRegistration([FromQuery] int id)
         {
             Syndication syndication = _syndicationStore.Find(id);
             var network = _externalNetworks.First(n => n.Name.ToLower() == syndication.Network.ToLower()) as IRequiresOAuthRegistration;
 
-            var tokens = network.GetToken(Url.ActionLink("CompleteRegistration", "Syndications", new { id }), oauth_token, oauth_verifier);
+            GetUserOAuthToken(syndication, network);
+
+            return Redirect(Url.ActionLink("Index"));
+        }
+
+        private void GetUserOAuthToken(Syndication syndication, IRequiresOAuthRegistration network)
+        {
+            var tokens = network.GetToken(Url.ActionLink("CompleteRegistration", "Syndications", new { syndication.id }), Request.Query);
 
             Credentials credentials = new Credentials();
             if (!string.IsNullOrEmpty(syndication.Credentials))
@@ -103,8 +110,6 @@ namespace SV.Maat.Syndications
             syndication.AccountName = network.GetProfileUrl(tokens);
 
             _syndicationStore.Update(syndication);
-
-            return Redirect(Url.ActionLink("Index"));
         }
 
         [HttpGet]
@@ -127,12 +132,26 @@ namespace SV.Maat.Syndications
             {
                 return NotFound();
             }
+                        
+            var network = _externalNetworks.First(n => n.Name.ToLower() == syndication.Network.ToLower());
 
-            var credentials = new Credentials { Uid = model.identity, Secret = model.secret, Instance=model.instance };
-            syndication.Credentials = _tokenSigning.Encrypt(credentials);
-            syndication.AccountName = model.name;
+            if (network is IRequiresFederatedInstance)
+            {
+                ((IRequiresFederatedInstance)network).RegisterApp(model.instance, "Maat", "http://davidedgar.me", Url.ActionLink("CompleteRegistration", "Syndications"));
+            }
 
-            _syndicationStore.Update(syndication);
+            if (network is IRequiresBearerToken || network is IRequiresCredentialEntry)
+            {
+                var credentials = new Credentials { Uid = model.identity, Secret = model.secret, Instance = model.instance };
+                syndication.Credentials = _tokenSigning.Encrypt(credentials);
+                syndication.AccountName = model.name;
+
+                _syndicationStore.Update(syndication);
+            }
+            else if (network is IRequiresOAuthRegistration)
+            {
+                GetUserOAuthToken(syndication, network as IRequiresOAuthRegistration);
+            }
 
             return Redirect(Url.ActionLink("Index"));
         }
