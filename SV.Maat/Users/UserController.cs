@@ -26,10 +26,10 @@ namespace SV.Maat.Users
         }
 
         [HttpGet]
-        [Route("{id}")]
-        public ActionResult View(long id)
+        [Route("{username}")]
+        public ActionResult View(string username)
         {
-            var user = _userStore.Find(id);
+            var user = _userStore.FindByUsername(username).FirstOrDefault();
             ViewBag.auth_endpoint = this.Url.ActionLink("AuthenticationRequest", "IndieAuth"); //"https://" + Path.Join(HttpContext.Request.Host.ToString(), "auth");
             ViewBag.token_endpoint = this.Url.ActionLink("TokenRequest", "IndieAuth");
 
