@@ -50,7 +50,7 @@ namespace SV.Maat.Mastodon
         {
             var account = GetAccount(credentials.Secret);
 
-            return account["url"];
+            return account.Url.ToString();
         }
 
         public Credentials GetToken(string redirectUri, IQueryCollection query)
@@ -113,7 +113,7 @@ namespace SV.Maat.Mastodon
             return System.Text.Json.JsonSerializer.Deserialize<Token>(MakeFormPost($"{instance}/api/v1/apps", data));
         }
 
-        private Dictionary<string,string> GetAccount(string token)
+        private Account GetAccount(string token)
         {
             if (App == null)
             {
@@ -122,7 +122,7 @@ namespace SV.Maat.Mastodon
 
             string uri = $"{App.instance}/api/v1/accounts/verify_credentials";
 
-            return System.Text.Json.JsonSerializer.Deserialize<Dictionary<string,string> > (MakeGet(uri, token));
+            return System.Text.Json.JsonSerializer.Deserialize<Account>(MakeGet(uri, token));
         }
 
         private Status PostStatus(string status, string[] media_ids, string token)
