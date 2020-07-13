@@ -1,17 +1,18 @@
-﻿@page
-@model SV.Maat.Users.Models.User
+﻿@model SV.Maat.Users.Models.User
 @{
+    Layout = "_Layout";
+    ViewBag.Title = $"User page for {Model.Name}";
 }
-<!DOCTYPE html>
-<html>
-<head>
+@section head { 
     <link rel="authorization_endpoint" href="@ViewBag.auth_endpoint">
     <link rel="token_endpoint" href="@ViewBag.token_endpoint">
     <link rel="micropub" href="@Url.Action("Publish", "Micropub")">
-</head>
-<body>
-    <h1>@Html.DisplayFor(m => m.Name)</h1>
-</body>
-</html>
+}
+
+<h1>Maat</h1>
+
+<section class="vcard">
+    <h2><a class="fn url" href="@Url.Action("View", "User", new { username = Model.Name })">@Html.DisplayFor(m => m.Name)</h2>
+</section>
 
 
