@@ -12,6 +12,7 @@ using System.IO;
 using Microsoft.AspNetCore.Http;
 using System.Linq;
 using System.Collections.Generic;
+using SV.Maat.lib;
 
 namespace SV.Maat.Mastodon
 {
@@ -94,20 +95,22 @@ namespace SV.Maat.Mastodon
 
         public string Syndicate(Credentials credentials, Entry entry)
         {
-            throw new NotImplementedException();
+            var status = PostStatus(ContentHelper.GetPlainText(entry.Body), new string[] { }, credentials.Secret);
+
+            return status.Url.ToString();
         }
 
         private AppRegistration RegisterAppOnInstance(string instance, string name, string returnurls, string url)
         {
             string data = $"client_name={name}&redirect_uris={returnurls}&scopes=read+write+follow+push&website={url}";
-            return System.Text.Json.JsonSerializer.Deserialize<AppRegistration>(MakePost($"{instance}/api/v1/apps", data));
+            return System.Text.Json.JsonSerializer.Deserialize<AppRegistration>(MakeFormPost($"{instance}/api/v1/apps", data));
 
         }
 
         private Token GetTokenFromInstance(string instance, string code, string client_id, string client_secret, string redirect_uri)
         {
             string data = $"client_id={client_id}&client_secret={client_secret}&redirect_uri={redirect_uri}&grant_type=authorization_code&code={code}&scope=read+write+follow+push";
-            return System.Text.Json.JsonSerializer.Deserialize<Token>(MakePost($"{instance}/api/v1/apps", data));
+            return System.Text.Json.JsonSerializer.Deserialize<Token>(MakeFormPost($"{instance}/api/v1/apps", data));
         }
 
         private Dictionary<string,string> GetAccount(string token)
@@ -122,11 +125,38 @@ namespace SV.Maat.Mastodon
             return System.Text.Json.JsonSerializer.Deserialize<Dictionary<string,string> > (MakeGet(uri, token));
         }
 
-        private string MakePost(string uri, string data)
+        private Status PostStatus(string status, string[] media_ids, string token)
+        {
+            var payload = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                status,
+                media_ids
+            });
+
+            var result = MakeJsonPost($"{App.instance}/api/v1/statuses", payload, token);
+
+            return System.Text.Json.JsonSerializer.Deserialize<Status>(result);
+        }
+
+        private string MakeJsonPost(string uri, string data, string token = "")
+        {
+            return MakePost(uri, data, "application/json", token);
+        }
+
+        private string MakeFormPost(string uri, string data, string token = "")
+        {
+            return MakePost(uri, data, "application/x-www-form-urlencoded", token);
+        }
+
+        private string MakePost(string uri, string data, string contentType, string token = "")
         {
             WebRequest r = WebRequest.Create(uri);
             r.Method = "POST";
-            r.ContentType = "application/x-www-form-urlencoded";
+            if (!string.IsNullOrEmpty(token))
+            {
+                r.Headers.Add(HttpRequestHeader.Authorization, $"Bearer: {token}");
+            }
+            r.ContentType = contentType;
             using (var s = r.GetRequestStream())
             {
                 s.Write(Encoding.ASCII.GetBytes(data));
@@ -145,7 +175,7 @@ namespace SV.Maat.Mastodon
             }
         }
 
-        private string MakeGet(string uri, string token)
+        private string MakeGet(string uri, string token = "")
         {
             WebRequest r = WebRequest.Create(uri);
             if (!string.IsNullOrEmpty(token))
