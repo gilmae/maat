@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace SV.Maat.Mastodon
 {
     public partial class Account
     {
+        public Account() { }
         [JsonPropertyName("id")]
         public string Id { get; set; }
 
@@ -63,9 +65,9 @@ namespace SV.Maat.Mastodon
         public DateTimeOffset LastStatusAt { get; set; }
 
         [JsonPropertyName("emojis")]
-        public object[] Emojis { get; set; }
+        public IEnumerable<Emoji> Emojis { get; set; }
 
         [JsonPropertyName("fields")]
-        public Field[] Fields { get; set; }
+        public IEnumerable<Field> Fields { get; set; }
     }
 }

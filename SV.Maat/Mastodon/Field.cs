@@ -5,6 +5,7 @@ namespace SV.Maat.Mastodon
 {
     public partial class Field
     {
+        public Field() { }
         [JsonPropertyName("name")]
         public string Name { get; set; }
 

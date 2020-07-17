@@ -87,6 +87,7 @@ namespace SV.Maat.Syndications
         {
             Syndication syndication = _syndicationStore.Find(id);
             var network = _externalNetworks.First(n => n.Name.ToLower() == syndication.Network.ToLower()) as IRequiresOAuthRegistration;
+           
 
             GetUserOAuthToken(syndication, network);
 
@@ -95,9 +96,20 @@ namespace SV.Maat.Syndications
 
         private void GetUserOAuthToken(Syndication syndication, IRequiresOAuthRegistration network)
         {
+            Credentials credentials = new Credentials();
+
+            if (!string.IsNullOrEmpty(syndication.Credentials))
+            {
+                credentials = _tokenSigning.Decrypt<Credentials>(syndication.Credentials);
+            }
+
+            if (network is IRequiresFederatedInstance)
+            {
+                ((IRequiresFederatedInstance)network).SetInstance(credentials.Instance);
+            }
+
             var tokens = network.GetToken(Url.ActionLink("CompleteRegistration", "Syndications", new { syndication.id }), Request.Query);
 
-            Credentials credentials = new Credentials();
             if (!string.IsNullOrEmpty(syndication.Credentials))
             {
                 credentials = _tokenSigning.Decrypt<Credentials>(syndication.Credentials);
@@ -135,14 +147,22 @@ namespace SV.Maat.Syndications
                         
             var network = _externalNetworks.First(n => n.Name.ToLower() == syndication.Network.ToLower());
 
+            var credentials = new Credentials();
             if (network is IRequiresFederatedInstance)
             {
                 ((IRequiresFederatedInstance)network).RegisterApp(model.instance, "Maat", "http://davidedgar.me", Url.ActionLink("CompleteRegistration", "Syndications"));
+                credentials.Instance = model.instance;
+                syndication.Credentials = _tokenSigning.Encrypt(credentials);
+                syndication.AccountName = model.name;
+                _syndicationStore.Update(syndication);
             }
 
             if (network is IRequiresBearerToken || network is IRequiresCredentialEntry)
             {
-                var credentials = new Credentials { Uid = model.identity, Secret = model.secret, Instance = model.instance };
+                credentials.Uid = model.identity;
+                credentials.Secret = model.secret;
+                credentials.Instance = model.instance;
+
                 syndication.Credentials = _tokenSigning.Encrypt(credentials);
                 syndication.AccountName = model.name;
 
@@ -150,7 +170,9 @@ namespace SV.Maat.Syndications
             }
             else if (network is IRequiresOAuthRegistration)
             {
-                GetUserOAuthToken(syndication, network as IRequiresOAuthRegistration);
+                var returnUrl = (network as IRequiresOAuthRegistration).GetAuthorizeLink(Url.ActionLink("CompleteRegistration", "Syndications", new { model.id })).AbsoluteUri;
+                return new RedirectResult(returnUrl);
+
             }
 
             return Redirect(Url.ActionLink("Index"));

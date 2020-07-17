@@ -4,10 +4,11 @@ namespace SV.Maat.Mastodon
 {
     public partial class Application
     {
+        public Application() { }
         [JsonPropertyName("name")]
         public string Name { get; set; }
 
         [JsonPropertyName("website")]
-        public object Website { get; set; }
+        public string Website { get; set; }
     }
 }

@@ -1,10 +1,7 @@
 ﻿using System;
 using StrangeVanilla.Blogging.Events;
 using SV.Maat.ExternalNetworks;
-using Mastonet;
 using SV.Maat.IndieAuth;
-using Mastonet.Entities;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Text;
@@ -13,6 +10,8 @@ using Microsoft.AspNetCore.Http;
 using System.Linq;
 using System.Collections.Generic;
 using SV.Maat.lib;
+using RestSharp;
+using RestSharp.Authenticators;
 
 namespace SV.Maat.Mastodon
 {
@@ -77,7 +76,6 @@ namespace SV.Maat.Mastodon
                 var registration = RegisterAppOnInstance(instance, name, returnUrls, url);
                 app = new MastodonApp { instance = instance, authenticationclient = _tokenSigning.Encrypt(registration) };
                 _appStore.Insert(app);
-
             }
 
             App = app;
@@ -95,22 +93,73 @@ namespace SV.Maat.Mastodon
 
         public string Syndicate(Credentials credentials, Entry entry)
         {
-            var status = PostStatus(ContentHelper.GetPlainText(entry.Body), new string[] { }, credentials.Secret);
+            if (App == null)
+            {
+                SetInstance(credentials.Instance);
+                if (App == null)
+                {
+                    throw new ArgumentException("Mastodon Application not set.");
+                }
+            }
 
-            return status.Url.ToString();
+            var client = new RestClient(App.instance);
+            client.Authenticator = new OAuth2AuthorizationRequestHeaderAuthenticator(credentials.Secret, "Bearer");
+
+            var media_ids = entry.AssociatedMedia.Select(m =>
+            {
+                var media_request = new RestRequest("api/v2/media");
+                byte[] data = Downloader.Download(m.Url).Result;
+                media_request.AddFileBytes("file", data, Guid.NewGuid().ToString(), m.Type);
+                media_request.AddParameter("description", m.Description);
+                var response = client.Post<Attachment>(media_request);
+                return response?.Data?.Id;
+            }).ToList();
+
+            var request = new RestRequest("api/v1/statuses")
+                .AddJsonBody(new
+                {
+                    status = ContentHelper.GetPlainText(entry.Body),
+                    media_ids
+                });
+            var response = client.Post<Status>(request);
+            return response?.Data?.Url?.ToString();
         }
 
         private AppRegistration RegisterAppOnInstance(string instance, string name, string returnurls, string url)
         {
+            var client = new RestClient(instance);
+            var request = new RestRequest("oauth/token", DataFormat.Json)
+                .AddJsonBody(new
+                {
+                    client_name = name,
+                    redirect_urls = returnurls,
+                    website = url,
+                    scope = "read write follow push"
+                });
             string data = $"client_name={name}&redirect_uris={returnurls}&scopes=read+write+follow+push&website={url}";
-            return System.Text.Json.JsonSerializer.Deserialize<AppRegistration>(MakeFormPost($"{instance}/api/v1/apps", data));
+            var response = client.Post<AppRegistration>(request);
 
+            return response.Data;
         }
 
         private Token GetTokenFromInstance(string instance, string code, string client_id, string client_secret, string redirect_uri)
         {
-            string data = $"client_id={client_id}&client_secret={client_secret}&redirect_uri={redirect_uri}&grant_type=authorization_code&code={code}&scope=read+write+follow+push";
-            return System.Text.Json.JsonSerializer.Deserialize<Token>(MakeFormPost($"{instance}/api/v1/apps", data));
+            var client = new RestClient(instance);
+
+            var request = new RestRequest("oauth/token", DataFormat.Json)
+                .AddJsonBody(new
+                {
+                    client_id,
+                    client_secret,
+                    redirect_uri,
+                    code,
+                    grant_type = "authorization_code",
+                    scope = "read write follow push"
+                });
+
+
+            var response = client.Post<Token>(request);
+            return response.Data;
         }
 
         private Account GetAccount(string token)
@@ -120,84 +169,15 @@ namespace SV.Maat.Mastodon
                 throw new ArgumentException("Mastodon Application not set.");
             }
 
-            string uri = $"{App.instance}/api/v1/accounts/verify_credentials";
-
-            return System.Text.Json.JsonSerializer.Deserialize<Account>(MakeGet(uri, token));
+            var client = new RestClient(App.instance);
+            client.Authenticator = new OAuth2AuthorizationRequestHeaderAuthenticator(token, "Bearer");
+            var request = new RestRequest("api/v1/accounts/verify_credentials");
+            
+            var response = client.Get<Account>(request);
+            return response.Data;
         }
 
-        private Status PostStatus(string status, string[] media_ids, string token)
-        {
-            var payload = System.Text.Json.JsonSerializer.Serialize(new
-            {
-                status,
-                media_ids
-            });
-
-            var result = MakeJsonPost($"{App.instance}/api/v1/statuses", payload, token);
-
-            return System.Text.Json.JsonSerializer.Deserialize<Status>(result);
-        }
-
-        private string MakeJsonPost(string uri, string data, string token = "")
-        {
-            return MakePost(uri, data, "application/json", token);
-        }
-
-        private string MakeFormPost(string uri, string data, string token = "")
-        {
-            return MakePost(uri, data, "application/x-www-form-urlencoded", token);
-        }
-
-        private string MakePost(string uri, string data, string contentType, string token = "")
-        {
-            WebRequest r = WebRequest.Create(uri);
-            r.Method = "POST";
-            if (!string.IsNullOrEmpty(token))
-            {
-                r.Headers.Add(HttpRequestHeader.Authorization, $"Bearer: {token}");
-            }
-            r.ContentType = contentType;
-            using (var s = r.GetRequestStream())
-            {
-                s.Write(Encoding.ASCII.GetBytes(data));
-            }
-            using (var resp = r.GetResponse())
-            {
-                using (var s = resp.GetResponseStream())
-                {
-                    using (var reader = new StreamReader(s))
-                    {
-                        var body = reader.ReadToEnd();
-                        return body;
-                    }
-                }
-
-            }
-        }
-
-        private string MakeGet(string uri, string token = "")
-        {
-            WebRequest r = WebRequest.Create(uri);
-            if (!string.IsNullOrEmpty(token))
-            {
-                r.Headers.Add(HttpRequestHeader.Authorization, $"Bearer: {token}");
-            }
-            using (var resp = r.GetResponse())
-            {
-                using (var s = resp.GetResponseStream())
-                {
-                    using (var reader = new StreamReader(s))
-                    {
-                        var body = reader.ReadToEnd();
-                        return body;
-                    }
-                }
-
-            }
-        }
-
-
-
+        
         private class AppRegistration
         {
             public string id { get; set; }

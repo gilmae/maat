@@ -1,10 +1,11 @@
-﻿using System;
+﻿    using System;
 using System.Text.Json.Serialization;
 
 namespace SV.Maat.Mastodon
 {
-    public partial class Card
+    public class Card
     {
+        public Card() { }
         [JsonPropertyName("url")]
         public Uri Url { get; set; }
 
@@ -39,7 +40,7 @@ namespace SV.Maat.Mastodon
         public long Height { get; set; }
 
         [JsonPropertyName("image")]
-        public object Image { get; set; }
+        public string Image { get; set; }
 
         [JsonPropertyName("embed_url")]
         public string EmbedUrl { get; set; }
