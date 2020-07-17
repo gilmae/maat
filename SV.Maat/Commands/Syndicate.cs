@@ -22,8 +22,8 @@ namespace SV.Maat.Commands
         {
             return aggregate is Entry
                 && (
-                    ((Entry)aggregate).Syndications == null
-                    || ((Entry)aggregate).Syndications.Contains(SyndicationAccount)
+                    ((Entry)aggregate).SyndicateTo == null
+                    || ((Entry)aggregate).SyndicateTo.Contains(SyndicationAccount)
                 );
         }
     }

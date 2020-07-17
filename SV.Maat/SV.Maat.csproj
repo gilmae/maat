@@ -27,6 +27,7 @@
     <PackageReference Include="NLog" Version="4.7.2" />
     <PackageReference Include="CoreTweet" Version="1.0.0.483" />
     <PackageReference Include="pinboard.net" Version="1.0.0" />
+    <PackageReference Include="RestSharp" Version="106.11.4" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="lib\" />
@@ -51,6 +52,7 @@
     <Folder Include="Syndications\Views\" />
     <Folder Include="Shared\" />
     <Folder Include="Shared\Views\" />
+    <Folder Include="Mastodon\" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Users\Views\View.cshtml">
