@@ -20,9 +20,9 @@ namespace SV.Maat.lib
                 byte[] data = new byte[response.ContentLength];
                 var stream = response.GetResponseStream();
 
-                for (int ii = 0; ii < response.ContentLength; ii += 1000)
+                for (int ii = 0; ii < response.ContentLength; ii += 1)
                 {
-                    stream.Read(data, ii, 1000);
+                    stream.Read(data, ii, 1);
                 }
 
                 return data;
