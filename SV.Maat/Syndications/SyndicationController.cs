@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using SV.Maat.ExternalNetworks;
 using SV.Maat.IndieAuth;
 using SV.Maat.IndieAuth.Middleware;
+using SV.Maat.lib;
 using SV.Maat.Syndications.Models;
 
 namespace SV.Maat.Syndications
@@ -43,7 +44,7 @@ namespace SV.Maat.Syndications
         [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
         public ActionResult Index()
         {
-            int userId = int.Parse(this.User.Claims.First(c => c.Type == ClaimTypes.Sid)?.Value);
+            int userId = this.UserId().GetValueOrDefault();
             ViewBag.Syndications = _syndicationStore.FindByUser(userId);
             ViewBag.networks = _externalNetworks.Select(n => new SyndicationNetwork { name = n.Name, url = n.Url, photo = n.Photo }).ToList();
 
@@ -55,7 +56,7 @@ namespace SV.Maat.Syndications
         [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
         public ActionResult Register([FromForm] RegisterSyndicationModel model)
         {
-            int userId = int.Parse(this.User.Claims.First(c => c.Type == ClaimTypes.Sid)?.Value);
+            int userId = this.UserId().GetValueOrDefault();
             Syndication syndication = new Syndication { AccountName = "Pending", Network = model.Network.ToString(), UserId = userId };
             var id = _syndicationStore.Insert(syndication);
 
