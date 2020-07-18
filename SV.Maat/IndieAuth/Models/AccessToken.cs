@@ -2,7 +2,7 @@
 using System.Text.Json.Serialization;
 using System.Text;
 using System.Text.Json;
-using SV.Maat.lib.Repository;
+using SimpleRepo;
 
 namespace SV.Maat.IndieAuth.Models
 {

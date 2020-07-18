@@ -4,13 +4,13 @@ using System.Linq;
 using Dapper;
 using Microsoft.Extensions.Configuration;
 using SV.Maat.IndieAuth.Models;
-using SV.Maat.lib.Repository;
+using SimpleRepo;
 
 namespace SV.Maat.IndieAuth
 {
     public class AccessTokenStore : RepositoryBase<AccessToken>, IAccessTokenStore
     {
-        public AccessTokenStore(IConfiguration config) : base(config.GetConnectionString("maat"))
+        public AccessTokenStore(IDbContext context) : base(context)
         {
         }
 

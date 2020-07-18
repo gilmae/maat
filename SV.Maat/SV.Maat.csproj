@@ -12,6 +12,12 @@
     <ProjectReference Include="..\StrangeVanilla.Blogging.Events\StrangeVanilla.Blogging.Events.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
+    <ProjectReference Include="..\SimpleRepo\SimpleRepo.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\Users\Users.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Npgsql" Version="4.1.3.1" />
@@ -36,7 +42,6 @@
     <Folder Include="Commands\" />
     <Folder Include="Users\" />
     <Folder Include="Users\Models\" />
-    <Folder Include="lib\Repository\" />
     <Folder Include="Users\Views\" />
     <Folder Include="IndieAuth\Models\" />
     <Folder Include="IndieAuth\Views\" />

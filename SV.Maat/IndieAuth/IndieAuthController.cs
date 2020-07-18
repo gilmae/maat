@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using SV.Maat.IndieAuth.Middleware;
 using SV.Maat.IndieAuth.Models;
 using SV.Maat.lib;
-using SV.Maat.lib.Repository;
+using SimpleRepo;
 
 namespace SV.Maat.IndieAuth
 {

@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
-using SV.Maat.lib.Repository;
+using SimpleRepo;
 
 namespace SV.Maat.IndieAuth.Models
 {

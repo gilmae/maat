@@ -7,10 +7,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SV.Maat.IndieAuth;
-using SV.Maat.IndieAuth.Models;
-using SV.Maat.lib;
 using SV.Maat.Users.Models;
+using Users;
 
 
 namespace SV.Maat.Users

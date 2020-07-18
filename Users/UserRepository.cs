@@ -1,18 +1,12 @@
-﻿using System;
-using SV.Maat.lib.Repository;
-using SV.Maat.Users.Models;
-using Dapper.Contrib.Extensions;
-using Dapper;
+﻿using Dapper;
 using System.Collections.Generic;
-using System.Data;
-using Microsoft.Extensions.Configuration;
-using Npgsql;
+using SimpleRepo;
 
-namespace SV.Maat.Users
+namespace Users
 {
     public class UserStore : RepositoryBase<User>, IUserStore
     {
-        public UserStore(IConfiguration config) : base(config.GetConnectionString("maat"))
+        public UserStore(IDbContext context) : base(context)
         {
 
         }

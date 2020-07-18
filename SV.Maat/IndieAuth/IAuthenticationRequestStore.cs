@@ -1,6 +1,6 @@
 ﻿using System;
 using SV.Maat.IndieAuth.Models;
-using SV.Maat.lib.Repository;
+using SimpleRepo;
 
 namespace SV.Maat.IndieAuth
 {

@@ -1,26 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
-using Dapper;
 using Dapper.Contrib.Extensions;
 using Npgsql;
 
-namespace SV.Maat.lib.Repository
+namespace SimpleRepo
 {
     public class RepositoryBase<T> : IRepository<T> where T : Model
     {
-        public RepositoryBase(string connectionString)
+        public RepositoryBase(IDbContext context)
         {
-            _connectionString = connectionString;
+            _context = context;
         }
 
-        protected string _connectionString;
+        protected IDbContext _context;
 
         protected IDbConnection Connection
         {
             get
             {
-                return new NpgsqlConnection(_connectionString);
+                return _context.GetConnection(); ;
             }
         }
 

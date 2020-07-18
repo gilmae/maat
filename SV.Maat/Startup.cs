@@ -19,6 +19,8 @@ using SV.Maat.Reactors;
 using SV.Maat.ExternalNetworks;
 using SV.Maat.lib;
 using SV.Maat.Mastodon;
+using SimpleRepo;
+using Users;
 
 namespace SV.Maat
 {
@@ -61,6 +63,9 @@ namespace SV.Maat
                 .AddNewtonsoftJson();
 
             services.Configure<CertificateStorage>(Configuration.GetSection("CertificateStorage"));
+
+            services.AddSingleton<IDbContext, PgContext>();
+            services.AddTransient(typeof(DbContextBuilder));
 
             services.AddSingleton<IEventStore<Entry>, PgStore<Entry>>();
             services.AddSingleton<IEventStore<Media>, PgStore<Media>>();
@@ -112,6 +117,11 @@ namespace SV.Maat
             app.UsePipelines(builder =>
             {
                 builder.UseSyndicateEntry();
+            });
+
+            app.UseDbContext(builder =>
+            {
+                builder.UseConnectionStringName("maat");
             });
         }
     }

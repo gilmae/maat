@@ -1,14 +1,12 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Dapper;
-using Microsoft.Extensions.Configuration;
-using SV.Maat.lib.Repository;
+using SimpleRepo;
 
 namespace SV.Maat.Mastodon
 {
     public class MastodonAppStore : RepositoryBase<MastodonApp>, IMastodonAppStore
     {
-        public MastodonAppStore(IConfiguration config) : base(config.GetConnectionString("maat"))
+        public MastodonAppStore(IDbContext context) : base(context)
         {
 
         }

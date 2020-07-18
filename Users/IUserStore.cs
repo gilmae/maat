@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using SV.Maat.lib.Repository;
-using SV.Maat.Users.Models;
+using SimpleRepo;
 
-namespace SV.Maat.Users
+
+namespace Users
 {
     public interface IUserStore : IRepository<User>
     {

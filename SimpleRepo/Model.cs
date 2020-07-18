@@ -1,7 +1,7 @@
 ﻿using System;
 using Dapper.Contrib.Extensions;
 
-namespace SV.Maat.lib.Repository
+namespace SimpleRepo
 {
     public class Model
     {

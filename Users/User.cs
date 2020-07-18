@@ -1,8 +1,6 @@
-﻿using System;
-using Dapper.Contrib.Extensions;
-using SV.Maat.lib.Repository;
+﻿using SimpleRepo;
 
-namespace SV.Maat.Users.Models
+namespace Users
 {
     public class User : Model
     {

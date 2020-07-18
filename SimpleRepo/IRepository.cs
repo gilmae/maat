@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SV.Maat.lib.Repository
+namespace SimpleRepo
 {
     public interface IRepository<T> where T : Model
     {

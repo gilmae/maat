@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using SV.Maat.IndieAuth.Models;
-using SV.Maat.lib.Repository;
+using SimpleRepo;
 
 namespace SV.Maat.IndieAuth
 {

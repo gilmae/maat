@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using Dapper;
 using Microsoft.Extensions.Configuration;
-using SV.Maat.lib.Repository;
+using SimpleRepo;
 using SV.Maat.Syndications.Models;
 
 namespace SV.Maat.Syndications
 {
     public class SyndicationStore : RepositoryBase<Syndication>, ISyndicationStore
     {
-        public SyndicationStore(IConfiguration config) : base(config.GetConnectionString("maat"))
+        public SyndicationStore(IDbContext context) : base(context)
         {
 
         }

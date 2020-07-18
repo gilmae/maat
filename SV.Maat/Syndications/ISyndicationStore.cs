@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using SV.Maat.lib.Repository;
+using SimpleRepo;
 using SV.Maat.Syndications.Models;
 
 namespace SV.Maat.Syndications
