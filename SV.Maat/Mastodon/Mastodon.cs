@@ -128,13 +128,13 @@ namespace SV.Maat.Mastodon
         private AppRegistration RegisterAppOnInstance(string instance, string name, string returnurls, string url)
         {
             var client = new RestClient(instance);
-            var request = new RestRequest("oauth/token", DataFormat.Json)
+            var request = new RestRequest("api/v1/apps", DataFormat.Json)
                 .AddJsonBody(new
                 {
                     client_name = name,
-                    redirect_urls = returnurls,
+                    redirect_uris = returnurls,
                     website = url,
-                    scope = "read write follow push"
+                    scopes = "read write follow push"
                 });
             string data = $"client_name={name}&redirect_uris={returnurls}&scopes=read+write+follow+push&website={url}";
             var response = client.Post<AppRegistration>(request);
