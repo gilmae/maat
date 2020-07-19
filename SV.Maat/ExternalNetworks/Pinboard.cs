@@ -1,8 +1,9 @@
-﻿using System;
-using StrangeVanilla.Blogging.Events;
+﻿using StrangeVanilla.Blogging.Events;
 using pinboard.net;
-using pinboard.net.Models;
+using RestSharp;
+using RestSharp.Authenticators;
 using SV.Maat.lib;
+using System.Text.Json.Serialization;
 
 namespace SV.Maat.ExternalNetworks
 {
@@ -20,22 +21,29 @@ namespace SV.Maat.ExternalNetworks
 
         public string Syndicate(Credentials credentials, Entry entry)
         {
-            using (var pb = new PinboardAPI($"{credentials.Uid}:{credentials.Secret}"))
+
+            RestClient client = new RestClient("https://api.pinboard.in");
+            var request = new RestRequest("v1/posts/add")
+                .AddQueryParameter("url", entry.BookmarkOf)
+                .AddQueryParameter("description", ContentHelper.GetPlainText(entry.Title))
+                .AddQueryParameter("extended", ContentHelper.GetPlainText(entry.Body))
+                .AddQueryParameter("tags", string.Join(',', entry.Categories))
+                .AddQueryParameter("format", "json")
+                .AddQueryParameter("auth_token", $"{credentials.Uid}:{credentials.Secret}");
+
+            var result = client.Get<BookmarkPostResult>(request);
+
+            if (result.Data.ResultCode == "done")
             {
-                Bookmark bookmark = new Bookmark();
-                bookmark.Url = entry.BookmarkOf;
-                bookmark.Description = ContentHelper.GetPlainText(entry.Title);
-                bookmark.Extended = ContentHelper.GetPlainText(entry.Body);
-                bookmark.Tags.AddRange(entry.Categories);
-
-                var result = pb.Posts.Add(bookmark).Result;
-
-                if (result.ResultCode)
-                {
-                    return $"pinboard:{System.Web.HttpUtility.UrlEncode(entry.BookmarkOf)}";
-                }
-                return "";
+                return $"pinboard:{System.Web.HttpUtility.UrlEncode(entry.BookmarkOf)}";
             }
+            return "";
+        }
+
+        public struct BookmarkPostResult
+        {
+            [JsonPropertyName("result_code")]
+            public string ResultCode { get; set; }
         }
     }
 }
