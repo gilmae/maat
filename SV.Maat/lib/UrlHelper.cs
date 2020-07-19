@@ -67,7 +67,7 @@ namespace SV.Maat.lib
 
         public static string GetUserNameFromUrl(this IUrlHelper ctx, string url)
         {
-            var genericUserUrl = ctx.ActionLink("view", "users", new { name = "" }).ToLower();
+            var genericUserUrl = ctx.ActionLink("view", "users", new { username = "-1" }).ToLower();
 
             string prefix = genericUserUrl.Substring(0, genericUserUrl.IndexOf("-1"));
 
