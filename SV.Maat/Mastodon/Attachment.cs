@@ -29,7 +29,7 @@ namespace SV.Maat.Mastodon
         /// For remote images, the remote URL of the original image
         /// </summary>
         [JsonPropertyName("remote_url")]
-        public string? RemoteUrl { get; set; }
+        public string RemoteUrl { get; set; }
 
         /// <summary>
         /// URL of the preview image
@@ -41,7 +41,7 @@ namespace SV.Maat.Mastodon
         /// Shorter URL for the image, for insertion into text (only present on local images)
         /// </summary>
         [JsonPropertyName("text_url")]
-        public string? TextUrl { get; set; }
+        public string TextUrl { get; set; }
 
         ///<summary>
         /// Metadata of the attachment

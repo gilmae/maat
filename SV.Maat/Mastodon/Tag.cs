@@ -23,7 +23,7 @@ namespace SV.Maat.Mastodon
         /// 7-day stats of the hashtag
         /// </summary>
         [JsonPropertyName("history")]
-        public IEnumerable<History>? History { get; set; }
+        public IEnumerable<History> History { get; set; }
     }
 
     public class History
