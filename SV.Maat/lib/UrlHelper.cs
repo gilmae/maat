@@ -65,9 +65,9 @@ namespace SV.Maat.lib
             return Guid.Empty;
         }
 
-        public static int GetUserIdFromUrl(this IUrlHelper ctx, string url)
+        public static string GetUserNameFromUrl(this IUrlHelper ctx, string url)
         {
-            var genericUserUrl = ctx.ActionLink("view", "users", new { id = -1 }).ToLower();
+            var genericUserUrl = ctx.ActionLink("view", "users", new { name = "" }).ToLower();
 
             string prefix = genericUserUrl.Substring(0, genericUserUrl.IndexOf("-1"));
 
@@ -78,7 +78,7 @@ namespace SV.Maat.lib
                 possibleId = possibleId.Substring(0, possibleId.IndexOf("/"));
             }
 
-            return int.Parse(possibleId);
+            return possibleId;
         }
     }
 }

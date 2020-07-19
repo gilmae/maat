@@ -11,6 +11,7 @@ using SV.Maat.IndieAuth.Middleware;
 using SV.Maat.IndieAuth.Models;
 using SV.Maat.lib;
 using SimpleRepo;
+using Users;
 
 namespace SV.Maat.IndieAuth
 {
@@ -21,13 +22,15 @@ namespace SV.Maat.IndieAuth
         
         IAuthenticationRequestStore _authenticationRequestStore;
         IAccessTokenStore _accessTokenStore;
+        IUserStore _userStore
         MicroformatParser mfparser = new MicroformatParser();
         TokenSigning _tokenSigner;
 
-        public IndieAuthController(IAuthenticationRequestStore authenticationRequestStore, IAccessTokenStore accessTokenStore, TokenSigning tokenSigner)
+        public IndieAuthController(IAuthenticationRequestStore authenticationRequestStore, IAccessTokenStore accessTokenStore, IUserStore userStore, TokenSigning tokenSigner)
         {
             _authenticationRequestStore = authenticationRequestStore;
             _accessTokenStore = accessTokenStore;
+            _userStore = userStore;
             _tokenSigner = tokenSigner;
         }
 
@@ -37,6 +40,13 @@ namespace SV.Maat.IndieAuth
         [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
         public IActionResult AuthenticationRequest([FromQuery]AuthenticationRequest model)
         {
+            string username = this.Url.GetUserNameFromUrl(model.UserProfileUrl);
+            User user = _userStore.FindByUsername(username).FirstOrDefault();
+            if (user == null)
+            {
+                return BadRequest("Unknown User");
+            }
+
             if (string.IsNullOrEmpty(model.ResponseType))
             {
                 model.ResponseType = "id";
@@ -46,6 +56,7 @@ namespace SV.Maat.IndieAuth
             {
                 model.Scope = DefaultScope;
             }
+
 
             model.ClientId = CanonicaliseUrl(model.ClientId);
 
@@ -62,7 +73,7 @@ namespace SV.Maat.IndieAuth
             }
             model.AuthorisationCode = "";
             model.AuthCodeExpiresAt = DateTime.UtcNow;
-            model.UserId =  this.Url.GetUserIdFromUrl(model.UserProfileUrl);
+            model.UserId = user.id;
 
             _authenticationRequestStore.Insert(model);
             return View(model);
@@ -157,9 +168,16 @@ namespace SV.Maat.IndieAuth
                 return BadRequest();
             }
 
+            string username = this.Url.GetUserNameFromUrl(request.UserProfileUrl);
+            User user = _userStore.FindByUsername(username).FirstOrDefault();
+            if (user == null)
+            {
+                return BadRequest("Unknown User");
+            }
+
             AccessToken token = new AccessToken {
                 AuthenticationRequestId = request.id,
-                UserId=this.Url.GetUserIdFromUrl(request.UserProfileUrl),
+                UserId=user.id,
                 Name = request.ClientName,
                 Scope = request.Scope,
                 ClientId = request.ClientId
