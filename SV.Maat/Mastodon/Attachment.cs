@@ -47,25 +47,25 @@ namespace SV.Maat.Mastodon
         /// Metadata of the attachment
         ///</summary>
         [JsonPropertyName("meta")]
-        public AttachmentMeta? Meta { get; set; }
+        public AttachmentMeta Meta { get; set; }
 
         /// <summary>
         /// Description of the attachment
         /// </summary>
         [JsonPropertyName("description")]
-        public string? Description { get; set; }
+        public string Description { get; set; }
     }
 
     public class AttachmentMeta
     {
         [JsonPropertyName("original")]
-        public AttachmentSizeData? Original { get; set; }
+        public AttachmentSizeData Original { get; set; }
 
         [JsonPropertyName("small")]
-        public AttachmentSizeData? Small { get; set; }
+        public AttachmentSizeData Small { get; set; }
 
         [JsonPropertyName("focus")]
-        public AttachmentFocusData? Focus { get; set; }
+        public AttachmentFocusData Focus { get; set; }
     }
 
     public class AttachmentSizeData
@@ -79,13 +79,13 @@ namespace SV.Maat.Mastodon
 
 
         [JsonPropertyName("size")]
-        public string? Size { get; set; }
+        public string Size { get; set; }
 
         [JsonPropertyName("aspect")]
         public double? Aspect { get; set; }
 
         [JsonPropertyName("frame_rate")]
-        public string? FrameRate { get; set; }
+        public string FrameRate { get; set; }
 
         [JsonPropertyName("duration")]
         public double? Duration { get; set; }

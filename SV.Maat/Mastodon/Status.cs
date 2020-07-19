@@ -62,7 +62,7 @@ namespace SV.Maat.Mastodon
         public string Content { get; set; }
 
         [JsonPropertyName("reblog")]
-        public Status? Reblog { get; set; }
+        public Status Reblog { get; set; }
 
         [JsonPropertyName("application")]
         public Application Application { get; set; }
