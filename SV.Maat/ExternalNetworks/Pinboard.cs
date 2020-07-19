@@ -1,7 +1,5 @@
 ﻿using StrangeVanilla.Blogging.Events;
-using pinboard.net;
 using RestSharp;
-using RestSharp.Authenticators;
 using SV.Maat.lib;
 using System.Text.Json.Serialization;
 
