@@ -22,7 +22,7 @@ namespace SV.Maat.IndieAuth
         
         IAuthenticationRequestStore _authenticationRequestStore;
         IAccessTokenStore _accessTokenStore;
-        IUserStore _userStore
+        IUserStore _userStore;
         MicroformatParser mfparser = new MicroformatParser();
         TokenSigning _tokenSigner;
 
