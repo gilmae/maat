@@ -412,3 +412,4 @@ maat
 *.crt
 *.key
 SV.Maat/Media
+.vscode
