@@ -8,7 +8,7 @@
     <link rel="authorization_endpoint" href="@Url.Action("AuthenticationRequest", "IndieAuth")">
     <link rel="token_endpoint" href="@Url.Action("TokenRequest", "IndieAuth")">
 
-    @RenderSection("head")
+    @RenderSection("head", required: false)
 </head>
 <body>
     <header>
