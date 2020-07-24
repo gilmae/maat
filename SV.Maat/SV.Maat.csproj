@@ -58,6 +58,8 @@
     <Folder Include="Shared\Views\" />
     <Folder Include="Mastodon\" />
     <Folder Include="wwwroot\" />
+    <Folder Include="Home\" />
+    <Folder Include="Home\Views\" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Users\Views\View.cshtml">

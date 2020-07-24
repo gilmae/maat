@@ -3,12 +3,6 @@
     Layout = "_Layout";
     ViewBag.Title = $"User page for {Model.Name}";
 }
-@section head { 
-    <link rel="authorization_endpoint" href="@ViewBag.auth_endpoint">
-    <link rel="token_endpoint" href="@ViewBag.token_endpoint">
-    <link rel="micropub" href="@Url.Action("Publish", "Micropub")">
-}
-
 
 <section class="vcard">
     <h2><a class="fn url" href="@Url.Action("View", "User", new { username = Model.Name })">@Html.DisplayFor(m => m.Name)</h2>

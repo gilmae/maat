@@ -4,6 +4,9 @@
 <head>
     <meta name="viewport" content="width=device-width" />
     <title>@ViewBag.Title</title>
+    <link rel="micropub" href="@Url.Action("Publish", "Micropub")">
+    <link rel="authorization_endpoint" href="@Url.Action("AuthenticationRequest", "IndieAuth")">
+    <link rel="token_endpoint" href="@Url.Action("TokenRequest", "IndieAuth")">
 
     @RenderSection("head")
 </head>
