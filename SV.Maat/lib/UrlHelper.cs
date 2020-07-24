@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using StrangeVanilla.Blogging.Events;
@@ -67,18 +68,14 @@ namespace SV.Maat.lib
 
         public static string GetUserNameFromUrl(this IUrlHelper ctx, string url)
         {
-            var genericUserUrl = ctx.ActionLink("view", "users", new { username = "-1" }).ToLower();
+            // User urls are in the format <host>/user/{username}
 
-            string prefix = genericUserUrl.Substring(0, genericUserUrl.IndexOf("-1"));
+            Uri uri = new Uri(url);
+            var parts = uri.AbsolutePath.Split("/").Where(p => !string.IsNullOrEmpty(p)).ToArray();
 
-            string possibleId = url.ToLower().Replace(prefix, "");
+            string username = parts[1];
 
-            if (possibleId.Contains("/"))
-            {
-                possibleId = possibleId.Substring(0, possibleId.IndexOf("/"));
-            }
-
-            return possibleId;
+            return username;
         }
     }
 }
