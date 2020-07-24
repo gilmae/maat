@@ -270,6 +270,10 @@ namespace SV.Maat.Micropub
             public object GetValue(string columnName, Entry entry)
             {
                 object value = _properties[columnName].GetValue(entry);
+                if (value == null) {
+                    return null;
+                }
+
                 switch (columnName)
                 {
                     case "name":
@@ -292,6 +296,10 @@ namespace SV.Maat.Micropub
                     case "content":
                         var contents = new List<object>();
                         var contentArray = (KeyValuePair<ContentType, string>[])value;
+                        if (contentArray == null)
+                        {
+                            return contents;
+                        }
                         foreach (var c in contentArray)
                         {
                             if (c.Key == ContentType.plaintext)
