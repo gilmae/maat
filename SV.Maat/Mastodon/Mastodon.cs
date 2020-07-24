@@ -105,7 +105,7 @@ namespace SV.Maat.Mastodon
             var client = new RestClient(App.instance);
             client.Authenticator = new OAuth2AuthorizationRequestHeaderAuthenticator(credentials.Secret, "Bearer");
 
-            var media_ids = entry.AssociatedMedia.Select(m =>
+            var media_ids = entry.AssociatedMedia?.Select(m =>
             {
                 var media_request = new RestRequest("api/v2/media");
                 byte[] data = Downloader.Download(m.Url).Result;
