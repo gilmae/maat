@@ -79,13 +79,27 @@ namespace SV.Maat.ExternalNetworks
                 AccessTokenSecret = credentials.Secret
             };
             var client = tokens.Account.VerifyCredentials();
-            
-            var response = tokens.Statuses.Update(ContentHelper.GetPlainText(entry.Body));
+
+            var media_ids = new long[] { };
+            if (entry.AssociatedMedia != null)
+            {
+                media_ids = entry.AssociatedMedia.Select(m =>
+                {
+                    byte[] data = Downloader.Download(m.Url).Result;
+    
+                    var response = tokens.Media.Upload(data);
+                    if (response != null && !string.IsNullOrEmpty(m.Description))
+                    {
+                        tokens.Media.Metadata.Create(response.MediaId.ToString(), m.Description);
+                    }
+                    return response?.MediaId ?? 0;
+                }).Where(i => i != 0).ToArray();
+            }
+
+            var response = tokens.Statuses.Update(status: ContentHelper.GetPlainText(entry.Body), media_ids: media_ids);
 
             return $"{Url}/{client.ScreenName}/statuses/{response.Id}";
-
         }
-
     }
 
     public static class ServicesExtensions

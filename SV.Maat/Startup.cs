@@ -56,9 +56,9 @@ namespace SV.Maat
             }).AddScheme<IndieAuthOptions, IndieAuthTokenHandler>(IndieAuthTokenHandler.SchemeName, op => { });
 
 
-            services.AddMvc();
-            services.AddRazorPages();
-            services.AddControllers();
+            services.AddMvc().AddNewtonsoftJson();
+            services.AddRazorPages().AddNewtonsoftJson();
+            services.AddControllers().AddNewtonsoftJson();
 
             services.Configure<CertificateStorage>(Configuration.GetSection("CertificateStorage"));
 
