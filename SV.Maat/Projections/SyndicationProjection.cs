@@ -9,9 +9,9 @@ using StrangeVanilla.Blogging.Events.Entries.Events;
 
 namespace SV.Maat.Projections
 {
-    public class SyndicationProjection : ProjectionBase, ISyndicationsProjection
+    public class SyndicationsProjection : ProjectionBase, ISyndicationsProjection
     {
-        public SyndicationProjection(ILogger<SyndicationProjection> logger, IEventStore<Entry> eventStore) : base(logger, eventStore) { }
+        public SyndicationsProjection(ILogger<SyndicationsProjection> logger, IEventStore<Entry> eventStore) : base(logger, eventStore) { }
 
         private ConcurrentDictionary<string, Guid> syndications = new ConcurrentDictionary<string, Guid>();
         public Guid? GetEntryForSyndication(string url)
