@@ -72,6 +72,10 @@ namespace SV.Maat.Micropub
             {
                 return Delete(post);
             }
+            else if (post.Action == ActionType.undelete.ToString())
+            {
+                return Undelete(post);
+            }
 
             return BadRequest();
         }
@@ -209,6 +213,33 @@ namespace SV.Maat.Micropub
             }
 
             _commandHandler.Handle<Entry>(entryId, new DeleteEntry());
+
+            return Ok();
+        }
+
+        public IActionResult Undelete(MicropubPublishModel model)
+        {
+            if (string.IsNullOrEmpty(model.Url))
+            {
+                return BadRequest(new
+                {
+                    error = "invalid_request",
+                    error_description = "URL was not provided"
+                });
+            }
+
+            Guid entryId = HttpContext.GetEntryIdFromUrl(model.Url);
+
+            if (entryId == Guid.Empty)
+            {
+                return BadRequest(new
+                {
+                    error = "invalid_request",
+                    error_description = "URL could not be parsed."
+                });
+            }
+
+            _commandHandler.Handle<Entry>(entryId, new UndeleteEntry());
 
             return Ok();
         }

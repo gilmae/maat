@@ -46,6 +46,7 @@ namespace SV.Maat.Micropub.Models
     public enum ActionType
     {
         update,
-        delete
+        delete,
+        undelete
     }
 }
