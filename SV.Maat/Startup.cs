@@ -71,6 +71,7 @@ namespace SV.Maat
 
             services.AddSingleton<IEntryProjection, EntryProjection>();
             services.AddSingleton<IRepliesProjection, RepliesProjection>();
+            services.AddSingleton<ISyndicationsProjection, SyndicationsProjection>();
             services.AddSingleton<IProjection<Media>, MemoryProjection<Media>>();
 
             services.AddSingleton<IFileStore, FSStore>();
