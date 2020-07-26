@@ -297,29 +297,26 @@ namespace SV.Maat.Micropub
                         return value.ToString();
                     case "content":
                         var contents = new List<object>();
-                        var contentArray = (KeyValuePair<ContentType, string>[])value;
-                        if (contentArray == null)
+                        var content = (Content)value;
+
+                        if (content == null)
                         {
                             return contents;
                         }
-                        foreach (var c in contentArray)
+
+                        if (content.Type == ContentType.plaintext)
                         {
-                            if (c.Key == ContentType.plaintext)
-                            {
-                                contents.Add(c.Value);
-                            }
-                            else
-                            {
-                                if (c.Key == ContentType.html)
-                                {
-                                    contents.Add(new { html = c.Value });
-                                }
-                                else if (c.Key == ContentType.markdown)
-                                {
-                                    contents.Add(new { markdown = c.Value });
-                                }
-                            }
+                            contents.Add(content.Value);
                         }
+                        else if (content.Type == ContentType.html)
+                        {
+                            contents.Add(new { html = content.Markup, value = content.Value });
+                        }
+                        else if (content.Type == ContentType.markdown)
+                        {
+                            contents.Add(new { markdown = content.Markup, value = content.Value });
+                        }
+
                         return contents;
                     default:
                         return null;

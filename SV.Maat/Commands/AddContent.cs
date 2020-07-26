@@ -9,7 +9,7 @@ namespace SV.Maat.Commands
     public class AddContent : ICommand
     {
         public string[] Name { get; set; }
-        public KeyValuePair<ContentType, string>[] Content { get; set; }
+        public Content Content { get; set; }
         public string BookmarkOf { get; set; }
         
         public bool IsValid(Aggregate aggregate)
@@ -19,7 +19,7 @@ namespace SV.Maat.Commands
 
         public Event GetEvent(int version)
         {
-            return new ContentSet()
+            return new ContentSet2()
             {
                 Body = Content,
                 Title = Name,

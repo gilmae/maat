@@ -110,7 +110,7 @@ namespace SV.Maat.Micropub
 
             string postStatus = post.PostStatus;
 
-            return HandleCreate(new[] { new KeyValuePair<ContentType, string>(ContentType.plaintext, post.Content) }, new []{ post.Title}, post.GetCategories(), media, post.BookmarkOf, post.ReplyTo, postStatus, post.SyndicateTo);
+            return HandleCreate(new Content{Type = ContentType.plaintext, Value = post.Content}, new []{ post.Title}, post.GetCategories(), media, post.BookmarkOf, post.ReplyTo, postStatus, post.SyndicateTo);
         }
 
         private IActionResult Create(MicropubPublishModel post)
@@ -131,7 +131,7 @@ namespace SV.Maat.Micropub
                 syndicateTo = (post.Properties.GetValueOrDefault("mp-syndicate-to") as object[]).Select(x => x.ToString()).ToArray();
             }
 
-            KeyValuePair<ContentType, string>[] content = ContentHelper.ParseContentArray(post.Properties.GetValueOrDefault("content"));
+            Content content = ContentHelper.ParseContentArray(post.Properties.GetValueOrDefault("content"));
             return HandleCreate(content,
                 (post.Properties.GetValueOrDefault("name") as object[])?.Select(x => x.ToString()).ToArray(),
                 categories,
@@ -143,7 +143,7 @@ namespace SV.Maat.Micropub
                 );
         }
 
-        private ActionResult HandleCreate(KeyValuePair<ContentType, string>[] content,
+        private ActionResult HandleCreate(Content content,
             string[] name,
             string[] categories,
             IEnumerable<Entry.MediaLink> media,
@@ -324,7 +324,7 @@ namespace SV.Maat.Micropub
                 commands.Add(new SetContent
                 {
                     Name = values.Contains("name") ? new string[0] : null,
-                    Content = values.Contains("content") ? new KeyValuePair<ContentType, string>[0] : null,
+                    Content = values.Contains("content") ? new Content() : null,
                     BookmarkOf = values.Contains("bookmark-of") ? "" : null
                 });
             }

@@ -5,15 +5,15 @@ using Events;
 
 namespace StrangeVanilla.Blogging.Events.Entries.Events
 {
-    [Obsolete]
-    public class ContentAdded : Event<Entry>
+    public class ContentAdded2 : Event<Entry>
     {
+
         public string[] Title { get; set; }
-        public KeyValuePair<ContentType, string>[] Body { get; set; }
+        public Content Body { get; set; }
         public string BookmarkOf { get; set; }
 
-        public ContentAdded() { }
-        public ContentAdded(Guid entryId)
+        public ContentAdded2() { }
+        public ContentAdded2(Guid entryId)
         {
             AggregateId = entryId;
         }
@@ -22,19 +22,9 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
         {
             base.Apply(aggregate);
 
-
             if (Body != null)
             {
-                Content content = new Content();
-                content.Value = Body.First((k) => k.Key == ContentType.plaintext).Value;
-
-                if (Body.Any(kv => kv.Key != ContentType.plaintext))
-                {
-                    var k = Body.FirstOrDefault(kv => kv.Key != ContentType.plaintext);
-                    content.Type = k.Key;
-                    content.Markup = k.Value;
-                }
-                aggregate.Body = content;
+                aggregate.Body = Body;
             }
 
             if (Title != null)
