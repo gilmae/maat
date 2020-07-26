@@ -6,7 +6,7 @@ namespace StrangeVanilla.Blogging.Events
 {
     public class Entry : Aggregate
     {
-        public string[] Title { get; set; }
+        public Content Title { get; set; }
         public Content Body { get; set; }
         public IList<string> Categories { get; set; }
         public DateTime? PublishedAt { get; set; }

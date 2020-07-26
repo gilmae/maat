@@ -22,7 +22,6 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
         {
             base.Apply(aggregate);
 
-
             if (Body != null)
             {
                 Content content = new Content();
@@ -39,7 +38,11 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
 
             if (Title != null)
             {
-                aggregate.Title = aggregate.Title.Concat(Title).ToArray();
+                if (Title.Count() == 0)
+                {
+                    aggregate.Title = null;
+                }
+                aggregate.Title = new Content { Type = ContentType.plaintext, Value = Title[0] };
             }
 
             if (BookmarkOf != null)

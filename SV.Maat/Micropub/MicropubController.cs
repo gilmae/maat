@@ -110,7 +110,7 @@ namespace SV.Maat.Micropub
 
             string postStatus = post.PostStatus;
 
-            return HandleCreate(new Content{Type = ContentType.plaintext, Value = post.Content}, new []{ post.Title}, post.GetCategories(), media, post.BookmarkOf, post.ReplyTo, postStatus, post.SyndicateTo);
+            return HandleCreate(new Content{Type = ContentType.plaintext, Value = post.Content}, new Content { Type = ContentType.plaintext, Value = post.Title}, post.GetCategories(), media, post.BookmarkOf, post.ReplyTo, postStatus, post.SyndicateTo);
         }
 
         private IActionResult Create(MicropubPublishModel post)
@@ -132,8 +132,9 @@ namespace SV.Maat.Micropub
             }
 
             Content content = ContentHelper.ParseContentArray(post.Properties.GetValueOrDefault("content"));
+            Content name = ContentHelper.ParseContentArray(post.Properties.GetValueOrDefault("name"));
             return HandleCreate(content,
-                (post.Properties.GetValueOrDefault("name") as object[])?.Select(x => x.ToString()).ToArray(),
+                name,
                 categories,
                 photos,
                 post.Properties.GetValueOrDefault("bookmark-of")?[0]?.ToString(),
@@ -144,7 +145,7 @@ namespace SV.Maat.Micropub
         }
 
         private ActionResult HandleCreate(Content content,
-            string[] name,
+            Content name,
             string[] categories,
             IEnumerable<Entry.MediaLink> media,
             string bookmark,
@@ -323,7 +324,7 @@ namespace SV.Maat.Micropub
             {
                 commands.Add(new SetContent
                 {
-                    Name = values.Contains("name") ? new string[0] : null,
+                    Name = values.Contains("name") ? new Content() : null,
                     Content = values.Contains("content") ? new Content() : null,
                     BookmarkOf = values.Contains("bookmark-of") ? "" : null
                 });
@@ -355,7 +356,7 @@ namespace SV.Maat.Micropub
             List<ICommand> commands = new List<ICommand> { };
             commands.Add(new SetContent
             {
-                Name = values.GetValueOrDefault("name"),
+                Name = ContentHelper.ParseContentArray(values.GetValueOrDefault("name")),
                 Content = ContentHelper.ParseContentArray(values.GetValueOrDefault("content")),
                 BookmarkOf = values.GetValueOrDefault("bookmark-of")?[0]?.ToString()
             });
@@ -402,7 +403,7 @@ namespace SV.Maat.Micropub
             List<ICommand> commands = new List<ICommand> { };
             commands.Add(new AddContent
             {
-                Name = values.GetValueOrDefault("name"),
+                Name = ContentHelper.ParseContentArray(values.GetValueOrDefault("name")),
                 Content = ContentHelper.ParseContentArray(values.GetValueOrDefault("content")),
                 BookmarkOf = values.GetValueOrDefault("bookmark-of")?[0]?.ToString()
             });

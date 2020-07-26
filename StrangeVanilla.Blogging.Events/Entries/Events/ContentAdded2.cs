@@ -8,7 +8,7 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
     public class ContentAdded2 : Event<Entry>
     {
 
-        public string[] Title { get; set; }
+        public Content Title { get; set; }
         public Content Body { get; set; }
         public string BookmarkOf { get; set; }
 
@@ -29,7 +29,7 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
 
             if (Title != null)
             {
-                aggregate.Title = aggregate.Title.Concat(Title).ToArray();
+                aggregate.Title = Title;
             }
 
             if (BookmarkOf != null)

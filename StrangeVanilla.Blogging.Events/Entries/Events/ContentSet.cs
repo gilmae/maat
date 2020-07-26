@@ -39,7 +39,12 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
 
             if (Title != null)
             {
-                aggregate.Title = Title;
+                if (Title.Count() == 0)
+                {
+                    aggregate.Title = null;
+                }
+
+                aggregate.Title = new Content { Type = ContentType.plaintext, Value = Title[0] };
             }
 
             if (BookmarkOf != null)

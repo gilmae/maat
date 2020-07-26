@@ -6,7 +6,7 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
     public class ContentSet2 : Event<Entry>
     {
 
-        public string[] Title { get; set; }
+        public Content Title { get; set; }
         public Content Body { get; set; }
         public string BookmarkOf { get; set; }
 

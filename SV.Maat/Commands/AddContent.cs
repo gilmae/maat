@@ -8,7 +8,7 @@ namespace SV.Maat.Commands
 {
     public class AddContent : ICommand
     {
-        public string[] Name { get; set; }
+        public Content Name { get; set; }
         public Content Content { get; set; }
         public string BookmarkOf { get; set; }
         

@@ -277,7 +277,6 @@ namespace SV.Maat.Micropub
 
                 switch (columnName)
                 {
-                    case "name":
                     case "in-reply-to":
                     case "bookmark-of":
                     case "category":
@@ -296,6 +295,7 @@ namespace SV.Maat.Micropub
                     case "post-status":
                         return value.ToString();
                     case "content":
+                    case "name":
                         var contents = new List<object>();
                         var content = (Content)value;
 
