@@ -156,7 +156,7 @@ namespace SV.Maat.Micropub
 
         private ActionResult GetSingleItem(string url, string[] properties)
         {
-            Guid entryId = HttpContext.GetEntryIdFromUrl(url);
+            Guid entryId = new Uri(url).GetEntryIdFromUrl();
             if (entryId == Guid.Empty)
             {
                 return BadRequest(new

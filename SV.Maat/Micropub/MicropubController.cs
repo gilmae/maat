@@ -202,7 +202,7 @@ namespace SV.Maat.Micropub
                 });
             }
 
-            Guid entryId = HttpContext.GetEntryIdFromUrl(model.Url);
+            Guid entryId = new Uri(model.Url).GetEntryIdFromUrl();
 
             if (entryId == Guid.Empty)
             {
@@ -229,7 +229,7 @@ namespace SV.Maat.Micropub
                 });
             }
 
-            Guid entryId = HttpContext.GetEntryIdFromUrl(model.Url);
+            Guid entryId = new Uri(model.Url).GetEntryIdFromUrl();
 
             if (entryId == Guid.Empty)
             {
@@ -255,7 +255,7 @@ namespace SV.Maat.Micropub
                 });
             }
 
-            Guid entryId = HttpContext.GetEntryIdFromUrl(model.Url);
+            Guid entryId = new Uri(model.Url).GetEntryIdFromUrl();
 
             if (entryId == Guid.Empty)
             {

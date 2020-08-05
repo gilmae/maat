@@ -20,11 +20,11 @@ namespace SV.Maat.lib
             return path;
         }
 
-        public static Guid GetEntryIdFromUrl(this HttpContext ctx, string url)
+        public static Guid GetEntryIdFromUrl(this Uri entryUrl)
         {
-            Uri requestUrl = new Uri(url);
-            var path = requestUrl.PathAndQuery;
-            
+            // EntryUrl will be in the form scheme://host/entries/{entryId}.
+            // It should not include a querystring, but get rid of one if it is there
+            var path = entryUrl.PathAndQuery.Split('?').FirstOrDefault();
 
             if (path.Contains(@"/entries/"))
             {
