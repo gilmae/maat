@@ -85,6 +85,8 @@ namespace SV.Maat.Reactors
                         return;
                     }
 
+                    IList<string> replyingTo = GetSyndicationsOfReplyToParent(entry);
+
                     var syndicatedUrl = network.Syndicate(credentials, entry);
                     _logger.LogTrace($"Syndicated {e.AggregateId} as {syndicatedUrl}");
                     _commandHandler.Handle<Entry>(e.AggregateId, new PublishSyndication { SyndicationUrl = syndicatedUrl });
@@ -95,6 +97,29 @@ namespace SV.Maat.Reactors
                 _logger.LogError(ex, ex.Message);
             }
             await _next(e);
+        }
+
+        private IList<string> GetSyndicationsOfReplyToParent(Entry entry)
+        {
+            IList<string> replyingTo = new List<string>();
+            if (!string.IsNullOrEmpty(entry.ReplyTo))
+            {
+                replyingTo.Add(entry.ReplyTo);
+
+                // If ReplyTo is a Maat Entry, then GetEntryIdFromUrl will return a non-Empty Guid
+                Guid? entryId = new Uri(entry.ReplyTo)?.GetEntryIdFromUrl();
+
+                if (entryId.HasValue && entryId != Guid.Empty)
+                {
+                    var parentEntry = _entries.Get(entryId.Value);
+                    if (parentEntry != null && parentEntry.Syndications != null)
+                    {
+                        replyingTo = replyingTo.Union(parentEntry.Syndications).ToList();
+                    }
+                }
+            }
+
+            return replyingTo;
         }
     }
 
