@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Events;
@@ -15,6 +16,7 @@ using SV.Maat.lib.Pipelines;
 using SV.Maat.Projections;
 using SV.Maat.Syndications;
 
+[assembly: InternalsVisibleTo("Tests")]
 namespace SV.Maat.Reactors
 {
     public class SyndicateEntry
@@ -99,7 +101,7 @@ namespace SV.Maat.Reactors
             await _next(e);
         }
 
-        private IList<string> GetSyndicationsOfReplyToParent(Entry entry)
+        public IList<string> GetSyndicationsOfReplyToParent(Entry entry)
         {
             IList<string> replyingTo = new List<string>();
             if (!string.IsNullOrEmpty(entry.ReplyTo))
