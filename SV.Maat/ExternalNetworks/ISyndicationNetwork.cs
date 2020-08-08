@@ -11,6 +11,6 @@ namespace SV.Maat.ExternalNetworks
 
         string Syndicate(Credentials credentials, Entry entry, string inNetworkReplyingTo = null);
 
-        bool IsUrlForNetwork(string url);
+        bool IsUrlForNetwork(Credentials credentials, string url);
     }
 }

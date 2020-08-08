@@ -19,7 +19,7 @@ namespace SV.Maat.ExternalNetworks
 
         public string Url => "https://pinboard.in";
 
-        public bool IsUrlForNetwork(string url)
+        public bool IsUrlForNetwork(Credentials credentials, string url)
         {
             if (url.StartsWith("pinboard:"))
             {

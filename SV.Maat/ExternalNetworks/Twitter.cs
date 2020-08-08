@@ -109,7 +109,7 @@ namespace SV.Maat.ExternalNetworks
             return $"{Url}/{client.ScreenName}/statuses/{response.Id}";
         }
 
-        public bool IsUrlForNetwork(string url)
+        public bool IsUrlForNetwork(Credentials credentials, string url)
         {
             return GetStatusIdFromTweetUrl(url).HasValue;
         }

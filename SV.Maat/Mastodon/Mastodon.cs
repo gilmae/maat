@@ -182,7 +182,7 @@ namespace SV.Maat.Mastodon
             return response.Data;
         }
 
-        public bool IsUrlForNetwork(string url)
+        public bool IsUrlForNetwork(Credentials credentials, string url)
         {
             // For now can only reply to toots on the same instance as the user
             // I have no idea if that is how it is supposed to work and I can
@@ -191,6 +191,14 @@ namespace SV.Maat.Mastodon
 
             //https://mastodon.social/users/Gargron/statuses/1,
             //https://mastodon.social/@Gargron/1
+            if (App == null)
+            {
+                SetInstance(credentials.Instance);
+                if (App == null)
+                {
+                    throw new ArgumentException("Mastodon Application not set.");
+                }
+            }
 
             if (!url.StartsWith(App.instance))
             {

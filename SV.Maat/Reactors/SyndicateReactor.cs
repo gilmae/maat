@@ -103,7 +103,13 @@ namespace SV.Maat.Reactors
 
                 IList<string> replyingTo = GetSyndicationsOfReplyToParent(entry);
 
-                var syndicatedUrl = network.Syndicate(credentials, entry);
+                string inNetworkReplyTo = replyingTo.FirstOrDefault(u => network.IsUrlForNetwork(credentials, u));
+
+                var syndicatedUrl = network.Syndicate(
+                    credentials,
+                    entry,
+                    inNetworkReplyTo
+                );
                 _logger.LogTrace($"Syndicated {syndicated.AggregateId} as {syndicatedUrl}");
                 _commandHandler.Handle<Entry>(syndicated.AggregateId, new PublishSyndication { SyndicationUrl = syndicatedUrl });
 
