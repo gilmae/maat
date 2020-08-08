@@ -49,59 +49,72 @@ namespace SV.Maat.Reactors
 
         public async Task InvokeAsync(Event e)
         {
+            if (e is Syndicated)
+            {
+                HandleEvent(e as Syndicated);
+            }
+            await _next(e);
+        }
+
+        public void HandleEvent(Syndicated syndicated)
+        {
+            if (syndicated == null)
+            {
+                return;
+            }
+
             try
             {
-                Syndicated syndicated = e as Syndicated;
-                if (syndicated != null) // TODO - fix the SyndicationAccount detection
+                var syndication = _syndicationStore.FindByAccountName(syndicated.SyndicationAccount);
+
+                if (syndication == null)
                 {
-                    var syndication = _syndicationStore.FindByAccountName(syndicated.SyndicationAccount);
+                    return;
+                }
 
-                    if (syndication == null)
-                    {
-                        return;
-                    }
+                var network = _externalNetworks.First(n => n.Name.ToLower() == syndication.Network.ToLower());
 
-                    var network = _externalNetworks.First(n => n.Name.ToLower() == syndication.Network.ToLower());
+                if (network == null)
+                {
+                    return;
+                }
 
-                    if (network == null)
-                    {
-                        return;
-                    }
+                var credentials = _tokenSigning.Decrypt<Credentials>(syndication.Credentials);
 
-                    var credentials = _tokenSigning.Decrypt<Credentials>(syndication.Credentials);
+                _logger.LogTrace($"Syndicating {syndicated.AggregateId} to {syndicated.SyndicationAccount}");
+                Entry entry = null;
+                int attempts = 0;
 
-                    _logger.LogTrace($"Syndicating {e.AggregateId} to {syndicated.SyndicationAccount}");
-                    Entry entry = null;
-                    int attempts = 0;
-
-                    while ((entry == null || entry.Version != e.Version) && attempts < 10)
-                    {
-                        entry = _entries.Get(e.AggregateId);
-                        attempts += 1;
-                        Thread.Sleep(TimeSpan.FromSeconds(1)); // Wait for the projection to be eventually consistent
-                    }
-
+                while ((entry == null || entry.Version != syndicated.Version) && attempts < 10)
+                {
+                    entry = _entries.Get(syndicated.AggregateId);
+                    attempts += 1;
                     if (entry == null)
                     {
-                        _logger.LogTrace($"Could not find {e.AggregateId} in projection");
-                        return;
+                        Thread.Sleep(TimeSpan.FromSeconds(1)); // Wait for the projection to be eventually consistent
                     }
-
-                    IList<string> replyingTo = GetSyndicationsOfReplyToParent(entry);
-
-                    var syndicatedUrl = network.Syndicate(credentials, entry);
-                    _logger.LogTrace($"Syndicated {e.AggregateId} as {syndicatedUrl}");
-                    _commandHandler.Handle<Entry>(e.AggregateId, new PublishSyndication { SyndicationUrl = syndicatedUrl });
                 }
+
+                if (entry == null)
+                {
+                    _logger.LogTrace($"Could not find {syndicated.AggregateId} in projection");
+                    return;
+                }
+
+                IList<string> replyingTo = GetSyndicationsOfReplyToParent(entry);
+
+                var syndicatedUrl = network.Syndicate(credentials, entry);
+                _logger.LogTrace($"Syndicated {syndicated.AggregateId} as {syndicatedUrl}");
+                _commandHandler.Handle<Entry>(syndicated.AggregateId, new PublishSyndication { SyndicationUrl = syndicatedUrl });
+
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
             }
-            await _next(e);
         }
 
-        public IList<string> GetSyndicationsOfReplyToParent(Entry entry)
+        public  IList<string> GetSyndicationsOfReplyToParent(Entry entry)
         {
             IList<string> replyingTo = new List<string>();
             if (!string.IsNullOrEmpty(entry.ReplyTo))

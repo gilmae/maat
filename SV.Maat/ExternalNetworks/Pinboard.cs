@@ -2,6 +2,8 @@
 using RestSharp;
 using SV.Maat.lib;
 using System.Text.Json.Serialization;
+using System.Collections.Generic;
+using System;
 
 namespace SV.Maat.ExternalNetworks
 {
@@ -17,9 +19,19 @@ namespace SV.Maat.ExternalNetworks
 
         public string Url => "https://pinboard.in";
 
-        public string Syndicate(Credentials credentials, Entry entry)
+        public bool IsUrlForNetwork(string url)
         {
+            if (url.StartsWith("pinboard:"))
+            {
+                string bookmark = url.Remove(0, "pinboard:".Length);
 
+                return Uri.IsWellFormedUriString(System.Web.HttpUtility.UrlDecode(bookmark), UriKind.RelativeOrAbsolute);
+            }
+            return false;
+        }
+
+        public string Syndicate(Credentials credentials, Entry entry, string inNetworkReplyingTo = null)
+        {
             RestClient client = new RestClient("https://api.pinboard.in");
             var request = new RestRequest("v1/posts/add")
                 .AddQueryParameter("url", entry.BookmarkOf)

@@ -1,4 +1,5 @@
-﻿using StrangeVanilla.Blogging.Events;
+﻿using System.Collections.Generic;
+using StrangeVanilla.Blogging.Events;
 
 namespace SV.Maat.ExternalNetworks
 {
@@ -8,6 +9,8 @@ namespace SV.Maat.ExternalNetworks
         string Photo { get; }
         string Url { get; }
 
-        string Syndicate(Credentials credentials, Entry entry);
+        string Syndicate(Credentials credentials, Entry entry, string inNetworkReplyingTo = null);
+
+        bool IsUrlForNetwork(string url);
     }
 }

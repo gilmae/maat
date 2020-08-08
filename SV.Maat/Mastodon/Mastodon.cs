@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using SV.Maat.lib;
 using RestSharp;
 using RestSharp.Authenticators;
+using System.Text.RegularExpressions;
 
 namespace SV.Maat.Mastodon
 {
@@ -30,6 +31,9 @@ namespace SV.Maat.Mastodon
         public string Photo => "https://joinmastodon.org/static/media/logo_full.97822390.svg";
 
         public string Url => "https://joinmastodon.org";
+
+        readonly Regex statusIdRegex = new Regex(@"^\/?@{1}[^\/]+\/?(\d+)");
+        readonly Regex statusIdRegexLong = new Regex(@"^\/?users\/{ 1 }[^\/]+\/{1}statuses\/{1}(\d+)");
 
         public MastodonApp App { get; set; }
 
@@ -91,7 +95,7 @@ namespace SV.Maat.Mastodon
             return App != null;
         }
 
-        public string Syndicate(Credentials credentials, Entry entry)
+        public string Syndicate(Credentials credentials, Entry entry, string inNetworkReplyingTo = null)
         {
             if (App == null)
             {
@@ -119,7 +123,8 @@ namespace SV.Maat.Mastodon
                 .AddJsonBody(new
                 {
                     status = ContentHelper.GetPlainText(entry.Body),
-                    media_ids
+                    media_ids,
+                    in_reply_to_id = GetStatusIdFromTootUrl(inNetworkReplyingTo)
                 });
             var response = client.Post<Status>(request);
             return response?.Data?.Url?.ToString();
@@ -177,8 +182,51 @@ namespace SV.Maat.Mastodon
             return response.Data;
         }
 
-        
-        private class AppRegistration
+        public bool IsUrlForNetwork(string url)
+        {
+            // For now can only reply to toots on the same instance as the user
+            // I have no idea if that is how it is supposed to work and I can
+            // find nothing aboutt how one might arbitraily reply to a toot
+            // elsewhere
+
+            //https://mastodon.social/users/Gargron/statuses/1,
+            //https://mastodon.social/@Gargron/1
+
+            if (!url.StartsWith(App.instance))
+            {
+                return false;
+            }
+
+            return GetStatusIdFromTootUrl(url).HasValue;
+        }
+
+        private long? GetStatusIdFromTootUrl(string url)
+        {
+            if (Uri.IsWellFormedUriString(url, UriKind.Absolute))
+            {
+                var path = new Uri(url).AbsolutePath;
+
+                var match = statusIdRegex.Match(path);
+
+                if (match == null)
+                {
+                    match = statusIdRegexLong.Match(path);
+                }
+
+                if (match != null && match.Groups != null && match.Groups.Count > 0)
+                {
+                    if (long.TryParse(match.Groups[0].Value, out long id))
+                    {
+                        return id;
+                    }
+                }
+            }
+
+            return null;
+        }
+    
+
+    private class AppRegistration
         {
             public string id { get; set; }
             public string name { get; set; }

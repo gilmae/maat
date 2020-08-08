@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using CoreTweet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +19,8 @@ namespace SV.Maat.ExternalNetworks
 
         private readonly string ConsumerKey;
         private readonly string ConsumerKeySecret;
+
+        readonly Regex statusIdRegex = new Regex(@"^\/?[^\/]+\/{1}status\/{1}(\d+)");
 
         public Twitter(IConfiguration config)
         {
@@ -69,7 +72,7 @@ namespace SV.Maat.ExternalNetworks
             return $"{Url}/{client.ScreenName}";
         }
 
-        public string Syndicate(Credentials credentials, Entry entry)
+        public string Syndicate(Credentials credentials, Entry entry, string inNetworkReplyingTo = null)
         {
             Tokens tokens = new Tokens
             {
@@ -96,9 +99,41 @@ namespace SV.Maat.ExternalNetworks
                 }).Where(i => i != 0).ToArray();
             }
 
-            var response = tokens.Statuses.Update(status: ContentHelper.GetPlainText(entry.Body), media_ids: media_ids);
+
+            var response = tokens.Statuses.Update(
+                status: ContentHelper.GetPlainText(entry.Body),
+                media_ids: media_ids,
+                in_reply_to_status_id: GetStatusIdFromTweetUrl(inNetworkReplyingTo)
+            );
 
             return $"{Url}/{client.ScreenName}/statuses/{response.Id}";
+        }
+
+        public bool IsUrlForNetwork(string url)
+        {
+            return GetStatusIdFromTweetUrl(url).HasValue;
+        }
+
+        private long? GetStatusIdFromTweetUrl(string url)
+        {
+            if (url.StartsWith(Url))
+            {
+                if (Uri.IsWellFormedUriString(url, UriKind.Absolute))
+                {
+                    var path = new Uri(url).AbsolutePath;
+
+                    var match = statusIdRegex.Match(path);
+
+                    if (match != null && match.Groups != null && match.Groups.Count > 0)
+                    {
+                        if (long.TryParse(match.Groups[0].Value, out long id))
+                        {
+                            return id;
+                        }
+                    }
+                }
+            }
+            return null;
         }
     }
 
