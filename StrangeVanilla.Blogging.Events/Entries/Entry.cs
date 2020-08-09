@@ -85,4 +85,18 @@ namespace StrangeVanilla.Blogging.Events
         public string Value { get; set; }
         public string Markup { get;set; }
     }
+
+    public enum PostType
+    {
+        note,
+        article,
+        bookmark,
+        reply,
+        rsvp,
+        _event,
+        share,
+        favourite,
+        video,
+        photo
+    }
 }

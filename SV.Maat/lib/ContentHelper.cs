@@ -13,7 +13,6 @@ namespace SV.Maat.lib
     {
         private const string uriPattern = @"((http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?)";
 
-
         public static IEnumerable<string> DiscoverLinks(this Content content)
         {
             return content.Markup.DiscoverLinks().Union(content.Value.DiscoverLinks()).Distinct();
