@@ -10,11 +10,11 @@ namespace SV.Maat.Micropub.Models
         public string MediaEndpoint { get; set; }
 
         [JsonProperty("q")]
-        [JsonPropertyName("media-endpoint")]
+        [JsonPropertyName("q")]
         public string[] SupportedQueries { get; set; }
 
-        [JsonProperty("syndicate_to")]
-        [JsonPropertyName("media-endpoint")]
+        [JsonProperty("syndicate-to")]
+        [JsonPropertyName("syndicate-to")]
         public object[] SupportedSyndicationNetworks { get; set; }
 
     }
