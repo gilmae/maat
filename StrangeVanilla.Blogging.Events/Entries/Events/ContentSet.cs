@@ -26,7 +26,7 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
             if (Body != null) 
             {
                 Content content = new Content();
-                content.Value = Body.First((k) => k.Key == ContentType.plaintext).Value;
+                content.Value = Body.FirstOrDefault((k) => k.Key == ContentType.plaintext).Value;
                 if (Body.Any(kv => kv.Key != ContentType.plaintext))
                 {
                     var k = Body.FirstOrDefault(kv => kv.Key != ContentType.plaintext);
