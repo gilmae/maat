@@ -37,6 +37,10 @@ namespace SV.Maat.ExternalNetworks
 
         public string Syndicate(Credentials credentials, Entry entry, string inNetworkReplyingTo = null)
         {
+            if (entry.PostType() != PostType.bookmark)
+            {
+                return "";
+            }
             RestClient client = new RestClient("https://api.pinboard.in");
             var request = new RestRequest("v1/posts/add")
                 .AddQueryParameter("url", entry.BookmarkOf)
