@@ -232,9 +232,9 @@ namespace SV.Maat.Mastodon
 
             return null;
         }
-    
 
-    private class AppRegistration
+
+        private class AppRegistration
         {
             public string id { get; set; }
             public string name { get; set; }
