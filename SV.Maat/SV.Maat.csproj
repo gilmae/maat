@@ -65,6 +65,7 @@
     <Folder Include="Entry\" />
     <Folder Include="Entry\Views\" />
     <Folder Include="Entry\Models\" />
+    <Folder Include="microblog\" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Users\Views\View.cshtml">
@@ -130,5 +131,8 @@
         <Content Update="Entry\Views\Timeline.cshtml">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="microblog\Microblog.cs" />
   </ItemGroup>
 </Project>
