@@ -132,7 +132,4 @@
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="microblog\Microblog.cs" />
-  </ItemGroup>
 </Project>
