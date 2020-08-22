@@ -66,16 +66,20 @@ namespace SV.Maat.lib
             return Guid.Empty;
         }
 
-        public static string GetUserNameFromUrl(this IUrlHelper ctx, string url)
+        public static string GetUserNameFromUrl(this Uri uri)
         {
             // User urls are in the format <host>/user/{username}
 
-            Uri uri = new Uri(url);
-            var parts = uri.AbsolutePath.Split("/").Where(p => !string.IsNullOrEmpty(p)).ToArray();
+            var path = uri.AbsolutePath;
 
-            string username = parts[1];
+            if (path.Contains(@"/user/"))
+            {
+                var potentialUserName = path.Replace(@"/user/", "");
 
-            return username;
+                return potentialUserName;
+            }
+
+            return "";
         }
     }
 }
