@@ -40,8 +40,12 @@ namespace SV.Maat.IndieAuth
         [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
         public IActionResult AuthenticationRequest([FromQuery]AuthenticationRequest model)
         {
-            string username = this.Url.GetUserNameFromUrl(model.UserProfileUrl);
-            User user = _userStore.FindByUsername(username).FirstOrDefault();
+            var userId = this.UserId();
+            if (!userId.HasValue)
+            {
+                return BadRequest("Unknown User");
+            }
+            User user = _userStore.Find(userId.Value);
             if (user == null)
             {
                 return BadRequest("Unknown User");
