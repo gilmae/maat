@@ -172,8 +172,7 @@ namespace SV.Maat.IndieAuth
                 return BadRequest();
             }
 
-            string username = this.Url.GetUserNameFromUrl(request.UserProfileUrl);
-            User user = _userStore.FindByUsername(username).FirstOrDefault();
+            User user = _userStore.Find(request.UserId);
             if (user == null)
             {
                 return BadRequest("Unknown User");
