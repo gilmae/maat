@@ -6,6 +6,7 @@ using CoreTweet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using StrangeVanilla.Blogging.Events;
 using SV.Maat.lib;
 
@@ -22,7 +23,9 @@ namespace SV.Maat.ExternalNetworks
 
         readonly Regex statusIdRegex = new Regex(@"^\/?[^\/]+\/{1}status\/{1}(\d+)");
 
-        public Twitter(IConfiguration config)
+        private ILogger<Twitter> _logger;
+
+        public Twitter(IConfiguration config, ILogger<Twitter> logger)
         {
             Dictionary<string,string> twitterConn = config
                 .GetConnectionString("Twitter")
@@ -37,6 +40,8 @@ namespace SV.Maat.ExternalNetworks
 
             ConsumerKey = twitterConn["consumerkey"];
             ConsumerKeySecret = twitterConn["consumerkeysecret"];
+
+            _logger = logger;
         }
 
         public Uri GetAuthorizeLink(string redirectUri)
@@ -99,24 +104,13 @@ namespace SV.Maat.ExternalNetworks
                 }).Where(i => i != 0).ToArray();
             }
 
-            var in_reply_to_status_id = GetStatusIdFromTweetUrl(inNetworkReplyingTo);
+            long? in_reply_to_status_id = GetStatusIdFromTweetUrl(inNetworkReplyingTo);
 
-            StatusResponse response;
-            if (in_reply_to_status_id.HasValue)
-            {
-                response = tokens.Statuses.Update(
+            StatusResponse response = tokens.Statuses.Update(
                     status: ContentHelper.GetPlainText(entry.Body),
                     media_ids: media_ids,
                     in_reply_to_status_id: in_reply_to_status_id
                 );
-            }
-            else
-            {
-                response = tokens.Statuses.Update(
-                    status: ContentHelper.GetPlainText(entry.Body),
-                    media_ids: media_ids
-                );
-            }
 
             return $"{Url}/{client.ScreenName}/statuses/{response.Id}";
         }
@@ -128,6 +122,11 @@ namespace SV.Maat.ExternalNetworks
 
         private long? GetStatusIdFromTweetUrl(string url)
         {
+            if (string.IsNullOrEmpty(url))
+            {
+                return null;
+            }
+
             if (url.StartsWith(Url))
             {
                 if (Uri.IsWellFormedUriString(url, UriKind.Absolute))
