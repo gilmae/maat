@@ -4,9 +4,9 @@
 <head>
     <meta name="viewport" content="width=device-width" />
     <title>@ViewBag.Title</title>
-    <link rel="micropub" href="@Url.Action("Publish", "Micropub")">
-    <link rel="authorization_endpoint" href="@Url.Action("AuthenticationRequest", "IndieAuth")">
-    <link rel="token_endpoint" href="@Url.Action("TokenRequest", "IndieAuth")">
+    <link rel="micropub" href="@Url.Action("Publish", "Micropub", null, this.Context.Request.Scheme)">
+    <link rel="authorization_endpoint" href="@Url.Action("AuthenticationRequest", "IndieAuth", null, this.Context.Request.Scheme)">
+    <link rel="token_endpoint" href="@Url.Action("TokenRequest", "IndieAuth", null, this.Context.Request.Scheme)">
 
     <link rel="stylesheet" href="css/maat.css"
 
