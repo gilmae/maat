@@ -20,6 +20,8 @@ namespace StrangeVanilla.Blogging.Events
 
         public DateTime? DeletedAt { get; set; }
 
+        public int OwnerId { get; set; }
+
         public StatusType Status
         {
             get

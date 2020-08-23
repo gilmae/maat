@@ -47,7 +47,6 @@ namespace SV.Maat.Micropub
         }
 
         [HttpGet]
-        [Authorize(AuthenticationSchemes = IndieAuthTokenHandler.SchemeName)]
         [Route("/entries/{id}")]
         public IActionResult Entry([FromRoute] Guid id)
         {
@@ -155,6 +154,7 @@ namespace SV.Maat.Micropub
         {
             Guid id = Guid.NewGuid();
             List<ICommand> commands = new List<ICommand> { new CreateEntry() };
+            commands.Add(new SetOwner() { OwnerId = this.UserId().Value });
             commands.Add(new SetContent { Name = name, Content = content, BookmarkOf = bookmark });
             if (categories != null)
             {
