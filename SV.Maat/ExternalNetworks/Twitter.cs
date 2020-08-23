@@ -99,12 +99,24 @@ namespace SV.Maat.ExternalNetworks
                 }).Where(i => i != 0).ToArray();
             }
 
+            var in_reply_to_status_id = GetStatusIdFromTweetUrl(inNetworkReplyingTo);
 
-            var response = tokens.Statuses.Update(
-                status: ContentHelper.GetPlainText(entry.Body),
-                media_ids: media_ids,
-                in_reply_to_status_id: GetStatusIdFromTweetUrl(inNetworkReplyingTo)
-            );
+            StatusResponse response;
+            if (in_reply_to_status_id.HasValue)
+            {
+                response = tokens.Statuses.Update(
+                    status: ContentHelper.GetPlainText(entry.Body),
+                    media_ids: media_ids,
+                    in_reply_to_status_id: in_reply_to_status_id
+                );
+            }
+            else
+            {
+                response = tokens.Statuses.Update(
+                    status: ContentHelper.GetPlainText(entry.Body),
+                    media_ids: media_ids
+                );
+            }
 
             return $"{Url}/{client.ScreenName}/statuses/{response.Id}";
         }
