@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -20,19 +22,42 @@ namespace SV.Maat
 
         public async Task InvokeAsync(HttpContext context)
         {
-            var endpoint = context.GetEndpoint() as RouteEndpoint;
-            var routeTemplate = string.Empty;
-            if (endpoint != null)
-            {
-                routeTemplate = endpoint.RoutePattern.RawText;
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
 
-                _logger.LogInformation(System.Text.Json.JsonSerializer.Serialize(new
-                {
-                    EndPoint = $"{context.Request.Method.ToUpper()} {routeTemplate}",
-                    DateRequested = DateTime.UtcNow
-                }));
+            var endpoint = context.GetEndpoint() as RouteEndpoint;
+
+            Dictionary<string, object> data = new Dictionary<string, object>();
+
+            data.TryAdd("request.path", context.Request.Path.Value);
+            data.TryAdd("request.method", context.Request.Method);
+            data.TryAdd("request.http_version", context.Request.Protocol);
+            data.TryAdd("request.content_length", context.Request.ContentLength);
+            data.TryAdd("request.header.x_forwarded_proto", context.Request.Scheme);
+            data.TryAdd("meta.local_hostname", Environment.MachineName);
+
+            try
+            {
+                await _next(context);
+                data.TryAdd("request.endpoint", $"{context.Request.Method.ToUpper()} {endpoint?.RoutePattern.RawText}");
+
+                data.TryAdd("name", $"{context.GetRouteValue("controller")}#{context.GetRouteValue("action")}");
+                data.TryAdd("action", context.GetRouteValue("action"));
+                data.TryAdd("controller", context.GetRouteValue("controller"));
+                data.TryAdd("response.content_length", context.Response.ContentLength);
+                data.TryAdd("response.status_code", context.Response.StatusCode);
+                data.TryAdd("duration_ms", stopwatch.ElapsedMilliseconds);
             }
-            await _next(context);
+            catch(Exception ex)
+            {
+                data.TryAdd("request.error", ex.Source);
+                data.TryAdd("request.error_detail", ex.Message);
+                throw;
+            }
+            finally
+            {
+                _logger.LogInformation(System.Text.Json.JsonSerializer.Serialize(data));
+            }
         }
     }
 
