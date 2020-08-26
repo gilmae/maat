@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using StrangeVanilla.Blogging.Events;
 
@@ -9,6 +10,20 @@ namespace SV.Maat.lib
 {
     public static class ContentHelper
     {
+        private const string uriPattern = @"((http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?)";
+
+
+        public static IEnumerable<string> DiscoverLinks(this Content content)
+        {
+            return content.Markup.DiscoverLinks().Union(content.Value.DiscoverLinks()).Distinct();
+        }
+
+        public static IEnumerable<string> DiscoverLinks(this string content)
+        {
+            return Regex.Matches(content, uriPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled)
+                .SelectMany(m => m.Captures.Select(c => c.Value))
+                .Distinct();
+        }
 
         public static string GetPlainText(this Content content)
         {
