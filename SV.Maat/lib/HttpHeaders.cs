@@ -15,8 +15,8 @@ namespace SV.Maat.lib
             return link.Split(',').Select(l =>
                 new HttpLink
                 {
-                    Url = Regex.Match(l, urlRegex)?.Groups[0].Value,
-                    Params = Regex.Matches(l, paramsRegexPattern)
+                    Url = Regex.Match(l, urlRegex, RegexOptions.IgnoreCase)?.Groups[0].Value,
+                    Params = Regex.Matches(l, paramsRegexPattern, RegexOptions.IgnoreCase)
                         .SelectMany(m=>
                             m.Captures
                                 .Where(c => (c as Match).Groups.Count == 3)
