@@ -46,6 +46,7 @@ namespace SV.Maat.ExternalNetworks
                 .AddQueryParameter("format", "json")
                 .AddQueryParameter("auth_token", $"{credentials.Uid}:{credentials.Secret}");
 
+            
             var result = client.Get<BookmarkPostResult>(request);
 
             if (result.Data.ResultCode == "done")
@@ -53,7 +54,13 @@ namespace SV.Maat.ExternalNetworks
                 return $"pinboard:{System.Web.HttpUtility.UrlEncode(entry.BookmarkOf)}";
             }
 
-            _logger.LogError($"Syndicating link to Pinboard for Entry {entry.Id} failed. Details:\n{result.Data.ResultCode}");
+            _logger.LogError($"Syndicating link to Pinboard for Entry {entry.Id} failed.");
+            _logger.LogInformation(System.Text.Json.JsonSerializer.Serialize(new
+            {
+                result.StatusCode,
+                result.StatusDescription,
+                result.Data
+            }));
             return "";
         }
 
