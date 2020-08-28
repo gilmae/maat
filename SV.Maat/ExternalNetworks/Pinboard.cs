@@ -4,13 +4,18 @@ using SV.Maat.lib;
 using System.Text.Json.Serialization;
 using System.Collections.Generic;
 using System;
+using Microsoft.Extensions.Logging;
 
 namespace SV.Maat.ExternalNetworks
 {
     public class Pinboard : ISyndicationNetwork, IRequiresCredentialEntry
     {
-        public Pinboard()
+
+        ILogger<Pinboard> _logger;
+
+        public Pinboard(ILogger<Pinboard> logger)
         {
+            _logger = logger;
         }
 
         public string Name => "Pinboard";
@@ -47,6 +52,8 @@ namespace SV.Maat.ExternalNetworks
             {
                 return $"pinboard:{System.Web.HttpUtility.UrlEncode(entry.BookmarkOf)}";
             }
+
+            _logger.LogError($"Syndicating link to Pinboard for Entry {entry.Id} failed. Details:\n{result.Data.ResultCode}");
             return "";
         }
 
