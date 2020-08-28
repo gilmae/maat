@@ -60,6 +60,9 @@
     <Folder Include="Home\" />
     <Folder Include="Home\Views\" />
     <Folder Include="wwwroot\css\" />
+    <Folder Include="Entry\" />
+    <Folder Include="Entry\Views\" />
+    <Folder Include="Entry\Models\" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Users\Views\View.cshtml">
@@ -108,6 +111,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="wwwroot\css\maat.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Entries\Views\Entry.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Entry\Views\Entry.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

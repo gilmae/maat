@@ -11,35 +11,13 @@ namespace SV.Maat.lib
     {
         public static string EntryUrl(this HttpContext ctx, Entry e)
         {
-            return EntryUrl(ctx, e.Id);
-        }
-
-        public static string EntryUrl(this HttpContext ctx, Guid id)
-        {
-            var path = ctx.Request.Scheme + "://" + Path.Join(ctx.Request.Host.ToString(), ctx.Request.PathBase, "entries", id.ToString());
-            return path;
-        }
-
-        public static Guid GetEntryIdFromUrl(this Uri entryUrl)
-        {
-            // EntryUrl will be in the form scheme://host/entries/{entryId}.
-            // It should not include a querystring, but get rid of one if it is there
-            var path = entryUrl.PathAndQuery.Split('?').FirstOrDefault();
-
-            if (path.Contains(@"/entries/"))
+            if (string.IsNullOrEmpty(e.Slug))
             {
-                var potentialId = path.Replace(@"/entries/", "");
-
-                Guid entryId;
-
-                if (Guid.TryParse(potentialId, out entryId))
-                {
-                    return entryId;
-                }
+                return $"{ctx.Request.Scheme}://{ctx.Request.Host}/entries/{e.Id}";
             }
-
-            return Guid.Empty;
+            return $"{ctx.Request.Scheme}://{ctx.Request.Host}/{e.Slug}";
         }
+
 
         public static string MediaUrl(this IUrlHelper ctx, Media e)
         {

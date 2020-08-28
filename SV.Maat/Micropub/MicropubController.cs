@@ -15,6 +15,7 @@ using SV.Maat.lib;
 using Microsoft.AspNetCore.Authorization;
 using SV.Maat.IndieAuth.Middleware;
 using SV.Maat.lib.Pipelines;
+using SV.Maat.Projections;
 
 namespace SV.Maat.Micropub
 {
@@ -29,13 +30,15 @@ namespace SV.Maat.Micropub
         IFileStore _fileStore;
         Pipeline _pipeline;
         CommandHandler _commandHandler;
+        IEntryProjection _entries;
 
         public MicropubController(ILogger<MicropubController> logger,
             IEventStore<Entry> entryRepository,
             IEventStore<Media> mediaRepository,
             IFileStore fileStore,
             Pipeline pipeline,
-            CommandHandler commandHandler
+            CommandHandler commandHandler,
+            IEntryProjection entries
             )
         {
             _logger = logger;
@@ -44,13 +47,7 @@ namespace SV.Maat.Micropub
             _fileStore = fileStore;
             _pipeline = pipeline;
             _commandHandler = commandHandler;
-        }
-
-        [HttpGet]
-        [Route("/entries/{id}")]
-        public IActionResult Entry([FromRoute] Guid id)
-        {
-            return Ok();
+            _entries = entries;
         }
 
         [HttpPost]
@@ -179,6 +176,9 @@ namespace SV.Maat.Micropub
                 commands.Add(new PublishEntry());
             }
 
+            Uri location = new Uri(this.Url.ActionLink("Entry", "Entry", new { id }));
+            commands.Add(new SetSlug { Slug = location.AbsolutePath });
+
             foreach (ICommand command in commands)
             {
                 if (!_commandHandler.Handle<Entry>(id, command))
@@ -187,7 +187,6 @@ namespace SV.Maat.Micropub
                 }
             }
 
-            string location = this.Url.ActionLink("Entry", "Micropub", new { id });
             return base.Created(location, null);
         }
 
@@ -202,9 +201,9 @@ namespace SV.Maat.Micropub
                 });
             }
 
-            Guid entryId = new Uri(model.Url).GetEntryIdFromUrl();
+            Guid? entryId = _entries.Get(new Uri(model.Url)?.AbsolutePath)?.Id;
 
-            if (entryId == Guid.Empty)
+            if (entryId == null || entryId == Guid.Empty)
             {
                 return BadRequest(new
                 {
@@ -213,7 +212,7 @@ namespace SV.Maat.Micropub
                 });
             }
 
-            _commandHandler.Handle<Entry>(entryId, new DeleteEntry());
+            _commandHandler.Handle<Entry>(entryId.Value, new DeleteEntry());
 
             return Ok();
         }
@@ -229,9 +228,9 @@ namespace SV.Maat.Micropub
                 });
             }
 
-            Guid entryId = new Uri(model.Url).GetEntryIdFromUrl();
+            Guid? entryId = _entries.Get(new Uri(model.Url)?.AbsolutePath)?.Id;
 
-            if (entryId == Guid.Empty)
+            if (entryId==null || entryId == Guid.Empty)
             {
                 return BadRequest(new
                 {
@@ -240,7 +239,7 @@ namespace SV.Maat.Micropub
                 });
             }
 
-            _commandHandler.Handle<Entry>(entryId, new UndeleteEntry());
+            _commandHandler.Handle<Entry>(entryId.Value, new UndeleteEntry());
 
             return Ok();
         }
@@ -255,9 +254,9 @@ namespace SV.Maat.Micropub
                 });
             }
 
-            Guid entryId = new Uri(model.Url).GetEntryIdFromUrl();
+            Guid? entryId = _entries.Get(new Uri(model.Url)?.AbsolutePath)?.Id;
 
-            if (entryId == Guid.Empty)
+            if (entryId == null || entryId == Guid.Empty)
             {
                 return BadRequest(new
                 {
@@ -269,13 +268,13 @@ namespace SV.Maat.Micropub
             try
             {
                 if (model.Add?.Count() > 0) {
-                    return HandleAddUpdate(model.Add, entryId);
+                    return HandleAddUpdate(model.Add, entryId.Value);
                 }
                 else if (model.Replace?.Count() > 0) {
-                    return HandleReplaceUpdate(model.Replace, entryId);
+                    return HandleReplaceUpdate(model.Replace, entryId.Value);
                 }
                 else if (model.Delete?.Count() > 0) { 
-                    return HandleRemoveUpdate(model.Delete, entryId);
+                    return HandleRemoveUpdate(model.Delete, entryId.Value);
                 }
             }
             catch (Exception ex)
@@ -348,7 +347,8 @@ namespace SV.Maat.Micropub
                 }
             }
 
-            return Created(this.Url.ActionLink("Entry", "Micropub", new { id }), null);
+            Entry entry = _entries.Get(id);
+            return Created(this.HttpContext.EntryUrl(entry), null);
         }
 
         private ActionResult HandleReplaceUpdate(Dictionary<string, string[]> values, Guid id)
@@ -395,7 +395,8 @@ namespace SV.Maat.Micropub
                 }
             }
 
-            return Created(this.Url.ActionLink("Entry", "Micropub", new { id }), null);
+            Entry entry = _entries.Get(id);
+            return Created(this.HttpContext.EntryUrl(entry), null);
         }
 
         private ActionResult HandleAddUpdate(Dictionary<string, string[]> values, Guid id)
@@ -431,7 +432,8 @@ namespace SV.Maat.Micropub
                 }
             }
 
-            return Created(this.Url.ActionLink("Entry", "Micropub", new { id }), null);
+            Entry entry = _entries.Get(id);
+            return Created(this.HttpContext.EntryUrl(entry), null);
         }
 
         private byte[] ReadStream(Stream data)

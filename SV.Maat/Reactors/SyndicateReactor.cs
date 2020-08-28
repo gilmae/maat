@@ -128,15 +128,11 @@ namespace SV.Maat.Reactors
                 replyingTo.Add(entry.ReplyTo);
 
                 // If ReplyTo is a Maat Entry, then GetEntryIdFromUrl will return a non-Empty Guid
-                Guid? entryId = new Uri(entry.ReplyTo)?.GetEntryIdFromUrl();
+                Entry parentEntry = _entries.Get(new Uri(entry.ReplyTo)?.AbsolutePath);
 
-                if (entryId.HasValue && entryId != Guid.Empty)
+                if (parentEntry != null && parentEntry.Syndications != null)
                 {
-                    var parentEntry = _entries.Get(entryId.Value);
-                    if (parentEntry != null && parentEntry.Syndications != null)
-                    {
-                        replyingTo = replyingTo.Union(parentEntry.Syndications).ToList();
-                    }
+                    replyingTo = replyingTo.Union(parentEntry.Syndications).ToList();
                 }
             }
 

@@ -1,0 +1,26 @@
+﻿@model SV.Maat.Entries.Models.Entry;
+@{
+    Layout = "_Layout";
+    ViewBag.Title = $"{Model.PublishedAt.ToString("G")}";
+}
+
+<article class="h-entry">
+    <header>
+        @if (!string.IsNullOrEmpty(Model.Title))
+        {
+            <h2 class="p-name">@Model.Title</h2>
+        }
+    </header>
+    <p class="e-content">@Model.Body</p>
+    
+    @if (Model.Categories.Any())
+    {
+        <ul class="p-category">
+            @foreach (string c in Model.Categories)
+            {
+                <li>@c</li>
+            }
+        </ul>
+    }
+</article>
+
