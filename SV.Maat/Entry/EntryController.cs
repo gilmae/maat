@@ -28,9 +28,10 @@ namespace SV.Maat.Entries
             {
                 Title = entry.Title.GetPlainText(),
                 Body = entry.Body.GetPlainText(),
-                Photos = entry.AssociatedMedia.Select(m => m.Url).ToArray(),
-                Categories = entry.Categories.ToArray(),
-                PublishedAt = entry.PublishedAt.Value
+                Photos = entry.AssociatedMedia?.Select(m => new Models.Media { Url = m.Url, Description = m.Description }).ToArray() ?? new Models.Media[0],
+                Categories = entry.Categories?.ToArray() ?? new string[0],
+                PublishedAt = entry.PublishedAt.Value,
+                Bookmark = entry.BookmarkOf
             };
 
             return View(model);

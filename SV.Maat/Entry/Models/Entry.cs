@@ -6,7 +6,14 @@ namespace SV.Maat.Entries.Models
         public string Title;
         public string Body;
         public string[] Categories;
-        public string[] Photos;
+        public Media[] Photos;
         public DateTime PublishedAt;
+        public string Bookmark;
+    }
+
+    public struct Media
+    {
+        public string Url;
+        public string Description;
     }
 }
