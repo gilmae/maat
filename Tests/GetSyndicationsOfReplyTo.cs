@@ -59,9 +59,9 @@ namespace Tests
         {
             Guid id = Guid.NewGuid();
             string replyTo = $"https://foo.bar/entries/{id}";
-            Entry entry = new Entry { ReplyTo = replyTo, Id = id, Syndications = new string[] { "http://google.com" } };
+            Entry entry = new Entry { ReplyTo = replyTo, Id = id, Syndications = new string[] { "http://google.com" }, Slug = $"/entries/{id}" };
 
-            IEnumerable<string> expected = new[] { replyTo, "http://google.com" };
+            IList<string> expected = new List<string> { replyTo, "http://google.com" };
 
             var reactor = new SyndicateEntry(null, null, new MockEntryProjection(new Entry[] { entry }), null, null, null, null);
 
@@ -75,9 +75,9 @@ namespace Tests
         {
             Guid id = Guid.NewGuid();
             string replyTo = $"https://foo.bar/entries/{id}";
-            Entry entry = new Entry { ReplyTo = replyTo, Id = id, Syndications = new string[] { "http://google.com", "http://ebay.com" } };
+            Entry entry = new Entry { ReplyTo = replyTo, Id = id, Syndications = new string[] { "http://google.com", "http://ebay.com" }, Slug = $"/entries/{id}" };
 
-            IEnumerable<string> expected = new[] { replyTo, "http://google.com", "http://ebay.com" };
+            IList<string> expected = new List<string> { replyTo, "http://google.com", "http://ebay.com" };
 
             var reactor = new SyndicateEntry(null, null, new MockEntryProjection(new Entry[] { entry }), null, null, null, null);
 
