@@ -76,7 +76,7 @@ namespace SV.Maat.Micropub
             var replies = _repliesProjection.GetReplyIds(url);
             return Ok(new
             {
-                replies = replies.Select(id => UrlHelper.EntryUrl(HttpContext, id))
+                replies = replies.Select(id => UrlHelper.EntryUrl(HttpContext, _entryView.Get(id)))
             });
 
         }
@@ -156,17 +156,7 @@ namespace SV.Maat.Micropub
 
         private ActionResult GetSingleItem(string url, string[] properties)
         {
-            Guid entryId = new Uri(url).GetEntryIdFromUrl();
-            if (entryId == Guid.Empty)
-            {
-                return BadRequest(new
-                {
-                    error = "invalid_request",
-                    error_description = "The post with the requested URL was not found"
-                });
-            }
-
-            Entry entry = _entryView.Get(entryId);
+            Entry entry = _entryView.Get(new Uri(url)?.AbsolutePath);
             if (entry == null)
             {
                 return BadRequest(new {

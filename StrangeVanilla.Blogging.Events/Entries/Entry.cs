@@ -22,6 +22,8 @@ namespace StrangeVanilla.Blogging.Events
 
         public int OwnerId { get; set; }
 
+        public string Slug { get; set; }
+
         public StatusType Status
         {
             get

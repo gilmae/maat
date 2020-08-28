@@ -15,22 +15,27 @@ namespace Tests.Mocks
             _entries = entries;
         }
 
-        public Entry Get(Guid id)
+        public Entry Get(Guid id, bool isPublished = false)
         {
             return _entries.FirstOrDefault(e => e.Id == id);
         }
 
-        public IEnumerable<Entry> GetAfter(int numItems, DateTime after)
+        public Entry Get(string slug)
+        {
+            return _entries.FirstOrDefault(e => e.Slug == slug);
+        }
+
+        public IEnumerable<Entry> GetAfter(int numItems, DateTime after, bool isPublished = false)
         {
             return _entries.Where(e => e.CreatedAt > after).OrderBy(e => e.CreatedAt).Take(numItems);
         }
 
-        public IEnumerable<Entry> GetBefore(int numItems, DateTime before)
+        public IEnumerable<Entry> GetBefore(int numItems, DateTime before, bool isPublished = false)
         {
             return _entries.Where(e => e.CreatedAt < before).OrderBy(e => e.CreatedAt).Take(numItems);
         }
 
-        public IEnumerable<Entry> GetLatest(int numItems)
+        public IEnumerable<Entry> GetLatest(int numItems, bool isPublished = false)
         {
             return _entries.OrderBy(e => e.CreatedAt).Take(numItems);
         }

@@ -1,0 +1,38 @@
+﻿@model SV.Maat.Entries.Models.Entry;
+@{
+    Layout = "_Layout";
+    ViewBag.Title = $"{Model.PublishedAt.ToString("G")}";
+}
+
+    <article class="h-entry">
+        <header>
+            @if (!string.IsNullOrEmpty(Model.Title))
+            {
+                <h2 class="p-name">@Model.Title</h2>
+            }
+        </header>
+        @if (!string.IsNullOrEmpty(Model.Bookmark))
+        {
+            <a href="@Model.Bookmark" class="u-bookmark-of">🔖 link</a>
+        }
+        <p class="e-content">@Model.Body</p>
+        @if (Model.Photos.Any())
+        {
+            <ul class="u-photo">
+                @foreach (var p in Model.Photos)
+                {
+                    <li><img alt="@p.Description" src="@p.Url" /></li>
+                }
+            </ul>
+        }
+        @if (Model.Categories.Any())
+        {
+            <ul class="p-category">
+                @foreach (string c in Model.Categories)
+                {
+                    <li>#@c</li>
+                }
+            </ul>
+        }
+    </article>
+

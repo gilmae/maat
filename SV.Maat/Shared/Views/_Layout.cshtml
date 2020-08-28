@@ -8,7 +8,7 @@
     <link rel="authorization_endpoint" href="@Url.Action("AuthenticationRequest", "IndieAuth", null, this.Context.Request.Scheme)">
     <link rel="token_endpoint" href="@Url.Action("TokenRequest", "IndieAuth", null, this.Context.Request.Scheme)">
 
-    <link rel="stylesheet" href="css/maat.css"
+    <link rel="stylesheet" href="/css/maat.css"
 
     @RenderSection("head", required: false)
 </head>
@@ -17,8 +17,6 @@
         <img src="~/images/brand/hiero_C10.png" alt="Hieroglyph of a seated figure facing left with a feather in its hair, the representation of tge Ancient Egyptian goddess Ma'at" />
         <h1>Maat</h1>
     </header>
-
-
     <div>
         @RenderBody()
     </div>

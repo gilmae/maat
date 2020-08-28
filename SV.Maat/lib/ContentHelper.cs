@@ -7,15 +7,15 @@ using StrangeVanilla.Blogging.Events;
 
 namespace SV.Maat.lib
 {
-    public class ContentHelper
+    public static class ContentHelper
     {
 
-        public static string GetPlainText(Content content)
+        public static string GetPlainText(this Content content)
         {
             return content?.Value;
         }
 
-        public static string GetPlainText(string[] content)
+        public static string GetPlainText(this string[] content)
         {
             if (content == null || content.IsEmpty())
             {
@@ -24,7 +24,7 @@ namespace SV.Maat.lib
             return content[0];
         }
 
-        public static Content ParseContentArray(object[] values)
+        public static Content ParseContentArray(this object[] values)
         {
             if (values is null)
             {

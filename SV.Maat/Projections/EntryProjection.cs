@@ -8,14 +8,14 @@ using StrangeVanilla.Blogging.Events;
 
 namespace SV.Maat.Projections
 {
-    public class EntryProjection : ProjectionBase, IEntryProjection, IProjection<Entry>
+    public class EntryProjection : ProjectionBase, IEntryProjection
     {
         ConcurrentDictionary<Guid, Entry> projections = new ConcurrentDictionary<Guid, Entry>();
         public EntryProjection(ILogger<EntryProjection> logger, IEventStore<Entry> eventStore) : base(logger, eventStore)
         {
         }
 
-        public Entry Get(Guid id)
+        public Entry Get(Guid id, bool publishedOnly = false)
         {
             if (projections.TryGetValue(id, out Entry entry))
             {
@@ -24,24 +24,36 @@ namespace SV.Maat.Projections
             return null;
         }
 
-        public IEnumerable<Entry> Get()
+        public Entry Get(string slug)
         {
-            return projections.Values.OrderByDescending(e=>e.CreatedAt);
+            return projections.Values.FirstOrDefault(e => e.Slug == slug);
         }
 
-        public IEnumerable<Entry> GetAfter(int numItems, DateTime after)
+        public IEnumerable<Entry> Get(bool publishedOnly = false)
         {
-            return Get().Where(x => x.CreatedAt > after).Take(numItems);
+            if (publishedOnly)
+            {
+                return projections.Values.Where(e => e.PublishedAt.GetValueOrDefault() <= DateTime.UtcNow).OrderByDescending(e => e.CreatedAt);
+            }
+            else
+            {
+                return projections.Values.OrderByDescending(e => e.CreatedAt);
+            }
         }
 
-        public IEnumerable<Entry> GetBefore(int numItems, DateTime before)
+        public IEnumerable<Entry> GetAfter(int numItems, DateTime after, bool publishedOnly = false)
         {
-            return Get().Where(x => x.CreatedAt < before).Take(numItems);
+            return Get(publishedOnly).Where(x => x.CreatedAt > after).Take(numItems);
         }
 
-        public IEnumerable<Entry> GetLatest(int numItems)
+        public IEnumerable<Entry> GetBefore(int numItems, DateTime before, bool publishedOnly = false)
         {
-            return Get().Take(numItems);
+            return Get(publishedOnly).Where(x => x.CreatedAt < before).Take(numItems);
+        }
+
+        public IEnumerable<Entry> GetLatest(int numItems, bool publishedOnly = false)
+        {
+            return Get(publishedOnly).Take(numItems);
         }
 
         public override (int?, int) ProcessEvents(IList<Event> newEvents)
