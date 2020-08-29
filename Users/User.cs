@@ -9,5 +9,6 @@ namespace Users
         public string Email { get; set; }
         public string Url { get; set; }
         public string HashedPassword { get; set; }
+        public string Host { get; set; }
     }
 }
