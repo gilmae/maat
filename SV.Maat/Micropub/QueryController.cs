@@ -13,6 +13,7 @@ using SV.Maat.Syndications;
 using SV.Maat.Syndications.Models;
 using SV.Maat.Projections;
 using SV.Maat.ExternalNetworks;
+using Users;
 
 namespace SV.Maat.Micropub
 {
@@ -25,14 +26,21 @@ namespace SV.Maat.Micropub
         readonly ISyndicationStore _syndicationStore;
         private readonly IEnumerable<ISyndicationNetwork> _externalNetworks;
         private readonly IRepliesProjection _repliesProjection;
+        IUserStore _userStore; 
 
-        public QueryController(ILogger<QueryController> logger, IEntryProjection entryView, ISyndicationStore syndicationStore, IEnumerable<ISyndicationNetwork> externalNetworks, IRepliesProjection repliesProjection)
+        public QueryController(ILogger<QueryController> logger,
+            IEntryProjection entryView,
+            ISyndicationStore syndicationStore,
+            IEnumerable<ISyndicationNetwork> externalNetworks,
+            IRepliesProjection repliesProjection,
+            IUserStore userStore)
         {
             _logger = logger;
             _entryView = entryView;
             _syndicationStore = syndicationStore;
             _externalNetworks = externalNetworks;
             _repliesProjection = repliesProjection;
+            _userStore = userStore;
         }
 
         [HttpGet]
@@ -76,7 +84,13 @@ namespace SV.Maat.Micropub
             var replies = _repliesProjection.GetReplyIds(url);
             return Ok(new
             {
-                replies = replies.Select(id => UrlHelper.EntryUrl(HttpContext, _entryView.Get(id)))
+                replies = replies.Select(id => {
+                    var e = _entryView.Get(id);
+                    var u = _userStore.Find(e.OwnerId);
+
+                    return UrlHelper.EntryUrl(e, u);
+
+                })
             });
 
         }
@@ -141,7 +155,7 @@ namespace SV.Maat.Micropub
 
             EntryToMicropubConverter converter = new EntryToMicropubConverter(properties);
 
-            var micropubEntries = entries.Select(e => converter.GetMicropub(e, entry=>HttpContext.EntryUrl(e)));
+            var micropubEntries = entries.Select(e => converter.GetMicropub(e, entry=> UrlHelper.EntryUrl(e, _userStore.Find(e.OwnerId))));
 
             return Ok(new
             {

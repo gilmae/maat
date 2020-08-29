@@ -1,21 +1,31 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using StrangeVanilla.Blogging.Events;
+using Users;
 
 namespace SV.Maat.lib
 {
     public static class UrlHelper
     {
-        public static string EntryUrl(this HttpContext ctx, Entry e)
+        public static string EntryUrl(Entry e, User u)
         {
-            if (string.IsNullOrEmpty(e.Slug))
+            string host = u?.Host;
+            if (string.IsNullOrEmpty(host))
             {
-                return $"{ctx.Request.Scheme}://{ctx.Request.Host}/entries/{e.Id}";
+                host = "/";
             }
-            return $"{ctx.Request.Scheme}://{ctx.Request.Host}/{e.Slug}";
+
+            string slug = e.Slug;
+
+            if (string.IsNullOrEmpty(slug))
+            {
+                slug = $"entries/{e.Id}";
+            }
+            return Path.Join(host, slug);
         }
 
 

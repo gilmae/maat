@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using SV.Maat.IndieAuth.Middleware;
 using SV.Maat.lib.Pipelines;
 using SV.Maat.Projections;
+using Users;
 
 namespace SV.Maat.Micropub
 {
@@ -31,6 +32,7 @@ namespace SV.Maat.Micropub
         Pipeline _pipeline;
         CommandHandler _commandHandler;
         IEntryProjection _entries;
+        IUserStore _userStore;
 
         public MicropubController(ILogger<MicropubController> logger,
             IEventStore<Entry> entryRepository,
@@ -38,7 +40,8 @@ namespace SV.Maat.Micropub
             IFileStore fileStore,
             Pipeline pipeline,
             CommandHandler commandHandler,
-            IEntryProjection entries
+            IEntryProjection entries,
+            IUserStore userStore
             )
         {
             _logger = logger;
@@ -48,6 +51,7 @@ namespace SV.Maat.Micropub
             _pipeline = pipeline;
             _commandHandler = commandHandler;
             _entries = entries;
+            _userStore = userStore;
         }
 
         [HttpPost]
@@ -348,7 +352,7 @@ namespace SV.Maat.Micropub
             }
 
             Entry entry = _entries.Get(id);
-            return Created(this.HttpContext.EntryUrl(entry), null);
+            return Created(UrlHelper.EntryUrl(entry, _userStore.Find(entry.OwnerId)), null);
         }
 
         private ActionResult HandleReplaceUpdate(Dictionary<string, string[]> values, Guid id)
@@ -396,7 +400,7 @@ namespace SV.Maat.Micropub
             }
 
             Entry entry = _entries.Get(id);
-            return Created(this.HttpContext.EntryUrl(entry), null);
+            return Created(UrlHelper.EntryUrl(entry, _userStore.Find(entry.OwnerId)), null);
         }
 
         private ActionResult HandleAddUpdate(Dictionary<string, string[]> values, Guid id)
@@ -433,7 +437,7 @@ namespace SV.Maat.Micropub
             }
 
             Entry entry = _entries.Get(id);
-            return Created(this.HttpContext.EntryUrl(entry), null);
+            return Created(UrlHelper.EntryUrl(entry, _userStore.Find(entry.OwnerId)), null);
         }
 
         private byte[] ReadStream(Stream data)
