@@ -87,9 +87,8 @@ namespace SV.Maat.Webmention
 
         void SendWebMentionToReceiver(string entryUrl, string link, string receiver)
         {
-            Uri receiverUri = new Uri(receiver);
-            var client = new RestClient(receiverUri.Host);
-            var request = new RestRequest(receiverUri.PathAndQuery)
+            var client = new RestClient(receiver);
+            var request = new RestRequest()
                 .AddParameter("source", entryUrl)
                 .AddParameter("target", link);
 

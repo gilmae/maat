@@ -13,23 +13,43 @@ namespace SV.Maat.lib
         public static (string link, string receiver) FindReceiver(this string link)
         {
             Uri linkUri = new Uri(link);
-            RestClient client = new RestClient(linkUri.Host);
+            RestClient client = new RestClient(linkUri);
             client.FollowRedirects = true;
 
-            var request = new RestRequest(linkUri.PathAndQuery);
+            var request = new RestRequest();
             var response = client.Get(request);
-            var headers = response.Headers.ToDictionary(h => h.Name, h => h.Value.ToString());
+            var headers = response.Headers.ToDictionary(h => h.Name.ToLower(), h => h.Value.ToString());
             var body = response.Content;
 
-            return (link, FindReceiver(headers,body));
+            string receiver = FindReceiver(headers, body);
+
+            if (string.IsNullOrEmpty(receiver))
+            {
+                return (link, string.Empty);
+            }
+
+            if (!Uri.IsWellFormedUriString(receiver, UriKind.Absolute))
+            {
+                receiver = new Uri(linkUri, receiver).AbsoluteUri;
+            }
+
+            if (Uri.IsWellFormedUriString(receiver, UriKind.Relative))
+            {
+                receiver = Path.Join(link, receiver);
+            }
+
+            return (link, receiver);
         }
 
         public static string FindReceiver(Dictionary<string, string> headers, string body)
         {
-            var linkHeader = HttpHeaders.ParseHttpLinkHeader(headers["link"]).FirstOrDefault(h => h.Params.ContainsKey("rel") && h.Params["rel"] == "webmention");
-            if (linkHeader != null)
+            if (headers.ContainsKey("link"))
             {
-                return linkHeader.Url;
+                var linkHeader = HttpHeaders.ParseHttpLinkHeader(headers["link"]).FirstOrDefault(h => h.Params.ContainsKey("rel") && h.Params["rel"].ToLower().Split(' ').Contains("webmention"));
+                if (linkHeader != null)
+                {
+                    return linkHeader.Url;
+                }
             }
 
             // Find first link in <head> with rel="webmention"
@@ -38,24 +58,15 @@ namespace SV.Maat.lib
                 IsNotConsumingCharacterReferences = true,
             });
             var doc = parser.ParseDocument(body);
-            var headLink = doc
-                .QuerySelectorAll("head link[rel=webmention]")
+            var htmlLink = doc
+                .QuerySelectorAll("link[rel~=webmention], body a[rel~=webmention]")
                 .Select(l => l.GetAttribute("href"))
                 .FirstOrDefault(h => !string.IsNullOrEmpty(h));
-            if (!string.IsNullOrEmpty(headLink))
+            if (!string.IsNullOrEmpty(htmlLink))
             {
-                return headLink;
+                return htmlLink;
             }
 
-            // Find first <a rel="webmention">
-            var bodyLink = doc
-                .QuerySelectorAll("body a[rel=webmention]")
-                .Select(l => l.GetAttribute("href"))
-                .FirstOrDefault(h => !string.IsNullOrEmpty(h));
-            if (!string.IsNullOrEmpty(bodyLink))
-            {
-                return bodyLink;
-            }
 
             return string.Empty;
         }
