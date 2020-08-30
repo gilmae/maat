@@ -23,6 +23,20 @@ namespace SV.Maat.Users
             _userStore = userStore;
         }
 
+
+        [HttpHead]
+        [Route("{username}")]
+        public ActionResult Head(string username)
+        {
+            var user = _userStore.FindByUsername(username).FirstOrDefault();
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok();
+        }
+
         [HttpGet]
         [Route("{username}")]
         public new ActionResult View(string username)
