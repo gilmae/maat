@@ -70,5 +70,18 @@ namespace SV.Maat.lib
 
             return string.Empty;
         }
+
+        public static bool SendWebMention(string source, string target, string receiver)
+        {
+            var client = new RestClient(receiver);
+            var request = new RestRequest()
+                .AddParameter("source", source)
+                .AddParameter("target", target);
+
+            var response = client.Post(request);
+
+            return response.IsSuccessful;
+            
+        }
     }
 }

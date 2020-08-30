@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using AngleSharp.Html.Parser;
 using Events;
 using Microsoft.Extensions.Logging;
-using RestSharp;
 using StrangeVanilla.Blogging.Events;
 using StrangeVanilla.Blogging.Events.Entries.Events;
 using SV.Maat.lib;
@@ -72,8 +68,7 @@ namespace SV.Maat.Webmention
 
             string entryUrl = UrlHelper.EntryUrl(entry, _userStore.Find(e.Id));
 
-            var links = entry.Body.DiscoverLinks();
-            var receivers = DiscoverWebMentionReceivers(links);
+            var receivers = DiscoverWebMentionReceivers(entry.Body.DiscoverLinks());
 
             foreach(var receiver in receivers)
             {
@@ -85,21 +80,15 @@ namespace SV.Maat.Webmention
 
         }
 
-        void SendWebMentionToReceiver(string entryUrl, string link, string receiver)
+        void SendWebMentionToReceiver(string source, string target, string receiver)
         {
-            var client = new RestClient(receiver);
-            var request = new RestRequest()
-                .AddParameter("source", entryUrl)
-                .AddParameter("target", link);
-
-            var response = client.Post(request);
-            if (response.IsSuccessful)
+            if (WebMention.SendWebMention(source, target, receiver))
             {
-                _logger.LogInformation($"Sent WebMention from {entryUrl} to {link}");
+                _logger.LogInformation($"Sent WebMention from {source} to {target}");
             }
             else
             {
-                _logger.LogInformation($"WebMention from {entryUrl} to {link} rejected with status {response.StatusCode}");
+                _logger.LogInformation($"WebMention from {source} to {target} rejected by {receiver}");
             }
         }
 
