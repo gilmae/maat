@@ -8,11 +8,13 @@ using System.Threading.Tasks;
 using AngleSharp.Html.Parser;
 using Events;
 using Microsoft.Extensions.Logging;
+using RestSharp;
 using StrangeVanilla.Blogging.Events;
 using StrangeVanilla.Blogging.Events.Entries.Events;
 using SV.Maat.lib;
 using SV.Maat.lib.Pipelines;
 using SV.Maat.Projections;
+using Users;
 
 namespace SV.Maat.Webmention
 {
@@ -21,14 +23,17 @@ namespace SV.Maat.Webmention
         ILogger<WebmentionSender> _logger;
         EventDelegate _next;
         IEntryProjection _entries;
+        IUserStore _userStore;
 
         public WebmentionSender(ILogger<WebmentionSender> logger,
             EventDelegate next,
-            IEntryProjection entries)
+            IEntryProjection entries,
+            IUserStore userStore)
         {
             _logger = logger;
             _next = next;
             _entries = entries;
+            _userStore = userStore;
         }
 
         public async Task InvokeAsync(Event e)
@@ -65,6 +70,8 @@ namespace SV.Maat.Webmention
                 return;
             }
 
+            string entryUrl = UrlHelper.EntryUrl(entry, _userStore.Find(e.Id));
+
             var links = entry.Body.DiscoverLinks();
             var receivers = DiscoverWebMentionReceivers(links);
 
@@ -72,67 +79,40 @@ namespace SV.Maat.Webmention
             {
                 foreach (string link in receiver.Value)
                 {
-                    SendWebMentionToReceiver(link, receiver.Key);
+                    SendWebMentionToReceiver(entryUrl, link, receiver.Key);
                 }
             }
 
         }
 
-        void SendWebMentionToReceiver(string link, string receiver)
+        void SendWebMentionToReceiver(string entryUrl, string link, string receiver)
         {
-            throw new NotImplementedException();
+            Uri receiverUri = new Uri(receiver);
+            var client = new RestClient(receiverUri.Host);
+            var request = new RestRequest(receiverUri.PathAndQuery)
+                .AddParameter("source", entryUrl)
+                .AddParameter("target", link);
+
+            var response = client.Post(request);
+            if (response.IsSuccessful)
+            {
+                _logger.LogInformation($"Sent WebMention from {entryUrl} to {link}");
+            }
+            else
+            {
+                _logger.LogInformation($"WebMention from {entryUrl} to {link} rejected with status {response.StatusCode}");
+            }
         }
 
         Dictionary<string, IEnumerable<string>> DiscoverWebMentionReceivers(IEnumerable<string> links)
         {
-            return links.Select(FindReceiver)
+            return links.Select(WebMention.FindReceiver)
                         .GroupBy(i => i.link)
                         .Select(g => new { receiver = g.Key, links = g.Select(i => i.receiver) })
                         .ToDictionary(i => i.receiver, i => i.links);
 
         }
 
-        (string link, string receiver) FindReceiver(string link)
-        {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(link);
-            request.AllowAutoRedirect = true;
-
-            using (var response = request.GetResponse())
-            {
-                //Find first Http Link with rel="webmention"
-                var linkHeader = HttpHeaders.ParseHttpLinkHeader(response.Headers["link"]).FirstOrDefault(h=>h.Params.ContainsKey("rel") && h.Params["rel"] == "webmention");
-                if (linkHeader != null)
-                {
-                    return (link, linkHeader.Url);
-                }
-
-                // Find first link in <head> with rel="webmention"
-                var parser = new HtmlParser(new HtmlParserOptions
-                {
-                    IsNotConsumingCharacterReferences = true,
-                });
-                var doc = parser.ParseDocument(response.GetResponseStream());
-                var headLink = doc
-                    .QuerySelectorAll("head link[rel=webmention]")
-                    .Select(l=>l.GetAttribute("href"))
-                    .FirstOrDefault(h=>!string.IsNullOrEmpty(h));
-                if (!string.IsNullOrEmpty(headLink))
-                {
-                    return (link, headLink);
-                }
-
-                // Find first <a rel="webmention">
-                var bodyLink = doc
-                    .QuerySelectorAll("body a[rel=webmention]")
-                    .Select(l => l.GetAttribute("href"))
-                    .FirstOrDefault(h => !string.IsNullOrEmpty(h));
-                if (!string.IsNullOrEmpty(bodyLink))
-                {
-                    return (link, bodyLink);
-                }
-
-            }
-            return (link, string.Empty);
-        }
+        
     }
 }
