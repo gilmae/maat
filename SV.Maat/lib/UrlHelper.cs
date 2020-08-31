@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using StrangeVanilla.Blogging.Events;
@@ -58,16 +59,8 @@ namespace SV.Maat.lib
         {
             // User urls are in the format <host>/user/{username}
 
-            var path = uri.AbsolutePath;
+            return Regex.Match(uri.AbsolutePath, @"user\/([^/?]+)", RegexOptions.IgnoreCase)?.Groups[1].Value;
 
-            if (path.Contains(@"/user/"))
-            {
-                var potentialUserName = path.Replace(@"/user/", "");
-
-                return potentialUserName;
-            }
-
-            return "";
         }
     }
 }

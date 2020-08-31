@@ -16,6 +16,14 @@ namespace Tests
         }
 
         [Fact]
+        public void IgnoresTrailingSlash()
+        {
+            string expected = "baz";
+            string actual = new Uri($"http://host/user/{expected}/").GetUserNameFromUrl();
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
         public void IgnoresQueryString()
         {
             string expected = "baz";
