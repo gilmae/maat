@@ -21,8 +21,6 @@ namespace SV.Maat.ExternalNetworks
         private readonly string ConsumerKey;
         private readonly string ConsumerKeySecret;
 
-        readonly Regex statusIdRegex = new Regex(@"^\/?[^\/]+\/{1}status\/{1}(\d+)");
-
         private ILogger<Twitter> _logger;
 
         public Twitter(IConfiguration config, ILogger<Twitter> logger)
@@ -133,11 +131,11 @@ namespace SV.Maat.ExternalNetworks
                 {
                     var path = new Uri(url).AbsolutePath;
 
-                    var match = statusIdRegex.Match(path);
+                    var match = new Regex(@"^\/?[^\/]+\/{1}statuses\/{1}(\d+)").Match(path);
 
-                    if (match != null && match.Groups != null && match.Groups.Count > 0)
+                    if (match != null && match.Groups != null && match.Groups.Count > 1)
                     {
-                        if (long.TryParse(match.Groups[0].Value, out long id))
+                        if (long.TryParse(match.Groups[1].Value, out long id))
                         {
                             return id;
                         }
