@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <Folder Include="Mocks\" />
+    <Folder Include="Twitter\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SV.Maat\SV.Maat.csproj" />

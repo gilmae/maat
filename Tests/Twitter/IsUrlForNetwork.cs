@@ -2,9 +2,9 @@
 using System.IO;
 using Microsoft.Extensions.Configuration;
 using Xunit;
-namespace Tests
+namespace Tests.Twitter
 {
-    public class Twitter
+    public class IsUrlForNetwork
     {
 
         public IConfiguration Config()
@@ -26,7 +26,7 @@ namespace Tests
         [Fact]
         public void IdentifiesTwitterUrls()
         {
-            
+
             Assert.True(new SV.Maat.ExternalNetworks.Twitter(Config(), null).IsUrlForNetwork(null, "https://twitter.com/gilmae/statuses/1301381260552486912"));
         }
     }
