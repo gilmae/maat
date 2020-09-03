@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using HeyRed.MarkdownSharp;
 using Newtonsoft.Json.Linq;
 using StrangeVanilla.Blogging.Events;
 
@@ -23,6 +24,24 @@ namespace SV.Maat.lib
             return Regex.Matches(content, uriPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled)
                 .SelectMany(m => m.Captures.Select(c => c.Value))
                 .Distinct();
+        }
+
+        public static string GetHtml(this Content content)
+        {
+            if (content.Type == ContentType.plaintext)
+            {
+                return content.Value;
+            }
+            else if (content.Type == ContentType.html)
+            {
+                return content.Markup;
+            }
+            else if (content.Type == ContentType.markdown)
+            {
+                return new Markdown().Transform(content.Markup);
+            }
+
+            return string.Empty;
         }
 
         public static string GetPlainText(this Content content)

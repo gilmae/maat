@@ -15,7 +15,7 @@
         {
             <a href="@Model.Bookmark" class="u-bookmark-of">🔖 link</a>
         }
-        <p class="e-content">@Model.Body</p>
+        <section class="e-content">@Html.Raw(Model.Body)</section>
         @if (Model.Photos.Any())
         {
             <ul class="u-photo">

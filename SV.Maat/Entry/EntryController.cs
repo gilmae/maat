@@ -27,7 +27,7 @@ namespace SV.Maat.Entries
             Models.Entry model = new Models.Entry
             {
                 Title = entry.Title.GetPlainText(),
-                Body = entry.Body.GetPlainText(),
+                Body = entry.Body.GetHtml(),
                 Photos = entry.AssociatedMedia?.Select(m => new Models.Media { Url = m.Url, Description = m.Description }).ToArray() ?? new Models.Media[0],
                 Categories = entry.Categories?.ToArray() ?? new string[0],
                 PublishedAt = entry.PublishedAt.Value,
