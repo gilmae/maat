@@ -42,8 +42,9 @@ namespace SV.Maat.Entries
             if (!entry.Syndications.IsNull())
             {
                 model.AlternateVersions = (from e in entry.Syndications
-                                          join n in _externalNetworks on e.Network equals n.Name
-                                          select new Models.AlternateVersion { Name = n.Name??"Unknown", Url = e.Url, Icon = n.Photo??"" }).ToArray();
+                                          join n in _externalNetworks on e.Network equals n.Name into gj
+                                           from subnet in gj.DefaultIfEmpty()
+                                           select new Models.AlternatVersion { Name = subnet.Name??"Unknown", Url = e.Url, Icon = subnet.Photo??"" }).ToArray();
 
             }
 
