@@ -9,8 +9,14 @@ namespace SV.Maat.Entries.Models
         public Media[] Photos;
         public DateTime PublishedAt;
         public string Bookmark;
+        public AlternateVersion[] AlternateVersions;
     }
 
+    public struct AlternateVersion {
+        public string Name;
+        public string Url;
+        public string Icon;
+    }
     public struct Media
     {
         public string Url;

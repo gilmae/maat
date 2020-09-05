@@ -34,5 +34,15 @@
                 }
             </ul>
         }
+        @if (Model.AlternateVersions != null && Model.AlternateVersions.Any())
+        {
+    <ul class="u-syndications">
+        @foreach (var s in Model.AlternateVersions)
+        {
+            <li><a href="@s.Url">@s.Name</a></li>
+        }
+    </ul>
+        }
+
     </article>
 
