@@ -3,14 +3,6 @@
     Layout = "_Layout";
     ViewBag.Title = $"{Model.PublishedAt.ToString("G")}";
 }
-@section head {
-    @if (Model.AlternateVersions != null && Model.AlternateVersions.Any())
-    {
-        @foreach (var s in Model.AlternateVersions){
-            <link rel="alternate" href="@s.Url" />
-        }
-    }
-}
 
 <article class="h-entry">
     <header>
@@ -35,19 +27,19 @@
     }
     @if (Model.Categories.Any())
     {
-        <ul class="p-category">
+        <ul class="categories">
             @foreach (string c in Model.Categories)
             {
-                <li>#@c</li>
+                <li class="p-category">#@c</li>
             }
         </ul>
     }
     @if (Model.AlternateVersions != null && Model.AlternateVersions.Any())
     {
-        <ul class="u-syndications">
+        <ul class="syndications">
             @foreach (var s in Model.AlternateVersions)
             {
-                <li><a href="@s.Url">@s.Name</a></li>
+                <li><a href="@s.Url" class="u-syndication syndication">@s.Name</a></li>
             }
         </ul>
     }
