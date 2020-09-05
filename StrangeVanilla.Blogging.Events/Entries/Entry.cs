@@ -11,7 +11,7 @@ namespace StrangeVanilla.Blogging.Events
         public IList<string> Categories { get; set; }
         public DateTime? PublishedAt { get; set; }
         public string Uid { get; set; }
-        public IList<string> Syndications { get; set; }
+        public IList<Syndication> Syndications { get; set; }
         public IList<MediaLink> AssociatedMedia { get; set; }
         public string BookmarkOf { get; set; }
         public string ReplyTo { get; set; }
@@ -48,6 +48,12 @@ namespace StrangeVanilla.Blogging.Events
             public string Url { get; set; }
             public string Type { get; set; }
             public string Description { get; set; }
+        }
+
+        public class Syndication
+        {
+            public string Url { get; set; }
+            public string Network { get; set; }
         }
     }
 

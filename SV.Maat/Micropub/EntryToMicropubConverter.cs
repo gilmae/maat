@@ -93,8 +93,14 @@ namespace SV.Maat.Micropub
                 case "published":
                 case "dt-deleted":
                 case "mp-syndicate-to":
-                case "syndication":
                     return value;
+                case "syndication":
+                    var syndications = value as IList<Syndication>;
+                    if (syndications != null)
+                    {
+                        return syndications.Select(s => s.Url);
+                    }
+                    return null;
                 case "photo":
                     var media = value as IList<MediaLink>;
                     if (media != null)

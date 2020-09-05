@@ -3,15 +3,20 @@ using Microsoft.AspNetCore.Mvc;
 using SV.Maat.Projections;
 using SV.Maat.lib;
 using System.Linq;
+using System.Collections.Generic;
+using SV.Maat.ExternalNetworks;
 
 namespace SV.Maat.Entries
 {
     public class EntryController : Controller
     {
         IEntryProjection _entries;
-        public EntryController(IEntryProjection entries)
+        IEnumerable<ISyndicationNetwork> _externalNetworks;
+        public EntryController(IEntryProjection entries,
+            IEnumerable<ISyndicationNetwork> externalNetworks)
         {
             _entries = entries;
+            _externalNetworks = externalNetworks;
         }
 
         [HttpGet]
@@ -33,6 +38,15 @@ namespace SV.Maat.Entries
                 PublishedAt = entry.PublishedAt.Value,
                 Bookmark = entry.BookmarkOf
             };
+            
+            if (!entry.Syndications.IsNull())
+            {
+                model.AlternateVersions = (from e in entry.Syndications
+                                          join n in _externalNetworks on e.Network equals n.Name into gj
+                                           from subnet in gj.DefaultIfEmpty()
+                                           select new Models.AlternateVersion { Name = (subnet?.Name)??e.Url, Url = e.Url, Icon = (subnet?.Photo)??"" }).ToArray();
+
+            }
 
             return View(model);
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Events;
 using StrangeVanilla.Blogging.Events;
 using StrangeVanilla.Blogging.Events.Entries.Events;
@@ -12,10 +13,11 @@ namespace SV.Maat.Commands
         }
 
         public string SyndicationUrl { get; set; }
+        public string Network { get; set; }
 
         public Event GetEvent(int version)
         {
-            return new SyndicationPublished { Syndication = SyndicationUrl };
+            return new SyndicationPublished { Syndication = SyndicationUrl, Network = Network };
         }
 
         public bool IsValid(Aggregate aggregate)
@@ -23,7 +25,7 @@ namespace SV.Maat.Commands
             return aggregate is Entry
                 && (
                     ((Entry)aggregate).Syndications == null
-                    || ((Entry)aggregate).Syndications.Contains(SyndicationUrl)
+                    || ((Entry)aggregate).Syndications.Any(s=>s.Url == SyndicationUrl)
                 );
         }
     }
