@@ -8,6 +8,7 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
     public class SyndicationPublished : Event<Entry>
     {
         public string Syndication { get; set; }
+        public string Network { get; set; }
 
         public SyndicationPublished(){}
 
@@ -22,11 +23,11 @@ namespace StrangeVanilla.Blogging.Events.Entries.Events
             base.Apply(aggregate);
             if (aggregate.Syndications == null)
             {
-                aggregate.Syndications = new List<string> { Syndication };
+                aggregate.Syndications = new List<Entry.Syndication> { new Entry.Syndication { Url = Syndication, Network = Network } };
             }
             else
             {
-                aggregate.Syndications.Add(Syndication);
+                aggregate.Syndications.Add(new Entry.Syndication { Url = Syndication, Network = Network });
                 aggregate.Syndications = aggregate.Syndications.Distinct().ToList();
             }
         }

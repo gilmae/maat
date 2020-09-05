@@ -111,7 +111,7 @@ namespace SV.Maat.Reactors
                     inNetworkReplyTo
                 );
                 _logger.LogTrace($"Syndicated {syndicated.AggregateId} as {syndicatedUrl}");
-                _commandHandler.Handle<Entry>(syndicated.AggregateId, new PublishSyndication { SyndicationUrl = syndicatedUrl });
+                _commandHandler.Handle<Entry>(syndicated.AggregateId, new PublishSyndication { SyndicationUrl = syndicatedUrl, Network = network.Name });
 
             }
             catch (Exception ex)
@@ -132,7 +132,7 @@ namespace SV.Maat.Reactors
 
                 if (parentEntry != null && parentEntry.Syndications != null)
                 {
-                    replyingTo = replyingTo.Union(parentEntry.Syndications).ToList();
+                    replyingTo = replyingTo.Union(parentEntry.Syndications.Select(s=>s.Url)).ToList();
                 }
             }
 
