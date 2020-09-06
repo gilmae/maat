@@ -33,6 +33,7 @@
     <PackageReference Include="CoreTweet" Version="1.0.0.483" />
     <PackageReference Include="RestSharp" Version="106.11.4" />
     <PackageReference Include="Markdown" Version="2.2.1" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="lib\" />
