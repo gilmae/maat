@@ -7,6 +7,9 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System.IO;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Formats.Gif;
+using SixLabors.ImageSharp.Formats.Png;
 
 namespace SV.Maat.MediaView
 {
@@ -50,12 +53,21 @@ namespace SV.Maat.MediaView
                 {
                     float scale = (float)width / image.Width;
                     int height = (int)Math.Floor(image.Height * scale);
+                    SixLabors.ImageSharp.Formats.IImageEncoder encoder = new JpegEncoder();
+                    if (m.MimeType == "image/gif")
+                    {
+                        encoder = new GifEncoder();
+                    }
+                    else if (m.MimeType == "image/png")
+                    {
+                        encoder = new PngEncoder();
+                    }
 
-                    image.Mutate(x => x.Resize(width,height));
+                    image.Mutate(x => x.Resize(width, height, KnownResamplers.Lanczos3));
                     var ms = new MemoryStream();
-                        image.SaveAsJpeg(ms);
-                        ms.Position = 0;
-                        return new FileStreamResult(ms, Microsoft.Net.Http.Headers.MediaTypeHeaderValue.Parse("image/jpeg"));
+                    image.Save(ms, encoder);
+                    ms.Position = 0;
+                    return new FileStreamResult(ms, m.MimeType);
                 }
             }
 
