@@ -13,10 +13,10 @@
     <section class="e-content">@Html.Raw(Model.Body)</section>
     @if (Model.Photos.Any())
     {
-        <ul class="u-photo">
+        <ul class="photos">
             @foreach (var p in Model.Photos)
             {
-                <li><img alt="@p.Description" src="@p.Url" /></li>
+                <li><a href="@p.Url" rel="canonical" target="_blank"><img alt="@p.Description" src="@p.Url/64" class="u-photo"/></a></li>
             }
         </ul>
     }
@@ -34,7 +34,7 @@
         <ul class="syndications">
             @foreach (var s in Model.AlternateVersions)
             {
-                <li><a href="@s.Url" class="u-syndication syndication">@s.Name</a></li>
+                <li><a href="@s.Url" class="u-syndication syndication"><img src="@s.Icon/16" /> @s.Name</a></li>
             }
         </ul>
     }
