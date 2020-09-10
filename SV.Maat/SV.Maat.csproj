@@ -120,5 +120,14 @@
     <Content Update="Entry\Views\Entry.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+        <Content Update="Entry\Views\_entry.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+        <Content Update="Entry\Views\Entry %28copy%29.cshtml">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Update="Entry\Views\Timeline.cshtml">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
   </ItemGroup>
 </Project>

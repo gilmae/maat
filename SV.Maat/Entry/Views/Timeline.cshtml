@@ -1,0 +1,14 @@
+﻿@model IList<SV.Maat.Entries.Models.Entry>;
+@{
+    Layout = "_Layout";
+    ViewBag.Title = $"Timeline";
+}
+
+<div class="timeline">
+@foreach (var m in Model) {
+    await Html.RenderPartialAsync("_entry", m);
+}
+
+</div>
+
+

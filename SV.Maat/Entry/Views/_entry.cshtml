@@ -1,0 +1,42 @@
+@model SV.Maat.Entries.Models.Entry;
+<article class="h-entry">
+    <header>
+        @if (!string.IsNullOrEmpty(Model.Title))
+        {
+            <h2 class="p-name">@Model.Title</h2>
+        }
+    </header>
+    @if (!string.IsNullOrEmpty(Model.Bookmark))
+    {
+        <a href="@Model.Bookmark" class="u-bookmark-of">🔖 link</a>
+    }
+    <section class="e-content">@Html.Raw(Model.Body)</section>
+    @if (Model.Photos.Any())
+    {
+        <ul class="u-photo">
+            @foreach (var p in Model.Photos)
+            {
+                <li><img alt="@p.Description" src="@p.Url" /></li>
+            }
+        </ul>
+    }
+    @if (Model.Categories.Any())
+    {
+        <ul class="categories">
+            @foreach (string c in Model.Categories)
+            {
+                <li class="p-category">#@c</li>
+            }
+        </ul>
+    }
+    @if (Model.AlternateVersions != null && Model.AlternateVersions.Any())
+    {
+        <ul class="syndications">
+            @foreach (var s in Model.AlternateVersions)
+            {
+                <li><a href="@s.Url" class="u-syndication syndication">@s.Name</a></li>
+            }
+        </ul>
+    }
+
+</article>

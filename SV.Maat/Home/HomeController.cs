@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace SV.Maat.Home
 {
-    [Route("/")]
+    [Route("/about")]
     public class HomeController : Controller
     {
         [Route("")]

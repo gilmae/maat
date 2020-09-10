@@ -20,6 +20,37 @@ namespace SV.Maat.Entries
         }
 
         [HttpGet]
+        [Route("/")]
+        public IActionResult Timeline()
+        {
+            var entries = _entries.GetLatest(20);
+
+            var model = entries.Select(entry =>
+            {
+                var m = new Models.Entry
+                {
+                    Title = entry.Title.GetPlainText(),
+                    Body = entry.Body.GetHtml(),
+                    Photos = entry.AssociatedMedia?.Select(m => new Models.Media { Url = m.Url, Description = m.Description }).ToArray() ?? new Models.Media[0],
+                    Categories = entry.Categories?.ToArray() ?? new string[0],
+                    PublishedAt = entry.PublishedAt.Value,
+                    Bookmark = entry.BookmarkOf
+                };
+                if (!entry.Syndications.IsNull())
+                {
+                    m.AlternateVersions = (from e in entry.Syndications
+                                           join n in _externalNetworks on e.Network equals n.Name into gj
+                                           from subnet in gj.DefaultIfEmpty()
+                                           select new Models.AlternateVersion { Name = (subnet?.Name) ?? e.Url, Url = e.Url, Icon = (subnet?.Photo) ?? "" }).ToArray();
+
+                }
+                return m;
+            });
+
+            return View(model.ToList());
+        }
+
+        [HttpGet]
         [Route("/entries/{id}")]
         public IActionResult Entry([FromRoute] Guid id)
         {
@@ -38,13 +69,13 @@ namespace SV.Maat.Entries
                 PublishedAt = entry.PublishedAt.Value,
                 Bookmark = entry.BookmarkOf
             };
-            
+
             if (!entry.Syndications.IsNull())
             {
                 model.AlternateVersions = (from e in entry.Syndications
-                                          join n in _externalNetworks on e.Network equals n.Name into gj
+                                           join n in _externalNetworks on e.Network equals n.Name into gj
                                            from subnet in gj.DefaultIfEmpty()
-                                           select new Models.AlternateVersion { Name = (subnet?.Name)??e.Url, Url = e.Url, Icon = (subnet?.Photo)??"" }).ToArray();
+                                           select new Models.AlternateVersion { Name = (subnet?.Name) ?? e.Url, Url = e.Url, Icon = (subnet?.Photo) ?? "" }).ToArray();
 
             }
 

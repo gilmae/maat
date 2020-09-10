@@ -28,6 +28,9 @@ namespace SV.Maat.lib
 
         public static string GetHtml(this Content content)
         {
+            if (content == null){
+                return string.Empty;
+            }
             if (content.Type == ContentType.plaintext)
             {
                 return content.Value;
