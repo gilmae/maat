@@ -55,7 +55,7 @@ namespace SV.Maat
                 opt.DefaultScheme = IndieAuthTokenHandler.SchemeName;
             }).AddScheme<IndieAuthOptions, IndieAuthTokenHandler>(IndieAuthTokenHandler.SchemeName, op => { });
 
-
+            services.AddHealthChecks();
             services.AddMvc().AddNewtonsoftJson();
             services.AddRazorPages().AddNewtonsoftJson();
             services.AddControllers().AddNewtonsoftJson();
@@ -113,6 +113,7 @@ namespace SV.Maat
             {
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
+                endpoints.MapHealthChecks("/health");
             });
 
             app.UsePipelines(builder =>
