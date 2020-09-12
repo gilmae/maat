@@ -15,7 +15,7 @@ namespace SV.Maat.Projections
         {
         }
 
-        public Entry Get(Guid id, bool publishedOnly = false)
+        public Entry Get(Guid id)
         {
             if (projections.TryGetValue(id, out Entry entry))
             {
@@ -29,31 +29,24 @@ namespace SV.Maat.Projections
             return projections.Values.FirstOrDefault(e => e.Slug == slug);
         }
 
-        public IEnumerable<Entry> Get(bool publishedOnly = false)
+        public IEnumerable<Entry> Get()
         {
-            if (publishedOnly)
-            {
-                return projections.Values.Where(e => e.PublishedAt.GetValueOrDefault() <= DateTime.UtcNow).OrderByDescending(e => e.CreatedAt);
-            }
-            else
-            {
-                return projections.Values.OrderByDescending(e => e.CreatedAt);
-            }
+            return projections.Values.OrderByDescending(e => e.CreatedAt);
         }
 
-        public IEnumerable<Entry> GetAfter(int numItems, DateTime after, bool publishedOnly = false)
+        public IEnumerable<Entry> GetAfter(int numItems, DateTime after)
         {
-            return Get(publishedOnly).Where(x => x.CreatedAt > after).Take(numItems);
+            return Get().Where(x => x.CreatedAt > after).Take(numItems);
         }
 
-        public IEnumerable<Entry> GetBefore(int numItems, DateTime before, bool publishedOnly = false)
+        public IEnumerable<Entry> GetBefore(int numItems, DateTime before)
         {
-            return Get(publishedOnly).Where(x => x.CreatedAt < before).Take(numItems);
+            return Get().Where(x => x.CreatedAt < before).Take(numItems);
         }
 
-        public IEnumerable<Entry> GetLatest(int numItems, bool publishedOnly = false)
+        public IEnumerable<Entry> GetLatest(int numItems)
         {
-            return Get(publishedOnly).Take(numItems);
+            return Get().Take(numItems);
         }
 
         public override (int?, int) ProcessEvents(IList<Event> newEvents)

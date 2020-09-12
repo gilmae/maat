@@ -10,6 +10,7 @@ namespace SV.Maat.Entries.Models
         public DateTime PublishedAt;
         public string Bookmark;
         public AlternateVersion[] AlternateVersions;
+        public string Url;
     }
 
     public struct AlternateVersion {
