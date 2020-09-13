@@ -29,6 +29,17 @@ namespace SV.Maat.lib
             return Path.Join(host, slug);
         }
 
+        public static string MediaUrl(Guid id, User u)
+        {
+            string host = u?.Host;
+            if (string.IsNullOrEmpty(host))
+            {
+                host = "/";
+            }
+            string slug = $"media/{id}";
+            return Path.Join(host, slug);
+        }
+
 
         public static string MediaUrl(this IUrlHelper ctx, Media e)
         {

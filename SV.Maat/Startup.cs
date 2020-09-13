@@ -120,6 +120,7 @@ namespace SV.Maat
             app.UsePipelines(builder =>
             {
                 builder.UseSyndicateEntry();
+                builder.UseBookmarkArchival();
             });
 
             app.UseDbContext(builder =>
