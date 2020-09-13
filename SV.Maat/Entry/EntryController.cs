@@ -6,6 +6,7 @@ using System.Linq;
 using System.Collections.Generic;
 using SV.Maat.ExternalNetworks;
 using Users;
+using StrangeVanilla.Blogging.Events;
 
 namespace SV.Maat.Entries
 {
@@ -30,27 +31,8 @@ namespace SV.Maat.Entries
             var entries = _entries.Get().Where(x => x.Status == StrangeVanilla.Blogging.Events.StatusType.published).Take(20);
 
             var model = entries.Select(entry =>
-            {
-                var m = new Models.Entry
-                {
-                    Title = entry.Title.GetPlainText(),
-                    Body = entry.Body.GetHtml(),
-                    Photos = entry.AssociatedMedia?.Select(m => new Models.Media { Url = m.Url, Description = m.Description }).ToArray() ?? new Models.Media[0],
-                    Categories = entry.Categories?.ToArray() ?? new string[0],
-                    PublishedAt = entry.PublishedAt.Value,
-                    Bookmark = entry.BookmarkOf,
-                    Url = UrlHelper.EntryUrl(entry, _userStore.Find(entry.OwnerId))
-                };
-                if (!entry.Syndications.IsNull())
-                {
-                    m.AlternateVersions = (from e in entry.Syndications
-                                           join n in _externalNetworks on e.Network equals n.Name into gj
-                                           from subnet in gj.DefaultIfEmpty()
-                                           select new Models.AlternateVersion { Name = (subnet?.Name) ?? e.Url, Url = e.Url, Icon = (subnet?.Photo) ?? "" }).ToArray();
-
-                }
-                return m;
-            });
+                CreateModel(entry, _userStore.Find(entry.OwnerId))
+            );
 
             return View(model.ToList());
         }
@@ -65,17 +47,24 @@ namespace SV.Maat.Entries
                 return NotFound();
             }
             var user = _userStore.Find(entry.OwnerId);
+
+            var model = CreateModel(entry, user);
+            return View(model);
+        }
+
+        private Models.Entry CreateModel(Entry entry, User user)
+        {
             Models.Entry model = new Models.Entry
             {
                 Title = entry.Title.GetPlainText(),
                 Body = entry.Body.GetHtml(),
-                Photos = entry.AssociatedMedia?.Select(m => new Models.Media { Url = m.Url, Description = m.Description }).ToArray() ?? new Models.Media[0],
+                Photos = entry.AssociatedMedia?.Where(m => m.Type == "photo").Select(m => new Models.Media { Url = m.Url, Description = m.Description }).ToArray() ?? new Models.Media[0],
                 Categories = entry.Categories?.ToArray() ?? new string[0],
                 PublishedAt = entry.PublishedAt.Value,
                 Bookmark = entry.BookmarkOf,
                 Url = UrlHelper.EntryUrl(entry, user)
             };
-
+            model.AlternateVersions = new List<Models.AlternateVersion>().ToArray();
             if (!entry.Syndications.IsNull())
             {
                 model.AlternateVersions = (from e in entry.Syndications
@@ -84,8 +73,13 @@ namespace SV.Maat.Entries
                                            select new Models.AlternateVersion { Name = (subnet?.Name) ?? e.Url, Url = e.Url, Icon = (subnet?.Photo) ?? "" }).ToArray();
 
             }
-
-            return View(model);
+            if (!entry.AssociatedMedia.IsNull() && entry.AssociatedMedia.Any(m => m.Type == MediaType.archivedCopy.ToString()))
+            {
+                model.AlternateVersions = model.AlternateVersions.Union(entry.AssociatedMedia?
+                       .Where(m => m.Type == MediaType.archivedCopy.ToString())
+                       .Select(m => new Models.AlternateVersion { Url = m.Url, Name = "Archive", Icon = "" })).ToArray();
+            }
+            return model;
         }
     }
 }

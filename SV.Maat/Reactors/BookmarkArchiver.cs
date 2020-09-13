@@ -92,7 +92,7 @@ namespace SV.Maat.Reactors
 
             string attachmentUrl = $"/media/{id}";
 
-            var attachMediaToEntry = new AttachMediaToEntry() { Type = "application/pdf", Url = attachmentUrl, Description = "Archived PDF of bookmarked url" };
+            var attachMediaToEntry = new AttachMediaToEntry() { Type = MediaType.archivedCopy.ToString() , Url = attachmentUrl, Description = "Archived PDF of bookmarked url" };
             _commandHandler.Handle<Entry>(entryId, attachMediaToEntry);
         }
 

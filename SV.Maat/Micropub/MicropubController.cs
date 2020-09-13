@@ -105,7 +105,11 @@ namespace SV.Maat.Micropub
                     return BadRequest("Could not upload file");
                 }
 
-                media = new List<Entry.MediaLink> { new Entry.MediaLink { Url = this.Url.ActionLink("GetMediaFile", "Media", new { id }), Type = post.Photo.Name } };
+                media = new List<Entry.MediaLink> {
+                    new Entry.MediaLink {
+                        Url = this.Url.ActionLink("GetMediaFile", "Media", new { id }),
+                        Type = post.Photo.Name }
+                };
             }
 
             string postStatus = post.PostStatus;

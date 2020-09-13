@@ -48,6 +48,7 @@ namespace StrangeVanilla.Blogging.Events
             public string Url { get; set; }
             public string Type { get; set; }
             public string Description { get; set; }
+
         }
 
         public class Syndication
@@ -68,6 +69,14 @@ namespace StrangeVanilla.Blogging.Events
         plaintext,
         html,
         markdown
+    }
+
+    public enum MediaType
+    {
+        photo,
+        video,
+        document,
+        archivedCopy
     }
 
     public class Content
