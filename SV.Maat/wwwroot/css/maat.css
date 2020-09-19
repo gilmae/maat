@@ -8,3 +8,22 @@ header h1{
     display:inline-block;
     margin-left:1rem;
 }
+
+ul.syndications li {
+    display: inline;
+    margin-left: .33em;
+}
+
+ul.syndications li:first-child {
+    margin-left: 0;
+}
+
+ul.syndications li a {
+    text-decoration: none;
+    font-size: .85em;
+    color: #555;
+}
+
+ ul.syndications li a i.fab {
+    font-size: .9em
+}
