@@ -35,7 +35,7 @@
             <li><a href="@Model.Url" rel="canonical" class="u-url">@Model.PublishedAt.ToString("G")</a></li>
             @foreach (var s in Model.AlternateVersions)
             {
-                <li><a href="@s.Url" class="u-syndication syndication"><i class="@s.Name.ToLower() icon" alt="@s.Name">&nbsp;</i></li>
+                <li><a href="@s.Url" class="u-syndication syndication"><i class="fab fa-@s.Name.ToLower() icon" alt="@s.Name">&nbsp;</i></li>
             }
         </ul>
     }
