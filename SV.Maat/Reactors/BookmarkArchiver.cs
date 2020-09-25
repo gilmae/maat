@@ -54,7 +54,7 @@ namespace SV.Maat.Reactors
 
         private void HandleEvent(ContentSet2 e)
         {
-            if (e == null)
+            if (e == null || string.IsNullOrEmpty(e.BookmarkOf))
             {
                 return;
             }
@@ -64,7 +64,7 @@ namespace SV.Maat.Reactors
 
         private void HandleEvent(ContentAdded2 e)
         {
-            if (e == null)
+            if (e == null || string.IsNullOrEmpty(e.BookmarkOf))
             {
                 return;
             }
