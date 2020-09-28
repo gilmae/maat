@@ -30,7 +30,7 @@ namespace SV.Maat.Micropub
                 byte[] fileData = new byte[file.Length];
                 using (var stream = new MemoryStream(fileData))
                 {
-                    file.CopyToAsync(stream);
+                    file.CopyTo(stream);
                 }
                 string filePath = _fileStore.Save(fileData);
                 Guid id = Guid.NewGuid();
