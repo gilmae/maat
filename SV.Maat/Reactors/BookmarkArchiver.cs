@@ -99,14 +99,14 @@ namespace SV.Maat.Reactors
         private string DownloadUrl(string url)
         {
             string tempLocation = Path.Join(Path.GetTempPath(), $"{Guid.NewGuid()}.pdf");
-            string arguments = $"{url} {tempLocation}";
+            string cmd = $"wkhtmltopdf {url} {tempLocation}";
 
             var process = new Process()
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = "wkhtmltopdf",
-                    Arguments = $"{arguments}",
+                    FileName = "xvfb-run",
+                    Arguments = $"{cmd}",
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     CreateNoWindow = true,
