@@ -27,3 +27,11 @@ ul.syndications li a {
  ul.syndications li a i.fab {
     font-size: .9em
 }
+
+.fab.fa-archive {
+    font-family: "Font Awesome 5 Free";
+}
+
+.fab.fa-archive:before {
+    content: "\f1c1";
+ }
