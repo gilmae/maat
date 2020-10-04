@@ -412,3 +412,6 @@ maat
 *.crt
 *.key
 .vscode
+SV.Maat/Media
+stacks
+
