@@ -99,14 +99,14 @@ namespace SV.Maat.Reactors
         private string DownloadUrl(string url)
         {
             string tempLocation = Path.Join(Path.GetTempPath(), $"{Guid.NewGuid()}.pdf");
-            string cmd = $"--headless --disable-gpu --print-to-pdf={tempLocation} {url}";
+            string arguments = $"{url} {tempLocation}";
 
             var process = new Process()
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = _chromeLocation,
-                    Arguments = $"{cmd}",
+                    FileName = "wkhtmltopdf",
+                    Arguments = $"{arguments}",
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     CreateNoWindow = true,
