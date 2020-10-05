@@ -103,4 +103,12 @@ namespace SV.Maat.Webmention
 
         
     }
+
+    public static class WebMentionSenderUtils
+    {
+        public static PipelineBuilder UseWebmentionSender(this PipelineBuilder pipeline)
+        {
+            return pipeline.UseReactor<WebmentionSender>();
+        }
+    }
 }

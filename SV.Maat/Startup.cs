@@ -16,6 +16,7 @@ using SV.Maat.Users;
 using SV.Maat.Projections;
 using SV.Maat.lib.Pipelines;
 using SV.Maat.Reactors;
+using SV.Maat.Webmention;
 using SV.Maat.ExternalNetworks;
 using SV.Maat.lib;
 using SV.Maat.Mastodon;
@@ -121,6 +122,7 @@ namespace SV.Maat
             {
                 builder.UseSyndicateEntry();
                 builder.UseBookmarkArchival();
+                builder.UseWebmentionSender();
             });
 
             app.UseDbContext(builder =>
