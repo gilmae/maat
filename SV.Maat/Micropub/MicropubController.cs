@@ -161,22 +161,31 @@ namespace SV.Maat.Micropub
             List<ICommand> commands = new List<ICommand> { new CreateEntry() };
             commands.Add(new SetOwner() { OwnerId = this.UserId().Value });
             commands.Add(new SetContent { Name = name, Content = content, BookmarkOf = bookmark });
-            if (categories != null)
+
+            if (categories != null && categories.Any(c => !string.IsNullOrEmpty(c)))
             {
-                commands.AddRange(categories.Select(c => new AddToCategory { Category = c }));
+                commands.AddRange(categories
+                    .Where(c => !string.IsNullOrEmpty(c))
+                    .Select(c => new AddToCategory { Category = c })
+                );
             }
+
             if (media != null)
             {
                 commands.AddRange(media.Select(m => new AttachMediaToEntry { Description = m.Description, Url = m.Url, Type = m.Type }));
             }
+
             if (!string.IsNullOrEmpty(replyTo))
             {
                 commands.Add(new ReplyTo { ReplyToUrl = replyTo });
             }
 
-            if (syndicateTo != null)
+            if (syndicateTo != null && syndicateTo.Any(s=>!string.IsNullOrEmpty(s)))
             {
-                commands.AddRange(syndicateTo.Select(s => new Syndicate { SyndicationAccount = s }));
+                commands.AddRange(syndicateTo
+                    .Where(s=> !string.IsNullOrEmpty(s))
+                    .Select(s => new Syndicate { SyndicationAccount = s })
+                );
             }
 
             if (postStatus == null || postStatus != "draft")
