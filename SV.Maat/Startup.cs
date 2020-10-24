@@ -22,6 +22,7 @@ using SV.Maat.lib;
 using SV.Maat.Mastodon;
 using SimpleRepo;
 using Users;
+using SV.Maat.Microblog;
 
 namespace SV.Maat
 {
@@ -88,6 +89,7 @@ namespace SV.Maat
 
             services.AddTwitter();
             services.AddMastodon();
+            services.AddMicroblog();
             services.AddTransient<ISyndicationNetwork, Pinboard>();
 
             services.AddPipelines();

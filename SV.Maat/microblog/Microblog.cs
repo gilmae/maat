@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using RestSharp;
 using StrangeVanilla.Blogging.Events;
 using SV.Maat.ExternalNetworks;
@@ -55,6 +57,14 @@ namespace SV.Maat.Microblog
 
             return string.Empty;
 
+        }
+    }
+
+    public static class ServicesExtensions
+    {
+        public static void AddMicroblog(this IServiceCollection services)
+        {
+            services.AddTransient<ISyndicationNetwork, Microblog>();
         }
     }
 }
