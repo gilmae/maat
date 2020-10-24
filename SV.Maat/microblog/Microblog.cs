@@ -28,15 +28,8 @@ namespace SV.Maat.Microblog
 
         public string Syndicate(Credentials credentials, Entry entry, string inNetworkReplyingTo = null)
         {
-            var converter = new EntryToMicropubConverter();
+            var converter = new EntryToMicropubConverter(new List<string> { "name", "content", "category", "photo", "in-reply-to", "bookmark-of" });
             var properties = converter.ToDictionary(entry);
-
-            properties.Remove("mp-syndicate-to");
-            properties.Remove("syndication");
-            if (!string.IsNullOrEmpty(inNetworkReplyingTo))
-            {
-                properties["in-reply-to"] = inNetworkReplyingTo;
-            }
 
             var client = new RestClient($"https://micro.blog");
             var request = new RestRequest("/micropub")
