@@ -24,7 +24,7 @@ namespace SV.Maat.Entries
             _userStore = userStore;
         }
 
-        [HttpGet]
+
         [Route("/")]
         public IActionResult Timeline()
         {
