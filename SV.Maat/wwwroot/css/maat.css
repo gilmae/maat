@@ -35,3 +35,12 @@ ul.syndications li a {
 .fab.fa-archive:before {
     content: "\f1c1";
  }
+
+.fab.fa-pinboard {
+    font-family: "Font Awesome 5 Free";
+    transform: rotateY(0deg) rotate(315deg);
+}
+
+.fab.fa-pinboard:before {
+    content: "\f08d"
+}
