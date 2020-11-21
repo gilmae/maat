@@ -106,7 +106,7 @@ namespace SV.Maat.Reactors
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = "xvfb-run",
-                    Arguments = $"{cmd}",
+                    Arguments = $"--server-args='-screen 0 640x480x16' {cmd}",
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     CreateNoWindow = true,
