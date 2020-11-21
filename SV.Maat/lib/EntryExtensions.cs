@@ -28,7 +28,7 @@ namespace SV.Maat.lib
                 return StrangeVanilla.Blogging.Events.PostType.bookmark;
             }
 
-            if (e.AssociatedMedia.Any())
+            if (e.AssociatedMedia != null && e.AssociatedMedia.Any())
             {
                 return StrangeVanilla.Blogging.Events.PostType.photo;
             }
