@@ -34,15 +34,15 @@ namespace SV.Maat.lib
             }
 
             Regex doubleWhiteSpace = new Regex(@"\s{2,}");
-            string name = doubleWhiteSpace.Replace(e.Title.GetPlainText().Trim(), " ");
-            string content = doubleWhiteSpace.Replace(e.Body.GetPlainText().Trim(), " ");
+            string name = doubleWhiteSpace.Replace(e.Title?.GetPlainText()?.Trim(), " ");
+            string content = doubleWhiteSpace.Replace(e.Body?.GetPlainText()?.Trim(), " ");
 
             if (string.IsNullOrEmpty(name))
             {
                 return StrangeVanilla.Blogging.Events.PostType.note;
             }
 
-            if (!content.StartsWith(name))
+            if (!(content??"").StartsWith(name))
             {
                 return StrangeVanilla.Blogging.Events.PostType.article;
             }
