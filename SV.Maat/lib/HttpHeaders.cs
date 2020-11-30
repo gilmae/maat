@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using RestSharp;
 
 namespace SV.Maat.lib
 {
@@ -26,6 +27,17 @@ namespace SV.Maat.lib
                    )
                 })
                 .Where(l=>!string.IsNullOrEmpty(l.Url));
+        }
+
+        public static string GetContentType( string url)
+        {
+            Uri linkUri = new Uri(url);
+            RestClient client = new RestClient(linkUri);
+            client.FollowRedirects = true; var request = new RestRequest();
+            var response = client.Head(request);
+            return (string)response.Headers.SingleOrDefault(h => h.Name.ToLower() == "content-type")?.Value;
+
+
         }
 
         public class HttpLink
