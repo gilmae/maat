@@ -11,7 +11,7 @@ using SV.Maat.lib.FileStore;
 using SV.Maat.Commands;
 using StrangeVanilla.Blogging.Events;
 using System.IO;
-
+using SV.Maat.lib;
 
 namespace SV.Maat.Reactors
 {
@@ -22,7 +22,6 @@ namespace SV.Maat.Reactors
         private readonly IEntryProjection _entries;
         private CommandHandler _commandHandler;
         private IFileStore _fileStore;
-        string _chromeLocation;
 
         public BookmarkArchiver(ILogger<BookmarkArchiver> logger,
             IConfiguration configuration,
@@ -35,7 +34,6 @@ namespace SV.Maat.Reactors
             _next = next;
             _entries = entries;
             _commandHandler = commandHandler;
-            _chromeLocation = configuration.GetConnectionString("Chrome");
             _fileStore = fileStore;
         }
 
@@ -43,36 +41,31 @@ namespace SV.Maat.Reactors
         {
             if (e is ContentSet2)
             {
-                HandleEvent(e as ContentSet2);
+                HandleBookmark(((ContentSet2)e)?.BookmarkOf, e.AggregateId);
             }
             else if (e is ContentAdded2)
             {
-                HandleEvent(e as ContentAdded2);
+                HandleBookmark(((ContentAdded2)e)?.BookmarkOf, e.AggregateId);
             }
             await _next(e);
         }
 
-        private void HandleEvent(ContentSet2 e)
+        private void HandleBookmark(string url, Guid aggregateId)
         {
-            if (e == null || string.IsNullOrEmpty(e.BookmarkOf))
+            if (string.IsNullOrEmpty(url))
             {
                 return;
             }
-            AttachPdf(DownloadUrl(e.BookmarkOf), e.AggregateId);
+
+            string savePath;
+            string contentType;
+            (savePath, contentType) = DownloadUrl(url);
+
+            AttachPdf(savePath, contentType, aggregateId);
             
         }
 
-        private void HandleEvent(ContentAdded2 e)
-        {
-            if (e == null || string.IsNullOrEmpty(e.BookmarkOf))
-            {
-                return;
-            }
-            AttachPdf(DownloadUrl(e.BookmarkOf), e.AggregateId);
-
-        }
-
-        private void AttachPdf(string archivedVersion, Guid entryId)
+        private void AttachPdf(string archivedVersion, string contentType, Guid entryId)
         {
             if (string.IsNullOrEmpty(archivedVersion))
             {
@@ -84,7 +77,7 @@ namespace SV.Maat.Reactors
             var mediaUpload = new CreateMedia()
             {
                 Name = "Archived copy",
-                MimeType = "application/pdf",
+                MimeType = contentType,
                 SavePath = filePath
             };
 
@@ -96,10 +89,35 @@ namespace SV.Maat.Reactors
             _commandHandler.Handle<Entry>(entryId, attachMediaToEntry);
         }
 
-        private string DownloadUrl(string url)
+        private (string, string) DownloadUrl(string url)
         {
             string tempLocation = Path.Join(Path.GetTempPath(), $"{Guid.NewGuid()}.pdf");
-            string cmd = $"wkhtmltopdf {url} {tempLocation}";
+
+            string contentType = HttpHeaders.GetContentType(url);
+            Func<string, string, bool> downloader = DownloadAsOriginal;
+            if (contentType == "text/html") { 
+                downloader = DownloadWebPageAsPdf;
+            }
+
+            if (downloader.Invoke(url, tempLocation))
+            {
+                return (tempLocation,contentType);
+            }
+            return (string.Empty, string.Empty);
+
+            
+        }
+
+        private bool DownloadAsOriginal(string url, string savePath)
+        {
+            byte[] content = Downloader.Download(url).Result;
+            File.WriteAllBytes(savePath, content);
+            return true;
+        }
+
+        private bool DownloadWebPageAsPdf(string url, string savePath)
+        {
+            string cmd = $"wkhtmltopdf {url} {savePath}";
 
             var process = new Process()
             {
@@ -119,18 +137,18 @@ namespace SV.Maat.Reactors
 
                 if (process.WaitForExit((int)TimeSpan.FromSeconds(30).TotalMilliseconds))
                 {
-                    return tempLocation;
+                    return true;
                 }
                 else
                 {
                     _logger.LogWarning("Download of url to pdf did not complete in time");
-                    return string.Empty;
+                    return false;
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in executing headless chrome");
-                return string.Empty;
+                return false;
             }
         }
 
