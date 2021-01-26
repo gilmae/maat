@@ -1,0 +1,21 @@
+@model Users.User;
+@{
+    Layout = "_Layout";
+    ViewBag.Title = $"Profile Settings page for {Model.Name}";
+}
+
+<form method="POST">
+        <p><label for="username">Name</label><br /><input type="text" name="name" value="@Model.Name" /></p>
+        <p><label for="password">Email</label><br /><input type="email" name="email" value="@Model.Email" /></p>
+        <p><label for="url">Url</label><br /><input type="url" name="url" value="@Model.Url" /></p>
+        <p><label for="bio">Url</label><br /><textarea rows="50" cols="80" name="bio" value="@Model.Bio" /></textarea></p>
+        <input type="submit" name="update" />
+</form>
+<section class="vcard">
+    <h2><a class="fn url" href="@Url.Action("View", "User", new { username = Model.Name })">@Html.DisplayFor(m => m.Name)</h2>
+    @{
+        Html.Raw(Model.Bio);
+    }
+</section>
+
+

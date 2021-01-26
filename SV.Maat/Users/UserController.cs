@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SV.Maat.Users.Models;
 using Users;
+using SV.Maat.lib;
 
 
 namespace SV.Maat.Users
@@ -61,6 +62,37 @@ namespace SV.Maat.Users
             var user = new User { Username = model.Username, Name = model.Username, HashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password) };
             _userStore.Insert(user);
             return Ok(user);
+        }
+
+        [HttpGet]
+        [Route("profile")]
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
+        public IActionResult Profile(){
+            int userid = this.UserId().GetValueOrDefault();
+            var user = _userStore.Find(userid);
+
+            return View(user);
+        }
+
+        [HttpPost]
+        [Route("profile")]
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
+        public IActionResult ProfileUpdate([FromForm] string name,
+            [FromForm] string email,
+            [FromForm] string url,
+            [FromForm] string bio
+            ){
+            int userid = this.UserId().GetValueOrDefault();
+            var user = _userStore.Find(userid);
+
+            user.Name = name;
+            user.Url = url;
+            user.Email = email;
+            user.Bio = bio;
+
+            _userStore.Update(user);
+
+            return Redirect("/user/" + user.Username);
         }
 
         [HttpGet]

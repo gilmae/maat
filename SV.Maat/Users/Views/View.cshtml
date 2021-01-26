@@ -1,4 +1,5 @@
 ﻿@model Users.User;
+@using HeyRed.MarkdownSharp;
 @{
     Layout = "_Layout";
     ViewBag.Title = $"User page for {Model.Name}";
@@ -6,6 +7,7 @@
 
 <section class="vcard">
     <h2><a class="fn url" href="@Url.Action("View", "User", new { username = Model.Name })">@Html.DisplayFor(m => m.Name)</h2>
+    <div class="bio">@Html.Raw(new Markdown().Transform(Model.Bio));</div>
 </section>
 
 
