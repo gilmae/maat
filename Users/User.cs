@@ -10,5 +10,7 @@ namespace Users
         public string Url { get; set; }
         public string HashedPassword { get; set; }
         public string Host { get; set; }
+
+        public string Bio { get; set; }
     }
 }
