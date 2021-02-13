@@ -16,7 +16,7 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.101
+        dotnet-version: 5.0.103
     - name: Install dependencies
       env: # Or as an environment variable
         gilmae_github_nuget_password: ${{ secrets.GILMAE_GITHUB_NUGET_PASSWORD }}
