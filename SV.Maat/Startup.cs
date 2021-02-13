@@ -23,6 +23,7 @@ using SV.Maat.Mastodon;
 using SimpleRepo;
 using Users;
 using SV.Maat.Microblog;
+using Honeycomb.AspNetCore.Middleware;
 
 namespace SV.Maat
 {
@@ -44,6 +45,8 @@ namespace SV.Maat
                 o.ViewLocationFormats.Add("/{1}/Views/{0}" + RazorViewEngine.ViewExtension);
                 o.ViewLocationFormats.Add("/Shared/Views/{0}" + RazorViewEngine.ViewExtension);
             });
+
+            services.AddHoneycomb(Configuration);
 
             services.AddAuthentication(
                 CookieAuthenticationDefaults.AuthenticationScheme
@@ -102,7 +105,7 @@ namespace SV.Maat
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            
             app.UseStaticFiles();
 
             //app.UseHttpsRedirection();
@@ -111,6 +114,7 @@ namespace SV.Maat
             
             app.UseAuthorization();
 
+            app.UseHoneycomb();
             app.UseRequestLogger();
 
             app.UseEndpoints(endpoints =>

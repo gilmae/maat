@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Honeycomb.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -13,11 +14,13 @@ namespace SV.Maat
     {
         private readonly RequestDelegate _next;
         ILogger<RequestLogger> _logger;
+        IHoneycombEventManager _eventManager;
 
-        public RequestLogger(RequestDelegate next, ILogger<RequestLogger> logger)
+        public RequestLogger(RequestDelegate next, ILogger<RequestLogger> logger, IHoneycombEventManager eventManager)
         {
             _next = next;
             _logger = logger;
+            _eventManager = eventManager;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -47,17 +50,24 @@ namespace SV.Maat
                 data.TryAdd("response.content_length", context.Response.ContentLength);
                 data.TryAdd("response.status_code", context.Response.StatusCode);
                 data.TryAdd("duration_ms", stopwatch.ElapsedMilliseconds);
+
+                _eventManager.AddData("api_response_ms", stopwatch.ElapsedMilliseconds);
             }
             catch(Exception ex)
             {
                 data.TryAdd("request.error", ex.Source);
                 data.TryAdd("request.error_detail", ex.Message);
+
+                _eventManager.AddData("request.error", ex.Source);
+                _eventManager.AddData("request.error_detail", ex.Message);
+
                 throw;
             }
             finally
             {
                 _logger.LogInformation(System.Text.Json.JsonSerializer.Serialize(data));
             }
+           
         }
     }
 
