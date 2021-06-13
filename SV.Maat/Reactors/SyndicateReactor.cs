@@ -30,16 +30,14 @@ namespace SV.Maat.Reactors
         readonly ISyndicationStore _syndicationStore;
         private readonly TokenSigning _tokenSigning;
         private CommandHandler _commandHandler;
-        private IHoneycombEventManager _eventManager;
-
+        
         public SyndicateEntry(ILogger<SyndicateEntry> logger,
             EventDelegate next,
             IEntryProjection entries,
             IEnumerable<ISyndicationNetwork> externalNetworks,
             ISyndicationStore syndicationStore,
             TokenSigning tokenSigning,
-            CommandHandler commandHandler,
-            IHoneycombEventManager eventManager)
+            CommandHandler commandHandler)
         {
             _logger = logger;
             _next = next;
@@ -49,7 +47,6 @@ namespace SV.Maat.Reactors
             _tokenSigning = tokenSigning;
             _externalNetworks = externalNetworks; _externalNetworks = externalNetworks;
             _commandHandler = commandHandler;
-            _eventManager = eventManager;
         }
 
         public async Task InvokeAsync(Event e)
@@ -72,7 +69,6 @@ namespace SV.Maat.Reactors
 
             try
             {
-                //_eventManager.AddData("syndication.data", syndicated);
                 var syndication = _syndicationStore.FindByAccountName(syndicated.SyndicationAccount);
 
                 if (syndication == null)
@@ -80,8 +76,6 @@ namespace SV.Maat.Reactors
                     _logger.LogDebug($"No syndication account for {syndicated.SyndicationAccount}");
                     return;
                 }
-
-                //_eventManager.AddData("syndication.account", syndication);
 
                 var network = _externalNetworks.First(n => n.Name.ToLower() == syndication.Network.ToLower());
 
@@ -107,8 +101,6 @@ namespace SV.Maat.Reactors
                     }
                 }
 
-                //_eventManager.AddData("syndication.waiting_for_consistency_attempts", attempts);
-
                 if (entry == null)
                 {
                     _logger.LogDebug($"Could not find {syndicated.AggregateId} in projection");
@@ -126,8 +118,6 @@ namespace SV.Maat.Reactors
                 );
                 _logger.LogDebug($"Syndicated {syndicated.AggregateId} as {syndicatedUrl}");
                 _commandHandler.Handle<Entry>(syndicated.AggregateId, new PublishSyndication { SyndicationUrl = syndicatedUrl, Network = network.Name });
-                //_eventManager.AddData("syndication.duration", stopwatch.ElapsedMilliseconds);
-
             }
             catch (Exception ex)
             {
