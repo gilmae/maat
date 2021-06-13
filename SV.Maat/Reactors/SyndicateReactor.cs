@@ -72,20 +72,22 @@ namespace SV.Maat.Reactors
 
             try
             {
-                _eventManager.AddData("syndication.data", syndicated);
+                //_eventManager.AddData("syndication.data", syndicated);
                 var syndication = _syndicationStore.FindByAccountName(syndicated.SyndicationAccount);
 
                 if (syndication == null)
                 {
+                    _logger.LogTrace($"No syndication account for {syndicated.SyndicationAccount}");
                     return;
                 }
 
-                _eventManager.AddData("syndication.account", syndication);
+                //_eventManager.AddData("syndication.account", syndication);
 
                 var network = _externalNetworks.First(n => n.Name.ToLower() == syndication.Network.ToLower());
 
                 if (network == null)
                 {
+                    _logger.LogTrace($"No network for {syndication.Network.ToLower()}");
                     return;
                 }
 
@@ -124,7 +126,7 @@ namespace SV.Maat.Reactors
                 );
                 _logger.LogTrace($"Syndicated {syndicated.AggregateId} as {syndicatedUrl}");
                 _commandHandler.Handle<Entry>(syndicated.AggregateId, new PublishSyndication { SyndicationUrl = syndicatedUrl, Network = network.Name });
-                _eventManager.AddData("syndication.duration", stopwatch.ElapsedMilliseconds);
+                //_eventManager.AddData("syndication.duration", stopwatch.ElapsedMilliseconds);
 
             }
             catch (Exception ex)

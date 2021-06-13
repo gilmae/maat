@@ -52,11 +52,15 @@ namespace SV.Maat.ExternalNetworks
                 .AddQueryParameter("tags", string.Join(',', entry.Categories))
                 .AddQueryParameter("format", "json")
                 .AddQueryParameter("auth_token", $"{credentials.Uid}:{credentials.Secret}");
-            _eventManager.AddData("syndication.request", request);
+            //_eventManager.AddData("syndication.request", request);
+
+            _logger.LogTrace($"Pinboard Request: {request}");
 
             var result = client.Get<BookmarkPostResult>(request);
 
-            _eventManager.AddData("syndication.response", result);
+            _logger.LogTrace($"Pinboard Response: {result}");
+
+            //_eventManager.AddData("syndication.response", result);
             if (result.Data.ResultCode == "done")
             {
                 return $"pinboard:{System.Web.HttpUtility.UrlEncode(entry.BookmarkOf)}";
