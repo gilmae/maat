@@ -23,7 +23,7 @@ namespace SV.Maat.lib
                 return StrangeVanilla.Blogging.Events.PostType.reply;
             }
 
-            if (!string.IsNullOrEmpty(e.BookmarkOf) && Uri.IsWellFormedUriString(e.ReplyTo, UriKind.Absolute))
+            if (!string.IsNullOrEmpty(e.BookmarkOf) && Uri.IsWellFormedUriString(e.BookmarkOf, UriKind.Absolute))
             {
                 return StrangeVanilla.Blogging.Events.PostType.bookmark;
             }

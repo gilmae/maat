@@ -42,6 +42,7 @@ namespace SV.Maat.ExternalNetworks
         {
             if (entry.PostType() != PostType.bookmark)
             {
+                _logger.LogDebug($"Not a bookmark: {entry.PostType()}");
                 return "";
             }
             RestClient client = new RestClient("https://api.pinboard.in");
