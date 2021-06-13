@@ -105,7 +105,7 @@ namespace SV.Maat.Reactors
                     }
                 }
 
-                _eventManager.AddData("syndication.waiting_for_consistency_attempts", attempts);
+                //_eventManager.AddData("syndication.waiting_for_consistency_attempts", attempts);
 
                 if (entry == null)
                 {
