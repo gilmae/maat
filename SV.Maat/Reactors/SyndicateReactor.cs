@@ -77,7 +77,7 @@ namespace SV.Maat.Reactors
 
                 if (syndication == null)
                 {
-                    _logger.LogTrace($"No syndication account for {syndicated.SyndicationAccount}");
+                    _logger.LogDebug($"No syndication account for {syndicated.SyndicationAccount}");
                     return;
                 }
 
@@ -87,13 +87,13 @@ namespace SV.Maat.Reactors
 
                 if (network == null)
                 {
-                    _logger.LogTrace($"No network for {syndication.Network.ToLower()}");
+                    _logger.LogDebug($"No network for {syndication.Network.ToLower()}");
                     return;
                 }
 
                 var credentials = _tokenSigning.Decrypt<Credentials>(syndication.Credentials);
 
-                _logger.LogTrace($"Syndicating {syndicated.AggregateId} to {syndicated.SyndicationAccount}");
+                _logger.LogDebug($"Syndicating {syndicated.AggregateId} to {syndicated.SyndicationAccount}");
                 Entry entry = null;
                 int attempts = 0;
 
@@ -111,7 +111,7 @@ namespace SV.Maat.Reactors
 
                 if (entry == null)
                 {
-                    _logger.LogTrace($"Could not find {syndicated.AggregateId} in projection");
+                    _logger.LogDebug($"Could not find {syndicated.AggregateId} in projection");
                     return;
                 }
 
@@ -124,7 +124,7 @@ namespace SV.Maat.Reactors
                     entry,
                     inNetworkReplyTo
                 );
-                _logger.LogTrace($"Syndicated {syndicated.AggregateId} as {syndicatedUrl}");
+                _logger.LogDebug($"Syndicated {syndicated.AggregateId} as {syndicatedUrl}");
                 _commandHandler.Handle<Entry>(syndicated.AggregateId, new PublishSyndication { SyndicationUrl = syndicatedUrl, Network = network.Name });
                 //_eventManager.AddData("syndication.duration", stopwatch.ElapsedMilliseconds);
 
