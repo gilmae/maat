@@ -4,15 +4,11 @@ using StrangeVanilla.Blogging.Events;
 using Microsoft.AspNetCore.Mvc;
 using SV.Maat.lib.FileStore;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-using System.IO;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Gif;
 using SixLabors.ImageSharp.Formats.Png;
 using SV.Maat.lib;
 using Microsoft.Extensions.Caching.Memory;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace SV.Maat.MediaView
@@ -74,8 +70,6 @@ namespace SV.Maat.MediaView
 
                 using (Image image = Image.Load(data))
                 {
-                    float scale = (float)actualWidth / image.Width;
-                    int height = (int)Math.Floor(image.Height * scale);
                     SixLabors.ImageSharp.Formats.IImageEncoder encoder = new JpegEncoder();
                     if (m.MimeType == "image/gif")
                     {
@@ -86,31 +80,17 @@ namespace SV.Maat.MediaView
                         encoder = new PngEncoder();
                     }
 
-                    image.Mutate(x => x.Resize(actualWidth, height, KnownResamplers.Lanczos3));
-                    var ms = new MemoryStream();
-                    image.Save(ms, encoder);
-                    ms.Position = 0;
-
-                    byte[] resizedData = new byte[ms.Length];
-                    for (int i=0; i < ms.Length; i++)
-                    {
-                        ms.Read(resizedData, i, 1);
-                    }
-
-                    ms.Close();
-                    ms.Dispose();
+                    var resized = image.ScaleToWidth(actualWidth, encoder).ToBytes();
 
                     var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(30));
 
 
-                    _memoryCache.Set<byte[]>(cacheKey, resizedData, cacheEntryOptions);
-                    return new FileContentResult(resizedData, m.MimeType);
+                    _memoryCache.Set<byte[]>(cacheKey, resized, cacheEntryOptions);
+                    return new FileContentResult(resized, m.MimeType);
                 }
             }
 
             return NotFound();
         }
-
-
     }
 }
