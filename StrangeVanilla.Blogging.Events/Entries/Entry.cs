@@ -4,7 +4,7 @@ using Events;
 
 namespace StrangeVanilla.Blogging.Events
 {
-    public class Entry : Aggregate
+    public record Entry : Aggregate
     {
         public Content Title { get; set; }
         public Content Body { get; set; }

@@ -3,7 +3,7 @@ using Events;
 
 namespace StrangeVanilla.Blogging.Events
 {
-    public class Media : Aggregate
+    public record Media : Aggregate
     {
         public string Name { get; set; }
         public string MediaStoreId { get; set; }

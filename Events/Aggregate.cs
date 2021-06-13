@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Events
 {
-    public abstract class Aggregate 
+    public abstract record Aggregate 
     {
         public Guid Id { get; set; }
         public int Version { get; set; }
