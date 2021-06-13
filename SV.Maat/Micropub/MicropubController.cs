@@ -294,7 +294,7 @@ namespace SV.Maat.Micropub
                     return HandleRemoveUpdate(model.Delete, entryId.Value);
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 throw;
             }
