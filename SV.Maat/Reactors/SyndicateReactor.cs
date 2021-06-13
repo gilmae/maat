@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Events;
+using Honeycomb.AspNetCore;
 using Microsoft.Extensions.Logging;
 using StrangeVanilla.Blogging.Events;
 using StrangeVanilla.Blogging.Events.Entries.Events;
@@ -28,6 +30,7 @@ namespace SV.Maat.Reactors
         readonly ISyndicationStore _syndicationStore;
         private readonly TokenSigning _tokenSigning;
         private CommandHandler _commandHandler;
+        private IHoneycombEventManager _eventManager;
 
         public SyndicateEntry(ILogger<SyndicateEntry> logger,
             EventDelegate next,
@@ -35,7 +38,8 @@ namespace SV.Maat.Reactors
             IEnumerable<ISyndicationNetwork> externalNetworks,
             ISyndicationStore syndicationStore,
             TokenSigning tokenSigning,
-            CommandHandler commandHandler)
+            CommandHandler commandHandler,
+            IHoneycombEventManager eventManager)
         {
             _logger = logger;
             _next = next;
@@ -45,6 +49,7 @@ namespace SV.Maat.Reactors
             _tokenSigning = tokenSigning;
             _externalNetworks = externalNetworks; _externalNetworks = externalNetworks;
             _commandHandler = commandHandler;
+            _eventManager = eventManager;
         }
 
         public async Task InvokeAsync(Event e)
@@ -62,15 +67,20 @@ namespace SV.Maat.Reactors
             {
                 return;
             }
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
 
             try
             {
+                _eventManager.AddData("syndication.data", syndicated);
                 var syndication = _syndicationStore.FindByAccountName(syndicated.SyndicationAccount);
 
                 if (syndication == null)
                 {
                     return;
                 }
+
+                _eventManager.AddData("syndication.account", syndication);
 
                 var network = _externalNetworks.First(n => n.Name.ToLower() == syndication.Network.ToLower());
 
@@ -95,6 +105,8 @@ namespace SV.Maat.Reactors
                     }
                 }
 
+                _eventManager.AddData("syndication.waiting_for_consistency_attempts", attempts);
+
                 if (entry == null)
                 {
                     _logger.LogTrace($"Could not find {syndicated.AggregateId} in projection");
@@ -112,6 +124,7 @@ namespace SV.Maat.Reactors
                 );
                 _logger.LogTrace($"Syndicated {syndicated.AggregateId} as {syndicatedUrl}");
                 _commandHandler.Handle<Entry>(syndicated.AggregateId, new PublishSyndication { SyndicationUrl = syndicatedUrl, Network = network.Name });
+                _eventManager.AddData("syndication.duration", stopwatch.ElapsedMilliseconds);
 
             }
             catch (Exception ex)
