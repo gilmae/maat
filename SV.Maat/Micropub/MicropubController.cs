@@ -296,7 +296,7 @@ namespace SV.Maat.Micropub
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
 
             return Ok();
