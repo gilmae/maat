@@ -12,7 +12,6 @@ using SV.Maat.IndieAuth.Middleware;
 using SV.Maat.lib.FileStore;
 using SV.Maat.Syndications;
 using SV.Maat.Syndications.Models;
-using SV.Maat.Users;
 using SV.Maat.Projections;
 using SV.Maat.lib.Pipelines;
 using SV.Maat.Reactors;
@@ -23,7 +22,10 @@ using SV.Maat.Mastodon;
 using SimpleRepo;
 using Users;
 using SV.Maat.Microblog;
-using Honeycomb.AspNetCore.Middleware;
+//using Honeycomb.AspNetCore.Middleware;
+using OpenTelemetry.Trace;
+using System;
+using OpenTelemetry.Resources;
 
 namespace SV.Maat
 {
@@ -46,7 +48,20 @@ namespace SV.Maat
                 o.ViewLocationFormats.Add("/Shared/Views/{0}" + RazorViewEngine.ViewExtension);
             });
 
-            services.AddHoneycomb(Configuration);
+            //services.AddHoneycomb(Configuration);
+            var oltpOptions = Configuration.GetSection("HoneycombSettings");
+            services.AddOpenTelemetryTracing(ot =>
+                ot.AddSource("Maat")
+                .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("maat-oltp"))
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddConsoleExporter()
+                .AddOtlpExporter(o => {
+                    o.Endpoint = new Uri("https://api.honeycomb.io:443");
+                    o.Headers = $"x-honeycomb-team={oltpOptions.GetValue<string>("TeamId")}, x-honeycomb-dataset={oltpOptions.GetValue<string>("DefaultDataSet")}";
+                })
+            );
+            
 
             services.AddAuthentication(
                 CookieAuthenticationDefaults.AuthenticationScheme
@@ -114,7 +129,7 @@ namespace SV.Maat
             
             app.UseAuthorization();
 
-            app.UseHoneycomb();
+            //app.UseHoneycomb();
             app.UseRequestLogger();
 
             app.UseEndpoints(endpoints =>

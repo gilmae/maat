@@ -5,7 +5,6 @@ using System.Text.Json.Serialization;
 using System.Collections.Generic;
 using System;
 using Microsoft.Extensions.Logging;
-using Honeycomb.AspNetCore;
 
 namespace SV.Maat.ExternalNetworks
 {
@@ -13,12 +12,10 @@ namespace SV.Maat.ExternalNetworks
     {
 
         ILogger<Pinboard> _logger;
-        IHoneycombEventManager _eventManager;
 
-        public Pinboard(ILogger<Pinboard> logger, IHoneycombEventManager eventManager)
+        public Pinboard(ILogger<Pinboard> logger)
         {
             _logger = logger;
-            _eventManager = eventManager;
         }
 
         public string Name => "Pinboard";
@@ -53,7 +50,6 @@ namespace SV.Maat.ExternalNetworks
                 .AddQueryParameter("tags", string.Join(',', entry.Categories))
                 .AddQueryParameter("format", "json")
                 .AddQueryParameter("auth_token", $"{credentials.Uid}:{credentials.Secret}");
-            //_eventManager.AddData("syndication.request", request);
 
             _logger.LogDebug($"Pinboard Request: {request}");
 
@@ -61,7 +57,6 @@ namespace SV.Maat.ExternalNetworks
 
             _logger.LogDebug($"Pinboard Response: {result}");
 
-            //_eventManager.AddData("syndication.response", result);
             if (result.Data.ResultCode == "done")
             {
                 return $"pinboard:{System.Web.HttpUtility.UrlEncode(entry.BookmarkOf)}";
