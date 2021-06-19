@@ -70,7 +70,7 @@ namespace SV.Maat.Reactors
 
                 try
                 {
-                    a.AddTag("syndication.account", syndicated.SyndicationAccount);
+                    //a.AddTag("syndication.account", syndicated.SyndicationAccount);
                     var syndication = _syndicationStore.FindByAccountName(syndicated.SyndicationAccount);
 
                     if (syndication == null)
