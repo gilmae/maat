@@ -28,7 +28,7 @@ namespace SV.Maat.Reactors
         readonly ISyndicationStore _syndicationStore;
         private readonly TokenSigning _tokenSigning;
         private CommandHandler _commandHandler;
-        static ActivitySource s_source = new ActivitySource("Maat.SyndicateReactor");
+        //static ActivitySource s_source = new ActivitySource("Maat.SyndicateReactor");
 
         public SyndicateEntry(ILogger<SyndicateEntry> logger,
             EventDelegate next,
@@ -63,8 +63,8 @@ namespace SV.Maat.Reactors
             {
                 return;
             }
-            using (Activity a = s_source.StartActivity("Syndicate"))
-            {
+            //using (Activity a = s_source.StartActivity("Maat.Syndication"))
+            //{
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
 
@@ -79,7 +79,7 @@ namespace SV.Maat.Reactors
                         return;
                     }
 
-                    a.AddTag("syndication.network", syndication.Network);
+                    //a.AddTag("syndication.network", syndication.Network);
                     var network = _externalNetworks.First(n => n.Name.ToLower() == syndication.Network.ToLower());
 
                     if (network == null)
@@ -91,7 +91,7 @@ namespace SV.Maat.Reactors
                     var credentials = _tokenSigning.Decrypt<Credentials>(syndication.Credentials);
 
                     _logger.LogDebug($"Syndicating {syndicated.AggregateId} to {syndicated.SyndicationAccount}");
-                    a.AddTag("syndication.aggregate.id", syndicated.AggregateId);
+                    //a.AddTag("syndication.aggregate.id", syndicated.AggregateId);
                     Entry entry = null;
                     int attempts = 0;
 
@@ -105,7 +105,7 @@ namespace SV.Maat.Reactors
                         }
                     }
 
-                    a.AddTag("syndication.aggregate.load_attempts", attempts);
+                    //a.AddTag("syndication.aggregate.load_attempts", attempts);
 
                     if (entry == null)
                     {
@@ -122,7 +122,7 @@ namespace SV.Maat.Reactors
                         entry,
                         inNetworkReplyTo
                     );
-                    a.AddTag("syndication.aggregate.success", !string.IsNullOrEmpty(syndicatedUrl));
+                    //a.AddTag("syndication.aggregate.success", !string.IsNullOrEmpty(syndicatedUrl));
 
                     _logger.LogDebug($"Syndicated {syndicated.AggregateId} as {syndicatedUrl}");
                     _commandHandler.Handle<Entry>(syndicated.AggregateId, new PublishSyndication { SyndicationUrl = syndicatedUrl, Network = network.Name });
@@ -131,7 +131,7 @@ namespace SV.Maat.Reactors
                 {
                     _logger.LogError(ex, ex.Message);
                 }
-            }
+            //}
         }
 
         public  IList<string> GetSyndicationsOfReplyToParent(Entry entry)
