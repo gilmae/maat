@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Dapper;
-using Microsoft.Extensions.Configuration;
-using SimpleRepo;
+using SimpleDbContext;
+using SimpleDbRepository;
 using SV.Maat.Syndications.Models;
 
 namespace SV.Maat.Syndications

@@ -5,6 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SimpleRepo\SimpleRepo.csproj" />
+    <None Remove="SimpleDbContext.Core" />
+    <None Remove="SimpleDbRepository" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="SimpleDbContext.Core" Version="1.0.19" />
+    <PackageReference Include="SimpleDbRepository" Version="1.0.19" />
   </ItemGroup>
 </Project>

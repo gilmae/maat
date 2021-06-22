@@ -4,7 +4,9 @@ using System.Linq;
 using Dapper;
 using Microsoft.Extensions.Configuration;
 using SV.Maat.IndieAuth.Models;
-using SimpleRepo;
+using SimpleDbContext;
+using SimpleDbRepository;
+
 
 namespace SV.Maat.IndieAuth
 {

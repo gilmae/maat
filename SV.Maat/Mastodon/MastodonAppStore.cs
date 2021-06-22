@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Dapper;
-using SimpleRepo;
+using SimpleDbContext;
+using SimpleDbRepository;
 
 namespace SV.Maat.Mastodon
 {

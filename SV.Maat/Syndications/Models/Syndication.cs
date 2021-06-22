@@ -1,5 +1,4 @@
-﻿using System;
-using SimpleRepo;
+﻿using SimpleDbRepository;
 
 namespace SV.Maat.Syndications.Models
 {

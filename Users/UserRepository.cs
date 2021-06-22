@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using System.Collections.Generic;
-using SimpleRepo;
+using SimpleDbRepository;
+using SimpleDbContext;
 
 namespace Users
 {

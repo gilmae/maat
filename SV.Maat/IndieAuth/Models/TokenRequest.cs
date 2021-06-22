@@ -1,6 +1,6 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc;
-using SimpleRepo;
+﻿using Microsoft.AspNetCore.Mvc;
+using SimpleDbRepository;
+
 
 namespace SV.Maat.IndieAuth.Models
 {
