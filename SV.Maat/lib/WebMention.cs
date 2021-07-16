@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using AngleSharp.Html.Parser;
 using RestSharp;
+using mf;
 
 namespace SV.Maat.lib
 {
@@ -21,7 +22,7 @@ namespace SV.Maat.lib
             var headers = response.Headers.ToDictionary(h => h.Name.ToLower(), h => h.Value.ToString());
             var body = response.Content;
 
-            string receiver = FindReceiver(headers, body);
+            string receiver = FindReceiver(linkUri, headers, body);
 
             if (string.IsNullOrEmpty(receiver))
             {
@@ -41,7 +42,7 @@ namespace SV.Maat.lib
             return (link, receiver);
         }
 
-        public static string FindReceiver(Dictionary<string, string> headers, string body)
+        public static string FindReceiver(Uri link, Dictionary<string, string> headers, string body)
         {
             if (headers.ContainsKey("link"))
             {
@@ -52,19 +53,12 @@ namespace SV.Maat.lib
                 }
             }
 
-            // Find first link in <head> with rel="webmention"
-            var parser = new HtmlParser(new HtmlParserOptions
+            Parser p = new Parser();
+            var d = p.Parse(link);
+
+            if (d.Rels.ContainsKey("webmention"))
             {
-                IsNotConsumingCharacterReferences = true,
-            });
-            var doc = parser.ParseDocument(body);
-            var htmlLink = doc
-                .QuerySelectorAll("link[rel~=webmention], body a[rel~=webmention]")
-                .Select(l => l.GetAttribute("href"))
-                .FirstOrDefault(h => !string.IsNullOrEmpty(h));
-            if (!string.IsNullOrEmpty(htmlLink))
-            {
-                return htmlLink;
+                return d.Rels["webmention"].First();
             }
 
 
