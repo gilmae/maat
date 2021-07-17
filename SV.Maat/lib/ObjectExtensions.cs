@@ -12,9 +12,5 @@ namespace SV.Maat.lib
             return o == null;
         }
 
-        public static bool HasContent<T>(this IEnumerable<T> o)
-        {
-            return o != null && o.Any();
-        }
     }
 }
