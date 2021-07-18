@@ -10,7 +10,7 @@ namespace SV.Maat.Commands
     {
         public Event GetEvent(int version)
         {
-            return new EntryUndeleted();
+            return new EntryUndeleted() { Version = version, };
         }
 
         public bool IsValid(Aggregate aggregate)

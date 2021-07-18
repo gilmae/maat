@@ -18,6 +18,7 @@ namespace SV.Maat.Commands
         {
             return new MediaUploaded
             {
+                Version = version,
                 Name = Name,
                 MediaStoreId = SavePath,
                 MimeType = MimeType

@@ -14,7 +14,7 @@ namespace SV.Maat.Commands
 
         public Event GetEvent(int version)
         {
-            return new MediaCleared();
+            return new MediaCleared() { Version = version };
         }
 
         public bool IsValid(Aggregate aggregate)

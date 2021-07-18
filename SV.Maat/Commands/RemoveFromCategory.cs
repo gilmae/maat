@@ -15,7 +15,7 @@ namespace SV.Maat.Commands
 
         public Event GetEvent(int version)
         {
-            return new EntryCategoryRemoved { Category = Category };
+            return new EntryCategoryRemoved { Version = version, Category = Category };
         }
 
         public bool IsValid(Aggregate aggregate)

@@ -17,7 +17,7 @@ namespace SV.Maat.Commands
 
         public Event GetEvent(int version)
         {
-            return new SyndicationPublished { Syndication = SyndicationUrl, Network = Network };
+            return new SyndicationPublished { Version = version, Syndication = SyndicationUrl, Network = Network };
         }
 
         public bool IsValid(Aggregate aggregate)

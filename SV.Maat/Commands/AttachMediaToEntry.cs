@@ -18,7 +18,7 @@ namespace SV.Maat.Commands
 
         public Event GetEvent(int version)
         {
-            return new MediaAssociated() { Description = Description, Type = Type, Url = Url };
+            return new MediaAssociated() { Version = version, Description = Description, Type = Type, Url = Url };
         }
 
         public bool IsValid(Aggregate aggregate)

@@ -15,7 +15,7 @@ namespace SV.Maat.Commands
 
         public Event GetEvent(int version)
         {
-            return new Syndicated { SyndicationAccount = SyndicationAccount };
+            return new Syndicated { Version = version, SyndicationAccount = SyndicationAccount };
         }
 
         public bool IsValid(Aggregate aggregate)
