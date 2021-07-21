@@ -33,6 +33,7 @@ namespace SV.Maat.Micropub.Models
         [JsonPropertyName("replace")]
         [BindProperty(Name = "replace")]
         public Dictionary<string, string[]> Replace { get; set; }
+
     }
 
     public static class MicropubPublisModelExtensions

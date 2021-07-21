@@ -85,126 +85,56 @@ namespace SV.Maat.Micropub
         [Authorize(AuthenticationSchemes = IndieAuthTokenHandler.SchemeName)]
         public IActionResult CreateFromForm([FromForm] MicropubFormCreateModel post)
         {
-            IEnumerable<Entry.MediaLink> media = new List<Entry.MediaLink>();
-            if (post.Photo != null)
+            MicropubPublishModel model = new MicropubPublishModel
             {
-                byte[] fileData = new byte[post.Photo.Length];
-                using (var stream = new MemoryStream(fileData))
-                {
-                    post.Photo.CopyToAsync(stream);
-                }
-                string filePath = _fileStore.Save(fileData);
-                Guid id = Guid.NewGuid();
-                if (!_commandHandler.Handle<Media>(id,
-                    new CreateMedia {
-                        Name = post.Photo.Name,
-                        MimeType = post.Photo.ContentType,
-                        SavePath = filePath
-                    }))
-                {
-                    return BadRequest("Could not upload file");
-                }
+                Type = Request.Form["h"],
+                Properties = new Dictionary<string, dynamic[]>()
+            };
 
-                media = new List<Entry.MediaLink> {
-                    new Entry.MediaLink {
-                        Url = this.Url.ActionLink("GetMediaFile", "Media", new { id }),
-                        Type = post.Photo.Name }
-                };
+            foreach (var f in Request.Form.Files)
+            {
+                (Guid id, bool success) = HandleMediaUpload(f);
+                if (success)
+                {
+                    string mediaUrl = this.Url.ActionLink("GetMediaFile", "Media", new { id });
+                    if (!model.Properties.ContainsKey(f.Name))
+                    {
+                        model.Properties[f.Name] = new[] {  mediaUrl};
+                    }
+                    else
+                    {
+                        model.Properties[f.Name].Append(mediaUrl);
+                    }
+                }
             }
 
-            string postStatus = post.PostStatus;
+            foreach (var f in Request.Form){
+                if (f.Key != "h" && !f.Key.StartsWith("mp-") && f.Key != "access_token" && f.Key!= "access-token"){
+                    string name = f.Key.Replace("[]", "");
+                    model.Properties[name] = f.Value;
+                }
+            }
 
-            return HandleCreate(new Content{Type = ContentType.plaintext, Value = post.Content}, new Content { Type = ContentType.plaintext, Value = post.Title}, post.GetCategories(), media, post.BookmarkOf, post.ReplyTo, postStatus, post.SyndicateTo);
+            return Create(model);
         }
 
         private IActionResult Create(MicropubPublishModel post)
         {
-            var photos = ParseMediaReference(post.Properties.GetValueOrDefault("photo"), "photo");
-
-            string inReplyTo = post.Properties.GetValueOrDefault("in-reply-to")?[0]?.ToString();
-            string postStatus = post.Properties.GetValueOrDefault("post-status")?[0]?.ToString();
-            string[] categories = new string[0];
-            if (post.Properties.GetValueOrDefault("category") != null)
-            {
-                categories = (post.Properties.GetValueOrDefault("category") as object[]).Select(x => x.ToString()).ToArray();
-            }
-
-            string[] syndicateTo = new string[0];
-            if (post.Properties.GetValueOrDefault("mp-syndicate-to") != null)
-            {
-                syndicateTo = (post.Properties.GetValueOrDefault("mp-syndicate-to") as object[]).Select(x => x.ToString()).ToArray();
-            }
-
-            Content content = ContentHelper.ParseContentArray(post.Properties.GetValueOrDefault("content"));
-            Content name = ContentHelper.ParseContentArray(post.Properties.GetValueOrDefault("name"));
-            return HandleCreate(content,
-                name,
-                categories,
-                photos,
-                post.Properties.GetValueOrDefault("bookmark-of")?[0]?.ToString(),
-                inReplyTo,
-                postStatus,
-                syndicateTo
-                );
-        }
-
-        private ActionResult HandleCreate(Content content,
-            Content name,
-            string[] categories,
-            IEnumerable<Entry.MediaLink> media,
-            string bookmark,
-            string replyTo,
-            string postStatus,
-            string[] syndicateTo)
-        {
             Guid id = Guid.NewGuid();
-            List<ICommand> commands = new List<ICommand> { new CreateEntry() };
-            commands.Add(new SetOwner() { OwnerId = this.UserId().Value });
-            commands.Add(new SetContent { Name = name, Content = content, BookmarkOf = bookmark });
-
-            if (categories != null && categories.Any(c => !string.IsNullOrEmpty(c)))
-            {
-                commands.AddRange(categories
-                    .Where(c => !string.IsNullOrEmpty(c))
-                    .Select(c => new AddToCategory { Category = c })
-                );
-            }
-
-            if (media != null)
-            {
-                commands.AddRange(media.Select(m => new AttachMediaToEntry { Description = m.Description, Url = m.Url, Type = m.Type }));
-            }
-
-            if (!string.IsNullOrEmpty(replyTo))
-            {
-                commands.Add(new ReplyTo { ReplyToUrl = replyTo });
-            }
-
-            if (syndicateTo != null && syndicateTo.Any(s=>!string.IsNullOrEmpty(s)))
-            {
-                commands.AddRange(syndicateTo
-                    .Where(s=> !string.IsNullOrEmpty(s))
-                    .Select(s => new Syndicate { SyndicationAccount = s })
-                );
-            }
-
-            if (postStatus == null || postStatus != "draft")
-            {
-                commands.Add(new PublishEntry());
-            }
-
             Uri location = new Uri(this.Url.ActionLink("Entry", "Entry", new { id }));
-            commands.Add(new SetSlug { Slug = location.AbsolutePath });
 
-            foreach (ICommand command in commands)
+            if (!post.Properties.ContainsKey("slug"))
             {
-                if (!_commandHandler.Handle<Entry>(id, command))
-                {
-                    return BadRequest($"Could not {command.GetType().Name}");
-                }
+                post.Properties["slug"] = new[] { location.ToString() };
+            } else
+            {
+                post.Properties["slug"].Append(location.ToString());
             }
 
-            return base.Created(location, null);
+            ICommand command = new CreatePost { Type = post.Type, Properties = post.Properties };
+            _commandHandler.Handle<Post>(id, command);
+
+            return Ok(location);
         }
 
         public IActionResult Delete(MicropubPublishModel model)

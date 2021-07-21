@@ -14,7 +14,7 @@ namespace SV.Maat.Micropub
     {
         [HttpPost]
         [Route("media")]
-        [Authorize(AuthenticationSchemes =IndieAuthTokenHandler.SchemeName)]
+        [Authorize(AuthenticationSchemes = IndieAuthTokenHandler.SchemeName)]
         public IActionResult CreateMedia(IFormFile file)
         {
             if (file == null)
@@ -27,28 +27,42 @@ namespace SV.Maat.Micropub
             }
             else
             {
-                byte[] fileData = new byte[file.Length];
-                using (var stream = new MemoryStream(fileData))
+                (Guid id, bool success) = HandleMediaUpload(file);
+                if (success)
                 {
-                    file.CopyTo(stream);
+                    return Created(this.Url.ActionLink("GetMediaFile", "Media", new { id }), null);
                 }
-                string filePath = _fileStore.Save(fileData);
-                Guid id = Guid.NewGuid();
-                if (!_commandHandler.Handle<Media>(id,
-                    new CreateMedia
-                    {
-                        Name = file.Name,
-                        MimeType = file.ContentType,
-                        SavePath = filePath
-                    }))
+                else
                 {
                     return BadRequest("Could not upload file");
                 }
-
-                //return Created(HttpContext.MediaUrl(media), null);
-                return Created(this.Url.ActionLink("GetMediaFile", "Media", new { id }), null);
             }
 
+        }
+
+        public (Guid, bool) HandleMediaUpload(IFormFile file)
+        {
+            Guid id = Guid.Empty;
+
+            byte[] fileData = new byte[file.Length];
+            using (var stream = new MemoryStream(fileData))
+            {
+                file.CopyTo(stream);
+            }
+            string filePath = _fileStore.Save(fileData);
+            id = Guid.NewGuid();
+            if (!_commandHandler.Handle<Media>(id,
+                new CreateMedia
+                {
+                    Name = file.Name,
+                    MimeType = file.ContentType,
+                    SavePath = filePath
+                }))
+            {
+                return (id, false);
+            }
+
+            return (id, true);
         }
     }
 }

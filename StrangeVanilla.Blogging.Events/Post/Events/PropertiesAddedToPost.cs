@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Events;
 
-namespace mptest.Events
+namespace StrangeVanilla.Blogging.Events.Posts.Events
 {
     public class PropertiesAddedToPost : Event<Post>
     {
@@ -10,9 +10,9 @@ namespace mptest.Events
         
 
         public PropertiesAddedToPost() { }
-        public PropertiesAddedToPost(Guid entryId)
+        public PropertiesAddedToPost(Guid id)
         {
-            AggregateId = entryId;
+            AggregateId = id;
         }
 
         public override void Apply(Post aggregate)
