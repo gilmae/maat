@@ -30,9 +30,21 @@ namespace SV.Maat.lib
             return Image.Load(resizedData);
         }
 
-        public static byte[] ToBytes(this Image image)
+        public static byte[] ToBytes(this Image image, IImageEncoder encoder)
         {
-            return Convert.FromBase64String(image.ToBase64String());
+            MemoryStream ms = new MemoryStream();
+            image.Save(ms, encoder);
+            ms.Position = 0;
+            byte[] data = new byte[ms.Length];
+            for (int i = 0; i < ms.Length; i++)
+            {
+                ms.Read(data, i, 1);
+            }
+
+            ms.Close();
+            ms.Dispose();
+
+            return data;
         }
     }
 }

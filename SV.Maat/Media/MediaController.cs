@@ -67,7 +67,7 @@ namespace SV.Maat.MediaView
                 }
 
                 data = _fileStore.Get(m.MediaStoreId);
-
+                
                 using (Image image = Image.Load(data))
                 {
                     SixLabors.ImageSharp.Formats.IImageEncoder encoder = new JpegEncoder();
@@ -79,8 +79,9 @@ namespace SV.Maat.MediaView
                     {
                         encoder = new PngEncoder();
                     }
+                    
 
-                    var resized = image.ScaleToWidth(actualWidth, encoder).ToBytes();
+                    var resized = image.ScaleToWidth(actualWidth, encoder).ToBytes(encoder);
 
                     var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(30));
 
