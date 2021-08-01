@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using Events;
 
 namespace StrangeVanilla.Blogging.Events.Posts.Events
 {
     public class PropertiesAddedToPost : Event<Post>
     {
+        [JsonConverter(typeof(MicroformatPropertiesSerialiser))]
         public Dictionary<string, object[]> Properties { get; set; }
         
 

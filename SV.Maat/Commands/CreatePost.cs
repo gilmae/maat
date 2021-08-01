@@ -11,6 +11,7 @@ namespace SV.Maat.Commands
         public string[] Type { get; set; }
         public Dictionary<string, object[]> Properties { get; set; }
         public Microformat[] Children { get; set; }
+        public int OwnerId { get; set; }
 
         public bool IsValid(Aggregate aggregate)
         {
@@ -19,7 +20,7 @@ namespace SV.Maat.Commands
 
         public Event GetEvent(int version)
         {
-            return new PostCreated { Version = version, Type = Type, Properties = Properties, Children = Children };
+            return new PostCreated { Version = version, Type = Type, Properties = Properties, Children = Children, OwnerId = OwnerId };
         }
     }
 }

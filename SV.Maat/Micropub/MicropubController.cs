@@ -125,16 +125,16 @@ namespace SV.Maat.Micropub
 
             if (!post.Properties.ContainsKey("slug"))
             {
-                post.Properties["slug"] = new[] { location.ToString() };
+                post.Properties["slug"] = new[] { location.AbsolutePath.ToString() };
             } else
             {
-                post.Properties["slug"].Append(location.ToString());
+                post.Properties["slug"].Append(location.AbsolutePath.ToString());
             }
 
-            ICommand command = new CreatePost { Type = post.Type, Properties = post.Properties };
+            ICommand command = new CreatePost { Type = post.Type, Properties = post.Properties, OwnerId = this.UserId().Value };
             _commandHandler.Handle<Post>(id, command);
 
-            return Ok(location);
+            return Created(location, null);
         }
 
         public IActionResult Delete(MicropubPublishModel model)

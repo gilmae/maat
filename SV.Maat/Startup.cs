@@ -78,9 +78,9 @@ namespace SV.Maat
             }).AddScheme<IndieAuthOptions, IndieAuthTokenHandler>(IndieAuthTokenHandler.SchemeName, op => { });
 
             services.AddHealthChecks();
-            services.AddMvc().AddNewtonsoftJson();
-            services.AddRazorPages().AddNewtonsoftJson();
-            services.AddControllers().AddNewtonsoftJson();
+            services.AddMvc();//.AddNewtonsoftJson();
+            services.AddRazorPages();//.AddNewtonsoftJson();
+            services.AddControllers();//.AddNewtonsoftJson();
 
             services.Configure<CertificateStorage>(Configuration.GetSection("CertificateStorage"));
 
@@ -89,9 +89,11 @@ namespace SV.Maat
 
             services.AddSingleton<IEventStore<Entry>, PgStore<Entry>>();
             services.AddSingleton<IEventStore<Media>, PgStore<Media>>();
+            services.AddSingleton<IEventStore<Post>, PgStore<Post>>();
             services.AddSingleton<IEventStore, PgStoreBase>();
 
             services.AddSingleton<IEntryProjection, EntryProjection>();
+            services.AddSingleton<IPostsProjection, PostsProjection>();
             services.AddSingleton<IRepliesProjection, RepliesProjection>();
             services.AddSingleton<ISyndicationsProjection, SyndicationsProjection>();
             services.AddSingleton<IProjection<Media>, MemoryProjection<Media>>();

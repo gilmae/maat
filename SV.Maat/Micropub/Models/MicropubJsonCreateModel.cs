@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
+using StrangeVanilla.Blogging.Events;
 
 namespace SV.Maat.Micropub.Models
 {
@@ -14,7 +15,8 @@ namespace SV.Maat.Micropub.Models
 
         [JsonPropertyName("properties")]
         [BindProperty(Name="properties")]
-        public Dictionary<string, dynamic[]> Properties { get; set; }
+        [JsonConverter(typeof(MicroformatPropertiesSerialiser))]
+        public Dictionary<string, object[]> Properties { get; set; }
 
         [BindProperty(Name = "action")]
         public string Action { get; set; }

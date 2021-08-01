@@ -21,7 +21,7 @@ namespace SV.Maat.Micropub
     [Route("micropub")]
     public partial class QueryController : ControllerBase
     {
-        IEntryProjection _entryView;
+        IPostsProjection _entryView;
         ILogger<QueryController> _logger;
         readonly ISyndicationStore _syndicationStore;
         private readonly IEnumerable<ISyndicationNetwork> _externalNetworks;
@@ -29,14 +29,14 @@ namespace SV.Maat.Micropub
         IUserStore _userStore; 
 
         public QueryController(ILogger<QueryController> logger,
-            IEntryProjection entryView,
+            IPostsProjection postsView,
             ISyndicationStore syndicationStore,
             IEnumerable<ISyndicationNetwork> externalNetworks,
             IRepliesProjection repliesProjection,
             IUserStore userStore)
         {
             _logger = logger;
-            _entryView = entryView;
+            _entryView = postsView;
             _syndicationStore = syndicationStore;
             _externalNetworks = externalNetworks;
             _repliesProjection = repliesProjection;
@@ -88,7 +88,7 @@ namespace SV.Maat.Micropub
                     var e = _entryView.Get(id);
                     var u = _userStore.Find(e.OwnerId);
 
-                    return UrlHelper.EntryUrl(e, u);
+                    return UrlHelper.PostUrl(e, u);
 
                 })
             });
@@ -133,44 +133,58 @@ namespace SV.Maat.Micropub
 
         private ActionResult GetMulipleItems(string[] properties, int? limit, string before, string after)
         {
-            IEnumerable<Entry> entries = null;
+            IEnumerable<Post> posts = null;
+            List<string> propertiesToInclude = new List<string>();
+            if (!properties.IsEmpty())
+            {
+                propertiesToInclude.AddRange(properties);
+            }
+
+
             int pageSize = GetLimit(limit);
             if (!string.IsNullOrEmpty(before))
             {
-                entries = _entryView.GetBefore(pageSize, before.FromBase64String<DateTime>());
+                posts = _entryView.GetBefore(pageSize, before.FromBase64String<DateTime>());
             }
             else if (!string.IsNullOrEmpty(after))
             {
-                entries = _entryView.GetAfter(pageSize, after.FromBase64String<DateTime>());
+                posts = _entryView.GetAfter(pageSize, after.FromBase64String<DateTime>());
             }
             else
             {
-                entries = _entryView.GetLatest(pageSize);
+                posts = _entryView.GetLatest(pageSize);
             }
 
-            if (!entries.Any())
+            if (!posts.Any())
             {
-                return Ok(new { items = entries.ToArray() });
+                return Ok(new { items = new object[] { } });
             }
-
-            EntryToMicropubConverter converter = new EntryToMicropubConverter(properties);
-
-            var micropubEntries = entries.Select(e => converter.GetMicropub(e, entry=> UrlHelper.EntryUrl(e, _userStore.Find(e.OwnerId))));
 
             return Ok(new
             {
-                items = micropubEntries,
+                items = posts.Select(i => new
+                {
+                    type = i.Data.Type,
+                    properties = i.Data.Properties.Where(kv => propertiesToInclude.IsEmpty() || propertiesToInclude.Contains(kv.Key)),
+                    children = i.Data.Children,
+                    url = UrlHelper.PostUrl(i, _userStore.Find(i.OwnerId))
+                }),
                 paging = new
                 {
-                    before = entries.Last().CreatedAt.ToBase64String(),
-                    after = entries.First().CreatedAt.ToBase64String()
+                    before = posts.Last().CreatedAt.ToBase64String(),
+                    after = posts.First().CreatedAt.ToBase64String()
                 }
             });
         }
 
         private ActionResult GetSingleItem(string url, string[] properties)
         {
-            Entry entry = _entryView.Get(new Uri(url)?.AbsolutePath);
+            Post entry = _entryView.Get(new Uri(url)?.AbsolutePath);
+            List<string> propertiesToInclude = new List<string>();
+            if (!properties.IsEmpty())
+            {
+                propertiesToInclude.AddRange(properties);
+            }
             if (entry == null)
             {
                 return BadRequest(new {
@@ -178,9 +192,13 @@ namespace SV.Maat.Micropub
                     error_description = "The post with the requested URL was not found"
                 });
             }
-            EntryToMicropubConverter converter = new EntryToMicropubConverter(properties);
-            //return Ok(MicropubEnricher(entry, converter.ToDictionary(entry), false, properties.IsEmpty()));
-            return Ok(converter.GetMicropub(entry, null));
+            return Ok(new
+            {
+                type = entry.Data.Type,
+                properties = entry.Data.Properties.Where(kv => propertiesToInclude.IsEmpty() || propertiesToInclude.Contains(kv.Key)),
+                children = entry.Data.Children,
+                url = UrlHelper.PostUrl(entry, _userStore.Find(entry.OwnerId))
+            });
         }
 
         private int GetLimit(int? limit)

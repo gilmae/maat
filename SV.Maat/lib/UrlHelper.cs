@@ -12,6 +12,19 @@ namespace SV.Maat.lib
 {
     public static class UrlHelper
     {
+        public static string PostUrl(Post e, User u)
+        {
+            string host = u?.Host;
+            if (string.IsNullOrEmpty(host))
+            {
+                host = "/";
+            }
+
+            string slug = $"entries/{e.Id}";
+
+            return Path.Join(host, slug);
+        }
+
         public static string EntryUrl(Entry e, User u)
         {
             string host = u?.Host;
