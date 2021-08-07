@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using StrangeVanilla.Blogging.Events;
-using System.Linq;
+using mfv = SV.Maat.Micropub.Models;
 
 namespace SV.Maat.Projections
 {
     public interface IEntryProjection
     {
-        Entry Get(Guid id);
-        Entry Get(string slug);
-        IEnumerable<Entry> Get();
-        IEnumerable<Entry> GetAfter(int numItems, DateTime after);
-        IEnumerable<Entry> GetBefore(int numItems, DateTime before);
-        IEnumerable<Entry> GetLatest(int numItems);
+        mfv.Entry Get(Guid id);
+        mfv.Entry Get(string slug);
+        IEnumerable<mfv.Entry> Get();
+        IEnumerable<mfv.Entry> GetAfter(int numItems, DateTime after);
+        IEnumerable<mfv.Entry> GetBefore(int numItems, DateTime before);
+        IEnumerable<mfv.Entry> GetLatest(int numItems);
     }
 }

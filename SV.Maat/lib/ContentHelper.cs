@@ -46,6 +46,7 @@ namespace SV.Maat.lib
             return string.Empty;
         }
 
+
         public static string GetPlainText(this Content content)
         {
             return content?.Value;
@@ -60,43 +61,43 @@ namespace SV.Maat.lib
             return content[0];
         }
 
-        public static Content ParseContentArray(this object[] values)
-        {
-            if (values is null)
-            {
-                return null;
-            }
-            List<KeyValuePair<ContentType, string>> contents = new List<KeyValuePair<ContentType, string>>();
+        //public static Content ParseContentArray(this object[] values)
+        //{
+        //    if (values is null)
+        //    {
+        //        return null;
+        //    }
+        //    List<KeyValuePair<ContentType, string>> contents = new List<KeyValuePair<ContentType, string>>();
 
-           foreach (object v in values)
-            {
-                if (v is string && !string.IsNullOrEmpty((string)v))
-                {
-                    return new Content { Type = ContentType.plaintext, Value = (string)v };
-                }
-                else if (v is JObject)
-                {
-                    dynamic dict = v as JObject;
+        //   foreach (object v in values)
+        //    {
+        //        if (v is string && !string.IsNullOrEmpty((string)v))
+        //        {
+        //            return new Content { Type = ContentType.plaintext, Value = (string)v };
+        //        }
+        //        else if (v is JObject)
+        //        {
+        //            dynamic dict = v as JObject;
 
-                    if (string.IsNullOrEmpty((string)dict.value)
-                        && string.IsNullOrEmpty((string)dict.html)
-                        && string.IsNullOrEmpty((string)dict.markdown))
-                    {
-                        continue;
-                    }
+        //            if (string.IsNullOrEmpty((string)dict.value)
+        //                && string.IsNullOrEmpty((string)dict.html)
+        //                && string.IsNullOrEmpty((string)dict.markdown))
+        //            {
+        //                continue;
+        //            }
 
-                    if (dict.html != null)
-                    {
-                        return new Content { Type = ContentType.html, Value = (string)dict.value, Markup=(string)dict.html };
-                    }
-                    if (dict.markdown != null)
-                    {
-                        return new Content { Type = ContentType.markdown, Value = (string)dict.value, Markup = (string)dict.markdown };
-                    }
-                }
-            }
+        //            if (dict.html != null)
+        //            {
+        //                return new Content { Type = ContentType.html, Value = (string)dict.value, Markup=(string)dict.html };
+        //            }
+        //            if (dict.markdown != null)
+        //            {
+        //                return new Content { Type = ContentType.markdown, Value = (string)dict.value, Markup = (string)dict.markdown };
+        //            }
+        //        }
+        //    }
 
-            return null;
-        }
+        //    return null;
+        //}
     }
 }

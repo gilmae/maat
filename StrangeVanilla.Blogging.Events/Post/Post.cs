@@ -14,5 +14,10 @@ namespace StrangeVanilla.Blogging.Events
 
         public Post() : base() { }
         public Post(Guid id) : base(id) { }
+
+        public static T AsVocab<T>()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

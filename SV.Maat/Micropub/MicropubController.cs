@@ -26,7 +26,6 @@ namespace SV.Maat.Micropub
     {
 
         private readonly ILogger<MicropubController> _logger;
-        IEventStore<Entry> _entryRepository;
         IEventStore<Media> _mediaRepository;
         IFileStore _fileStore;
         Pipeline _pipeline;
@@ -35,7 +34,6 @@ namespace SV.Maat.Micropub
         IUserStore _userStore;
 
         public MicropubController(ILogger<MicropubController> logger,
-            IEventStore<Entry> entryRepository,
             IEventStore<Media> mediaRepository,
             IFileStore fileStore,
             Pipeline pipeline,
@@ -45,7 +43,6 @@ namespace SV.Maat.Micropub
             )
         {
             _logger = logger;
-            _entryRepository = entryRepository;
             _mediaRepository = mediaRepository;
             _fileStore = fileStore;
             _pipeline = pipeline;
@@ -64,18 +61,18 @@ namespace SV.Maat.Micropub
             {
                 return Create(post);
             }
-            else if (post.Action == ActionType.update.ToString())
-            {
-                return Update(post);
-            }
-            else if (post.Action == ActionType.delete.ToString())
-            {
-                return Delete(post);
-            }
-            else if (post.Action == ActionType.undelete.ToString())
-            {
-                return Undelete(post);
-            }
+            //else if (post.Action == ActionType.update.ToString())
+            //{
+            //    return Update(post);
+            //}
+            //else if (post.Action == ActionType.delete.ToString())
+            //{
+            //    return Delete(post);
+            //}
+            //else if (post.Action == ActionType.undelete.ToString())
+            //{
+            //    return Undelete(post);
+            //}
 
             return BadRequest();
         }
@@ -137,251 +134,251 @@ namespace SV.Maat.Micropub
             return Created(location, null);
         }
 
-        public IActionResult Delete(MicropubPublishModel model)
-        {
-            if (string.IsNullOrEmpty(model.Url))
-            {
-                return BadRequest(new
-                {
-                    error = "invalid_request",
-                    error_description = "URL was not provided"
-                });
-            }
+        //public IActionResult Delete(MicropubPublishModel model)
+        //{
+        //    if (string.IsNullOrEmpty(model.Url))
+        //    {
+        //        return BadRequest(new
+        //        {
+        //            error = "invalid_request",
+        //            error_description = "URL was not provided"
+        //        });
+        //    }
 
-            Guid? entryId = _entries.Get(new Uri(model.Url)?.AbsolutePath)?.Id;
+        //    Guid? entryId = _entries.Get(new Uri(model.Url)?.AbsolutePath)?.Id;
 
-            if (entryId == null || entryId == Guid.Empty)
-            {
-                return BadRequest(new
-                {
-                    error = "invalid_request",
-                    error_description = "URL could not be parsed."
-                });
-            }
+        //    if (entryId == null || entryId == Guid.Empty)
+        //    {
+        //        return BadRequest(new
+        //        {
+        //            error = "invalid_request",
+        //            error_description = "URL could not be parsed."
+        //        });
+        //    }
 
-            _commandHandler.Handle<Entry>(entryId.Value, new DeleteEntry());
+        //    _commandHandler.Handle<Entry>(entryId.Value, new DeleteEntry());
 
-            return Ok();
-        }
+        //    return Ok();
+        //}
 
-        public IActionResult Undelete(MicropubPublishModel model)
-        {
-            if (string.IsNullOrEmpty(model.Url))
-            {
-                return BadRequest(new
-                {
-                    error = "invalid_request",
-                    error_description = "URL was not provided"
-                });
-            }
+        //public IActionResult Undelete(MicropubPublishModel model)
+        //{
+        //    if (string.IsNullOrEmpty(model.Url))
+        //    {
+        //        return BadRequest(new
+        //        {
+        //            error = "invalid_request",
+        //            error_description = "URL was not provided"
+        //        });
+        //    }
 
-            Guid? entryId = _entries.Get(new Uri(model.Url)?.AbsolutePath)?.Id;
+        //    Guid? entryId = _entries.Get(new Uri(model.Url)?.AbsolutePath)?.Id;
 
-            if (entryId==null || entryId == Guid.Empty)
-            {
-                return BadRequest(new
-                {
-                    error = "invalid_request",
-                    error_description = "URL could not be parsed."
-                });
-            }
+        //    if (entryId==null || entryId == Guid.Empty)
+        //    {
+        //        return BadRequest(new
+        //        {
+        //            error = "invalid_request",
+        //            error_description = "URL could not be parsed."
+        //        });
+        //    }
 
-            _commandHandler.Handle<Entry>(entryId.Value, new UndeleteEntry());
+        //    _commandHandler.Handle<Entry>(entryId.Value, new UndeleteEntry());
 
-            return Ok();
-        }
+        //    return Ok();
+        //}
 
-        private IActionResult Update(MicropubPublishModel model)
-        {
-            if (string.IsNullOrEmpty(model.Url))
-            {
-                return BadRequest(new {
-                    error = "invalid_request",
-                    error_description = "URL was not provided"
-                });
-            }
+        //private IActionResult Update(MicropubPublishModel model)
+        //{
+        //    if (string.IsNullOrEmpty(model.Url))
+        //    {
+        //        return BadRequest(new {
+        //            error = "invalid_request",
+        //            error_description = "URL was not provided"
+        //        });
+        //    }
 
-            Guid? entryId = _entries.Get(new Uri(model.Url)?.AbsolutePath)?.Id;
+        //    Guid? entryId = _entries.Get(new Uri(model.Url)?.AbsolutePath)?.Id;
 
-            if (entryId == null || entryId == Guid.Empty)
-            {
-                return BadRequest(new
-                {
-                    error = "invalid_request",
-                    error_description = "URL could not be parsed."
-                });
-            }
+        //    if (entryId == null || entryId == Guid.Empty)
+        //    {
+        //        return BadRequest(new
+        //        {
+        //            error = "invalid_request",
+        //            error_description = "URL could not be parsed."
+        //        });
+        //    }
 
-            try
-            {
-                if (model.Add?.Count() > 0) {
-                    return HandleAddUpdate(model.Add, entryId.Value);
-                }
-                else if (model.Replace?.Count() > 0) {
-                    return HandleReplaceUpdate(model.Replace, entryId.Value);
-                }
-                else if (model.Delete?.Count() > 0) { 
-                    return HandleRemoveUpdate(model.Delete, entryId.Value);
-                }
-            }
-            catch
-            {
-                throw;
-            }
+        //    try
+        //    {
+        //        if (model.Add?.Count() > 0) {
+        //            return HandleAddUpdate(model.Add, entryId.Value);
+        //        }
+        //        else if (model.Replace?.Count() > 0) {
+        //            return HandleReplaceUpdate(model.Replace, entryId.Value);
+        //        }
+        //        else if (model.Delete?.Count() > 0) { 
+        //            return HandleRemoveUpdate(model.Delete, entryId.Value);
+        //        }
+        //    }
+        //    catch
+        //    {
+        //        throw;
+        //    }
 
-            return Ok();
-        }
+        //    return Ok();
+        //}
 
-        private IEnumerable<Entry.MediaLink> ParseMediaReference(IEnumerable<dynamic> items, string type)
-        {
-            IList<Entry.MediaLink> media = new List<Entry.MediaLink>();
-            if (items == null)
-            {
-                return media;
-            }
+        //private IEnumerable<Entry.MediaLink> ParseMediaReference(IEnumerable<dynamic> items, string type)
+        //{
+        //    IList<Entry.MediaLink> media = new List<Entry.MediaLink>();
+        //    if (items == null)
+        //    {
+        //        return media;
+        //    }
 
-            foreach (dynamic item in items)
-            {
-                if (item is string)
-                {
-                    media.Add(new Entry.MediaLink { Url = item.ToString(), Type = type });
-                }
-                else
-                {
-                    var m = new Entry.MediaLink { Url = item.value, Type = type };
-                    try
-                    {
-                        m.Description = item.alt;
-                    }
-                    catch (RuntimeBinderException)
-                    {
+        //    foreach (dynamic item in items)
+        //    {
+        //        if (item is string)
+        //        {
+        //            media.Add(new Entry.MediaLink { Url = item.ToString(), Type = type });
+        //        }
+        //        else
+        //        {
+        //            var m = new Entry.MediaLink { Url = item.value, Type = type };
+        //            try
+        //            {
+        //                m.Description = item.alt;
+        //            }
+        //            catch (RuntimeBinderException)
+        //            {
 
-                    }
-                    media.Add(m);
-                }
-            }
-            return media;
-        }
+        //            }
+        //            media.Add(m);
+        //        }
+        //    }
+        //    return media;
+        //}
 
-        private ActionResult HandleRemoveUpdate(string[] values, Guid id)
-        {
-            List<ICommand> commands = new List<ICommand> { };
-            if (values.Contains("name") || values.Contains("content") || values.Contains("bookmark-of"))
-            {
-                commands.Add(new SetContent
-                {
-                    Name = values.Contains("name") ? new Content() : null,
-                    Content = values.Contains("content") ? new Content() : null,
-                    BookmarkOf = values.Contains("bookmark-of") ? "" : null
-                });
-            }
+        //private ActionResult HandleRemoveUpdate(string[] values, Guid id)
+        //{
+        //    List<ICommand> commands = new List<ICommand> { };
+        //    if (values.Contains("name") || values.Contains("content") || values.Contains("bookmark-of"))
+        //    {
+        //        commands.Add(new SetContent
+        //        {
+        //            Name = values.Contains("name") ? new Content() : null,
+        //            Content = values.Contains("content") ? new Content() : null,
+        //            BookmarkOf = values.Contains("bookmark-of") ? "" : null
+        //        });
+        //    }
 
-            if (values.Contains("reply-to"))
-            {
-                commands.Add(new ReplyTo { ReplyToUrl = string.Empty });
-            }
+        //    if (values.Contains("reply-to"))
+        //    {
+        //        commands.Add(new ReplyTo { ReplyToUrl = string.Empty });
+        //    }
 
-            if (values.Contains("category"))
-            {
-                commands.Add(new ClearCategoriesFromEntry());
-            }
+        //    if (values.Contains("category"))
+        //    {
+        //        commands.Add(new ClearCategoriesFromEntry());
+        //    }
 
-            foreach (ICommand command in commands)
-            {
-                if (!_commandHandler.Handle<Entry>(id, command))
-                {
-                    return BadRequest($"Could not {command.GetType().Name}");
-                }
-            }
+        //    foreach (ICommand command in commands)
+        //    {
+        //        if (!_commandHandler.Handle<Entry>(id, command))
+        //        {
+        //            return BadRequest($"Could not {command.GetType().Name}");
+        //        }
+        //    }
 
-            Entry entry = _entries.Get(id);
-            return Created(UrlHelper.EntryUrl(entry, _userStore.Find(entry.OwnerId)), null);
-        }
+        //    Entry entry = _entries.Get(id);
+        //    return Created(UrlHelper.EntryUrl(entry, _userStore.Find(entry.OwnerId)), null);
+        //}
 
-        private ActionResult HandleReplaceUpdate(Dictionary<string, string[]> values, Guid id)
-        {
-            List<ICommand> commands = new List<ICommand> { };
-            commands.Add(new SetContent
-            {
-                Name = ContentHelper.ParseContentArray(values.GetValueOrDefault("name")),
-                Content = ContentHelper.ParseContentArray(values.GetValueOrDefault("content")),
-                BookmarkOf = values.GetValueOrDefault("bookmark-of")?[0]?.ToString()
-            });
+        //private ActionResult HandleReplaceUpdate(Dictionary<string, string[]> values, Guid id)
+        //{
+        //    List<ICommand> commands = new List<ICommand> { };
+        //    commands.Add(new SetContent
+        //    {
+        //        Name = ContentHelper.ParseContentArray(values.GetValueOrDefault("name")),
+        //        Content = ContentHelper.ParseContentArray(values.GetValueOrDefault("content")),
+        //        BookmarkOf = values.GetValueOrDefault("bookmark-of")?[0]?.ToString()
+        //    });
 
-            if (values.GetValueOrDefault("category") != null)
-            {
-                commands.Add(new ClearCategoriesFromEntry());
-                string[] categories = (values.GetValueOrDefault("category") as object[]).Select(x => x.ToString()).ToArray();
-                commands.AddRange(categories.Select(c => new AddToCategory { Category = c }));
-            }
+        //    if (values.GetValueOrDefault("category") != null)
+        //    {
+        //        commands.Add(new ClearCategoriesFromEntry());
+        //        string[] categories = (values.GetValueOrDefault("category") as object[]).Select(x => x.ToString()).ToArray();
+        //        commands.AddRange(categories.Select(c => new AddToCategory { Category = c }));
+        //    }
 
-            var media = ParseMediaReference(values.GetValueOrDefault("photo"), "photo");
-            if (media.Any())
-            {
-                commands.Add(new ClearMediaFromEntry());
-                commands.AddRange(media.Select(m => new AttachMediaToEntry { Description = m.Description, Type = m.Type, Url = m.Url }));
-            }
+        //    var media = ParseMediaReference(values.GetValueOrDefault("photo"), "photo");
+        //    if (media.Any())
+        //    {
+        //        commands.Add(new ClearMediaFromEntry());
+        //        commands.AddRange(media.Select(m => new AttachMediaToEntry { Description = m.Description, Type = m.Type, Url = m.Url }));
+        //    }
 
-            //if (post.Properties.GetValueOrDefault("mp-syndicate-to") != null)
-            //{
-            //    string[] syndicateTo = (post.Properties.GetValueOrDefault("mp-syndicate-to") as object[]).Select(x => x.ToString()).ToArray();
-            //    commands.AddRange(syndicateTo.Select(c => new Syndicate { SyndicationAccount = c }));
-            //}
+        //    //if (post.Properties.GetValueOrDefault("mp-syndicate-to") != null)
+        //    //{
+        //    //    string[] syndicateTo = (post.Properties.GetValueOrDefault("mp-syndicate-to") as object[]).Select(x => x.ToString()).ToArray();
+        //    //    commands.AddRange(syndicateTo.Select(c => new Syndicate { SyndicationAccount = c }));
+        //    //}
 
-            //string postStatus = post.Properties.GetValueOrDefault("post-status")?[0]?.ToString();
-            //if (postStatus == null || postStatus != "draft")
-            //{
-            //    commands.Add(new PublishEntry());
-            //}
+        //    //string postStatus = post.Properties.GetValueOrDefault("post-status")?[0]?.ToString();
+        //    //if (postStatus == null || postStatus != "draft")
+        //    //{
+        //    //    commands.Add(new PublishEntry());
+        //    //}
 
-            foreach (ICommand command in commands)
-            {
-                if (!_commandHandler.Handle<Entry>(id, command))
-                {
-                    return BadRequest($"Could not {command.GetType().Name}");
-                }
-            }
+        //    foreach (ICommand command in commands)
+        //    {
+        //        if (!_commandHandler.Handle<Entry>(id, command))
+        //        {
+        //            return BadRequest($"Could not {command.GetType().Name}");
+        //        }
+        //    }
 
-            Entry entry = _entries.Get(id);
-            return Created(UrlHelper.EntryUrl(entry, _userStore.Find(entry.OwnerId)), null);
-        }
+        //    Entry entry = _entries.Get(id);
+        //    return Created(UrlHelper.EntryUrl(entry, _userStore.Find(entry.OwnerId)), null);
+        //}
 
-        private ActionResult HandleAddUpdate(Dictionary<string, string[]> values, Guid id)
-        {
-            List<ICommand> commands = new List<ICommand> { };
-            commands.Add(new AddContent
-            {
-                Name = ContentHelper.ParseContentArray(values.GetValueOrDefault("name")),
-                Content = ContentHelper.ParseContentArray(values.GetValueOrDefault("content")),
-                BookmarkOf = values.GetValueOrDefault("bookmark-of")?[0]?.ToString()
-            });
+        //private ActionResult HandleAddUpdate(Dictionary<string, string[]> values, Guid id)
+        //{
+        //    List<ICommand> commands = new List<ICommand> { };
+        //    commands.Add(new AddContent
+        //    {
+        //        Name = ContentHelper.ParseContentArray(values.GetValueOrDefault("name")),
+        //        Content = ContentHelper.ParseContentArray(values.GetValueOrDefault("content")),
+        //        BookmarkOf = values.GetValueOrDefault("bookmark-of")?[0]?.ToString()
+        //    });
 
-            if (values.GetValueOrDefault("category") != null)
-            {
-                string[] categories = (values.GetValueOrDefault("category") as object[]).Select(x => x.ToString()).ToArray();
-                commands.AddRange(categories.Select(c => new AddToCategory { Category = c }));
-            }
+        //    if (values.GetValueOrDefault("category") != null)
+        //    {
+        //        string[] categories = (values.GetValueOrDefault("category") as object[]).Select(x => x.ToString()).ToArray();
+        //        commands.AddRange(categories.Select(c => new AddToCategory { Category = c }));
+        //    }
 
-            var media = ParseMediaReference(values.GetValueOrDefault("photo"), "photo");
-            commands.AddRange(media.Select(m => new AttachMediaToEntry { Description = m.Description, Type = m.Type, Url = m.Url }));
+        //    var media = ParseMediaReference(values.GetValueOrDefault("photo"), "photo");
+        //    commands.AddRange(media.Select(m => new AttachMediaToEntry { Description = m.Description, Type = m.Type, Url = m.Url }));
 
-            if (values.GetValueOrDefault("mp-syndicate-to") != null)
-            {
-                string[] syndicateTo = (values.GetValueOrDefault("mp-syndicate-to") as object[]).Select(x => x.ToString()).ToArray();
-                commands.AddRange(syndicateTo.Select(c => new Syndicate { SyndicationAccount=c}));
-            }
+        //    if (values.GetValueOrDefault("mp-syndicate-to") != null)
+        //    {
+        //        string[] syndicateTo = (values.GetValueOrDefault("mp-syndicate-to") as object[]).Select(x => x.ToString()).ToArray();
+        //        commands.AddRange(syndicateTo.Select(c => new Syndicate { SyndicationAccount=c}));
+        //    }
 
-            foreach (ICommand command in commands)
-            {
-                if (!_commandHandler.Handle<Entry>(id, command))
-                {
-                    return BadRequest($"Could not {command.GetType().Name}");
-                }
-            }
+        //    foreach (ICommand command in commands)
+        //    {
+        //        if (!_commandHandler.Handle<Entry>(id, command))
+        //        {
+        //            return BadRequest($"Could not {command.GetType().Name}");
+        //        }
+        //    }
 
-            Entry entry = _entries.Get(id);
-            return Created(UrlHelper.EntryUrl(entry, _userStore.Find(entry.OwnerId)), null);
-        }
+        //    Entry entry = _entries.Get(id);
+        //    return Created(UrlHelper.EntryUrl(entry, _userStore.Find(entry.OwnerId)), null);
+        //}
 
         private byte[] ReadStream(Stream data)
         {

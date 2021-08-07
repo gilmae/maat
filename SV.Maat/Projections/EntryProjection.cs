@@ -3,48 +3,51 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Events;
-using Microsoft.Extensions.Logging;
 using StrangeVanilla.Blogging.Events;
+using mfv = SV.Maat.Micropub.Models;
+using Microsoft.Extensions.Logging;
+using mf;
 
 namespace SV.Maat.Projections
 {
     public class EntryProjection : ProjectionBase, IEntryProjection
     {
-        ConcurrentDictionary<Guid, Entry> projections = new ConcurrentDictionary<Guid, Entry>();
-        public EntryProjection(ILogger<EntryProjection> logger, IEventStore<Entry> eventStore) : base(logger, eventStore)
+        ConcurrentDictionary<Guid, Post> projections = new ConcurrentDictionary<Guid, Post>();
+        public EntryProjection(ILogger<EntryProjection> logger, IEventStore<Post> eventStore) : base(logger, eventStore)
         {
         }
 
-        public Entry Get(Guid id)
+        public mfv.Entry Get(Guid id)
         {
-            if (projections.TryGetValue(id, out Entry entry))
+            if (projections.TryGetValue(id, out Post entry))
             {
-                return entry;
+                return entry.Data.AsVocab<mfv.Entry>();
             }
             return null;
         }
 
-        public Entry Get(string slug)
+        public mfv.Entry Get(string slug)
         {
-            return projections.Values.FirstOrDefault(e => e.Slug == slug);
+            return projections.Values.FirstOrDefault(e => e.Data.Properties.ContainsKey("slug")
+                && e.Data.Properties["slug"].Any(p => p as string == slug))?.Data.AsVocab<mfv.Entry>();
         }
 
-        public IEnumerable<Entry> Get()
+        public IEnumerable<mfv.Entry> Get()
         {
-            return projections.Values.OrderByDescending(e => e.CreatedAt);
+            return projections.Values.OrderByDescending(e => e.CreatedAt).Select(p=>p.Data.AsVocab<mfv.Entry>());
         }
 
-        public IEnumerable<Entry> GetAfter(int numItems, DateTime after)
+        public IEnumerable<mfv.Entry> GetAfter(int numItems, DateTime after)
         {
-            return Get().Where(x => x.CreatedAt > after).Take(numItems);
+            return projections.Values.Where(x => x.CreatedAt > after).Take(numItems).Select(p => p.Data.AsVocab<mfv.Entry>());
         }
 
-        public IEnumerable<Entry> GetBefore(int numItems, DateTime before)
+        public IEnumerable<mfv.Entry> GetBefore(int numItems, DateTime before)
         {
-            return Get().Where(x => x.CreatedAt < before).Take(numItems);
+            return projections.Values.Where(x => x.CreatedAt < before).Take(numItems).Select(p => p.Data.AsVocab<mfv.Entry>());
         }
 
-        public IEnumerable<Entry> GetLatest(int numItems)
+        public IEnumerable<mfv.Entry> GetLatest(int numItems)
         {
             return Get().Take(numItems);
         }
@@ -53,16 +56,20 @@ namespace SV.Maat.Projections
         {
             if (newEvents.Any())
             {
-                var entryEvents = newEvents.Where(e => e is Event<Entry>);
-                logger.LogTrace("Processing {0} new Entry events", entryEvents.Count());
+                var entryEvents = newEvents.Where(e => e is Event<Post>);
+                logger.LogTrace("Processing {0} new potential entry events", entryEvents.Count());
                 foreach (Event<Entry> e in entryEvents.Where(e => e is Event<Entry>))
                 {
-                    if (!projections.TryGetValue(e.AggregateId, out Entry aggregate))
+                    if (!projections.TryGetValue(e.AggregateId, out Post aggregate))
                     {
-                        aggregate = new Entry(e.AggregateId);
+                        aggregate = new Post(e.AggregateId);
                     }
                     e.Apply(aggregate);
-                    projections.AddOrUpdate(aggregate.Id, aggregate, (key, oldValue) => aggregate);
+
+                    if (aggregate.Data.Type.Contains("h-entry"))
+                    {
+                        projections.AddOrUpdate(aggregate.Id, aggregate, (key, oldValue) => aggregate);
+                    }
                 }
                 int maxId = newEvents.Max(e => e.Id);
                 logger.LogTrace("Entry projection updated, last id processed: {0}", maxId);

@@ -9,7 +9,7 @@ namespace SV.Maat.ExternalNetworks
         string Photo { get; }
         string Url { get; }
 
-        string Syndicate(Credentials credentials, Entry entry, string inNetworkReplyingTo = null);
+        string Syndicate(Credentials credentials, Post entry, string inNetworkReplyingTo = null);
 
         bool IsUrlForNetwork(Credentials credentials, string url);
     }

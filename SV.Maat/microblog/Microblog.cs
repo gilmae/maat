@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using mf;
 using Microsoft.Extensions.DependencyInjection;
 using RestSharp;
 using StrangeVanilla.Blogging.Events;
@@ -26,11 +27,10 @@ namespace SV.Maat.Microblog
             throw new NotImplementedException();
         }
 
-        public string Syndicate(Credentials credentials, Entry entry, string inNetworkReplyingTo = null)
+        public string Syndicate(Credentials credentials, Post post, string inNetworkReplyingTo = null)
         {
-            var converter = new EntryToMicropubConverter(new List<string> { "name", "content", "category", "photo", "in-reply-to", "bookmark-of" });
-            var properties = converter.ToDictionary(entry);
-
+            string[] propertiesToInclude = new[] { "name", "content", "category", "photo", "in-reply-to", "bookmark-of" };
+            var properties = post.Data.Properties.Where(kv => propertiesToInclude.Contains(kv.Key));
             var client = new RestClient($"https://micro.blog");
             var request = new RestRequest("/micropub")
                 .AddJsonBody(new

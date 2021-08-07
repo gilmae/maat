@@ -92,10 +92,11 @@ namespace SV.Maat.Reactors
 
                     _logger.LogDebug($"Syndicating {syndicated.AggregateId} to {syndicated.SyndicationAccount}");
                     //a.AddTag("syndication.aggregate.id", syndicated.AggregateId);
-                    Entry entry = null;
+                    Post post = null;
+                    Micropub.Models.Entry entry = null;
                     int attempts = 0;
 
-                    while ((entry == null || entry.Version != syndicated.Version) && attempts < 10)
+                    while ((post == null || post.Version != syndicated.Version) && attempts < 10)
                     {
                         entry = _entries.Get(syndicated.AggregateId);
                         attempts += 1;
@@ -119,7 +120,7 @@ namespace SV.Maat.Reactors
 
                     var syndicatedUrl = network.Syndicate(
                         credentials,
-                        entry,
+                        post,
                         inNetworkReplyTo
                     );
                     //a.AddTag("syndication.aggregate.success", !string.IsNullOrEmpty(syndicatedUrl));
@@ -134,7 +135,7 @@ namespace SV.Maat.Reactors
             //}
         }
 
-        public  IList<string> GetSyndicationsOfReplyToParent(Entry entry)
+        public  IList<string> GetSyndicationsOfReplyToParent(Micropub.Models.Entry entry)
         {
             IList<string> replyingTo = new List<string>();
             if (!string.IsNullOrEmpty(entry.ReplyTo))
@@ -142,11 +143,11 @@ namespace SV.Maat.Reactors
                 replyingTo.Add(entry.ReplyTo);
 
                 // If ReplyTo is a Maat Entry, then GetEntryIdFromUrl will return a non-Empty Guid
-                Entry parentEntry = _entries.Get(new Uri(entry.ReplyTo)?.AbsolutePath);
+                Micropub.Models.Entry parentEntry = _entries.Get(new Uri(entry.ReplyTo)?.AbsolutePath);
 
                 if (parentEntry != null && parentEntry.Syndications != null)
                 {
-                    replyingTo = replyingTo.Union(parentEntry.Syndications.Select(s=>s.Url)).ToList();
+                    replyingTo = replyingTo.Union(parentEntry.Syndications.Select(s=>s.ToString())).ToList(); // TODO Detect photo urls vs string urls
                 }
             }
 
