@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using RestSharp;
 using StrangeVanilla.Blogging.Events;
 using SV.Maat.ExternalNetworks;
+using SV.Maat.lib;
 using SV.Maat.Micropub;
 
 namespace SV.Maat.Microblog
@@ -30,8 +31,18 @@ namespace SV.Maat.Microblog
         public string Syndicate(Credentials credentials, Post post, string inNetworkReplyingTo = null)
         {
             string[] propertiesToInclude = new[] { "name", "content", "category", "photo", "in-reply-to", "bookmark-of" };
-            var properties = post.Data.Properties.Where(kv => propertiesToInclude.Contains(kv.Key));
+            var properties = post.Data.Properties.DuplicateOnlyKeys(propertiesToInclude);
             var client = new RestClient($"https://micro.blog");
+
+            //if (post.Data.Properties.ContainsKey("photo") && post.Data.Properties["photo"] != null) {
+            //    for (int ii=0;ii< post.Data.Properties["photo"].Length; ii++)
+            //    {
+            //        var request = new RestRequest("/micropub")
+            //    .AddFileBytes("photo", Downloader.Download(post.Data.Properties["photo"][1] as string).Result, "photo");
+            //    }
+            //}
+            
+           
             var request = new RestRequest("/micropub")
                 .AddJsonBody(new
                 {

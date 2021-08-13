@@ -77,46 +77,45 @@ namespace SV.Maat.ExternalNetworks
 
         public string Syndicate(Credentials credentials, Post post, string inNetworkReplyingTo = null)
         {
-            //Tokens tokens = new Tokens
-            //{
-            //    ConsumerKey = ConsumerKey,
-            //    ConsumerSecret = ConsumerKeySecret,
-            //    AccessToken = credentials.Uid,
-            //    AccessTokenSecret = credentials.Secret
-            //};
-            //var client = tokens.Account.VerifyCredentials();
+            Tokens tokens = new Tokens
+            {
+               ConsumerKey = ConsumerKey,
+               ConsumerSecret = ConsumerKeySecret,
+               AccessToken = credentials.Uid,
+               AccessTokenSecret = credentials.Secret
+            };
+            var client = tokens.Account.VerifyCredentials();
 
-            //var media_ids = new long[] { };
-            //Micropub.Models.Entry entry = Post.AsVocab<Micropub.Models.Entry>();
-            //if (entry.IsNull())
-            //{
-            //    return "";
-            //}
-            //if (entry.Photo != null)
-            //{
-            //    media_ids = entry.Photo.Select(m =>
-            //    {
-            //        byte[] data = Downloader.Download(m.Url).Result;
+            var media_ids = new long[] { };
+            Micropub.Models.Entry entry = Post.AsVocab<Micropub.Models.Entry>();
+            if (entry.IsNull())
+            {
+               return "";
+            }
+            if (entry.Photo != null)
+            {
+               media_ids = entry.Photo.Select(m =>
+               {
+                   byte[] data = Downloader.Download(m.Url).Result;
     
-            //        var response = tokens.Media.Upload(data);
-            //        if (response != null && !string.IsNullOrEmpty(m.Description))
-            //        {
-            //            tokens.Media.Metadata.Create(response.MediaId.ToString(), m.Description);
-            //        }
-            //        return response?.MediaId ?? 0;
-            //    }).Where(i => i != 0).ToArray();
-            //}
+                   var response = tokens.Media.Upload(data);
+                   if (response != null && !string.IsNullOrEmpty(m.Description))
+                   {
+                       tokens.Media.Metadata.Create(response.MediaId.ToString(), m.Description);
+                   }
+                   return response?.MediaId ?? 0;
+               }).Where(i => i != 0).ToArray();
+            }
 
-            //long? in_reply_to_status_id = GetStatusIdFromTweetUrl(inNetworkReplyingTo);
+            long? in_reply_to_status_id = GetStatusIdFromTweetUrl(inNetworkReplyingTo);
 
-            //StatusResponse response = tokens.Statuses.Update(
-            //        status: ContentHelper.GetPlainText(entry.Content),
-            //        media_ids: media_ids,
-            //        in_reply_to_status_id: in_reply_to_status_id
-            //    );
+            StatusResponse response = tokens.Statuses.Update(
+                   status: entry.Content.Value,
+                   media_ids: media_ids,
+                   in_reply_to_status_id: in_reply_to_status_id
+               );
 
-            //return $"{Url}/{client.ScreenName}/statuses/{response.Id}";
-            return "";
+            return $"{Url}/{client.ScreenName}/statuses/{response.Id}";
         }
 
         public bool IsUrlForNetwork(Credentials credentials, string url)

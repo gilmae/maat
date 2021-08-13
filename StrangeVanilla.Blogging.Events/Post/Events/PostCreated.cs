@@ -26,6 +26,8 @@ namespace StrangeVanilla.Blogging.Events.Posts.Events
             aggregate.CreatedAt = this.OccuredAt;
             aggregate.LastModifiedAt = this.OccuredAt;
             aggregate.Data = new Microformat { Children = new List<Microformat>(), Properties = Properties, Type = Type };
+            aggregate.Data.AddProperty("uid", AggregateId.ToString());
+            
             if (Children != null)
             {
                 aggregate.Data.Children.AddRange(Children);

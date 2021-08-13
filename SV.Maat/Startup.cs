@@ -144,7 +144,7 @@ namespace SV.Maat
 
             app.UsePipelines(builder =>
             {
-                //builder.UseSyndicateEntry();
+                builder.UseSyndicateEntry();
                 builder.UseBookmarkArchival();
                 //builder.UseWebmentionSender();
             });

@@ -95,40 +95,44 @@ namespace SV.Maat.Mastodon
             return App != null;
         }
 
-        public string Syndicate(Credentials credentials, Post entry, string inNetworkReplyingTo = null)
+        public string Syndicate(Credentials credentials, Post post, string inNetworkReplyingTo = null)
         {
-            //if (App == null)
-            //{
-            //    SetInstance(credentials.Instance);
-            //    if (App == null)
-            //    {
-            //        throw new ArgumentException("Mastodon Application not set.");
-            //    }
-            //}
+            if (App == null)
+            {
+               SetInstance(credentials.Instance);
+               if (App == null)
+               {
+                   throw new ArgumentException("Mastodon Application not set.");
+               }
+            }
+            
+            Micropub.Models.Entry entry = Post.AsVocab<Micropub.Models.Entry>();
+            if (entry.IsNull())
+            {
+               return "";
+            }
+            var client = new RestClient(App.instance);
+            client.Authenticator = new OAuth2AuthorizationRequestHeaderAuthenticator(credentials.Secret, "Bearer");
 
-            //var client = new RestClient(App.instance);
-            //client.Authenticator = new OAuth2AuthorizationRequestHeaderAuthenticator(credentials.Secret, "Bearer");
+            var media_ids = entry.Photo.Select(m =>
+            {
+               var media_request = new RestRequest("api/v2/media");
+               byte[] data = Downloader.Download(m.Url).Result;
+               media_request.AddFileBytes("file", data, Guid.NewGuid().ToString());
+               media_request.AddParameter("description", m.Description);
+               var response = client.Post<Attachment>(media_request);
+               return response?.Data?.Id;
+            }).ToList();
 
-            //var media_ids = entry.AssociatedMedia?.Select(m =>
-            //{
-            //    var media_request = new RestRequest("api/v2/media");
-            //    byte[] data = Downloader.Download(m.Url).Result;
-            //    media_request.AddFileBytes("file", data, Guid.NewGuid().ToString(), m.Type);
-            //    media_request.AddParameter("description", m.Description);
-            //    var response = client.Post<Attachment>(media_request);
-            //    return response?.Data?.Id;
-            //}).ToList();
-
-            //var request = new RestRequest("api/v1/statuses")
-            //    .AddJsonBody(new
-            //    {
-            //        status = ContentHelper.GetPlainText(entry.Body),
-            //        media_ids,
-            //        in_reply_to_id = GetStatusIdFromTootUrl(inNetworkReplyingTo)
-            //    });
-            //var response = client.Post<Status>(request);
-            //return response?.Data?.Url?.ToString();
-            return "";
+            var request = new RestRequest("api/v1/statuses")
+               .AddJsonBody(new
+               {
+                   status = entry.Content.Value,
+                   media_ids,
+                   in_reply_to_id = GetStatusIdFromTootUrl(inNetworkReplyingTo)
+               });
+            var response = client.Post<Status>(request);
+            return response?.Data?.Url?.ToString();
         }
 
         private AppRegistration RegisterAppOnInstance(string instance, string name, string returnurls, string url)

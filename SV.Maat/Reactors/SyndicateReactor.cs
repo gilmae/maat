@@ -147,7 +147,7 @@ namespace SV.Maat.Reactors
 
                 if (parentEntry != null && parentEntry.Syndications != null)
                 {
-                    replyingTo = replyingTo.Union(parentEntry.Syndications.Select(s=>s.ToString())).ToList(); // TODO Detect photo urls vs string urls
+                    replyingTo = replyingTo.Union(parentEntry.Syndications.Select(s=>s.ToString())).ToList(); 
                 }
             }
 

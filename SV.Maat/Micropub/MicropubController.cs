@@ -120,12 +120,12 @@ namespace SV.Maat.Micropub
             Guid id = Guid.NewGuid();
             Uri location = new Uri(this.Url.ActionLink("Entry", "Entry", new { id }));
 
-            if (!post.Properties.ContainsKey("slug"))
+            if (!post.Properties.ContainsKey("url"))
             {
-                post.Properties["slug"] = new[] { location.AbsolutePath.ToString() };
+                post.Properties["url"] = new[] { location.ToString() };
             } else
             {
-                post.Properties["slug"].Append(location.AbsolutePath.ToString());
+                post.Properties["url"].Append(location.ToString());
             }
 
             ICommand command = new CreatePost { Type = post.Type, Properties = post.Properties, OwnerId = this.UserId().Value };

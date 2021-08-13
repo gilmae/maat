@@ -28,8 +28,8 @@ namespace SV.Maat.Projections
 
         public mfv.Entry Get(string slug)
         {
-            return projections.Values.FirstOrDefault(e => e.Data.Properties.ContainsKey("slug")
-                && e.Data.Properties["slug"].Any(p => p as string == slug))?.Data.AsVocab<mfv.Entry>();
+            return projections.Values.FirstOrDefault(e => e.Data.Properties.ContainsKey("url")
+                && e.Data.Properties["url"].Any(p => new Uri(p as string).AbsolutePath.ToString() == slug))?.Data.AsVocab<mfv.Entry>();
         }
 
         public IEnumerable<mfv.Entry> Get()
