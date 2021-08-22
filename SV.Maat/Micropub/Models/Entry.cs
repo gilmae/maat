@@ -6,7 +6,7 @@ using mf;
 using StrangeVanilla.Blogging.Events;
 
 namespace SV.Maat.Micropub.Models {
-    [Vocab(MustBeType = new[] {"h-entry"})]
+    [Vocab(MustBeType = new[] {"entry"})]
     public record Entry
     {
         [Id]
@@ -39,10 +39,10 @@ namespace SV.Maat.Micropub.Models {
         public object[] Author { get; set; }
 
         [Property(Name = "category")]
-        public string[] Category { get; set; }
+        public object[] Category { get; set; }
 
         [Property(Name = "url")]
-        public string[] Url { get; set; }
+        public object[] Url { get; set; }
 
         [Property(Name = "uid")]
         public string Uid { get; set; }
@@ -52,7 +52,7 @@ namespace SV.Maat.Micropub.Models {
 
         // Assume nobody is going to put a photo url here
         [Property(Name = "syndication")]
-        public string[] Syndications { get; set; }
+        public object[] Syndications { get; set; }
 
         [Property(Name = "in-reply-to")]
         public string ReplyTo { get; set; }

@@ -35,10 +35,10 @@ namespace SV.Maat.Projections
         }
     
 
-        public Post Get(string slug)
+        public Post Get(string url)
         {
-            return projections.Values.FirstOrDefault(e => e.Data.Properties.ContainsKey("slug")
-                && e.Data.Properties["slug"].Any(p=>p as string == slug));
+            return projections.Values.FirstOrDefault(e => e.Data.Properties.ContainsKey("url")
+                && e.Data.Properties["url"].Any(p=>p as string == url));
         }
 
         public IEnumerable<Post> Get()

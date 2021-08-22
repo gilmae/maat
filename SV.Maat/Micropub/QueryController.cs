@@ -134,13 +134,7 @@ namespace SV.Maat.Micropub
         private ActionResult GetMulipleItems(string[] properties, int? limit, string before, string after)
         {
             IEnumerable<Post> posts = null;
-            List<string> propertiesToInclude = new List<string>();
-            if (!properties.IsEmpty())
-            {
-                propertiesToInclude.AddRange(properties);
-            }
-
-
+            
             int pageSize = GetLimit(limit);
             if (!string.IsNullOrEmpty(before))
             {
@@ -165,7 +159,7 @@ namespace SV.Maat.Micropub
                 items = posts.Select(i => new
                 {
                     type = i.Data.Type,
-                    properties = i.Data.Properties.Where(kv => propertiesToInclude.IsEmpty() || propertiesToInclude.Contains(kv.Key)),
+                    properties = properties.IsEmpty()?i.Data.Properties:i.Data.Properties.DuplicateOnlyKeys(properties),
                     children = i.Data.Children,
                     url = UrlHelper.PostUrl(i, _userStore.Find(i.OwnerId))
                 }),
@@ -179,12 +173,8 @@ namespace SV.Maat.Micropub
 
         private ActionResult GetSingleItem(string url, string[] properties)
         {
-            Post entry = _entryView.Get(new Uri(url)?.AbsolutePath);
-            List<string> propertiesToInclude = new List<string>();
-            if (!properties.IsEmpty())
-            {
-                propertiesToInclude.AddRange(properties);
-            }
+            Post entry = _entryView.Get(url);
+
             if (entry == null)
             {
                 return BadRequest(new {
@@ -192,10 +182,18 @@ namespace SV.Maat.Micropub
                     error_description = "The post with the requested URL was not found"
                 });
             }
+
+            var propertiesToReturn = entry.Data.Properties;
+            if (!properties.IsEmpty())
+            {
+                propertiesToReturn = entry.Data.Properties.DuplicateOnlyKeys(properties);
+            }
+
+
             return Ok(new
             {
                 type = entry.Data.Type,
-                properties = entry.Data.Properties.Where(kv => propertiesToInclude.IsEmpty() || propertiesToInclude.Contains(kv.Key)),
+                properties = propertiesToReturn,
                 children = entry.Data.Children,
                 url = UrlHelper.PostUrl(entry, _userStore.Find(entry.OwnerId))
             });

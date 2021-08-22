@@ -124,9 +124,6 @@
     <Content Update="Entries\Views\Entry.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="Entry\Views\Entry.cshtml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
         <Content Update="Entry\Views\_entry.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -150,5 +147,10 @@
     <None Remove="SimpleDbContext.Npgsql" />
     <None Remove="mfDotNet" />
     <None Remove="AngleSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Entry\Views\Entry.cshtml.baj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

@@ -58,7 +58,7 @@ namespace SV.Maat.Projections
             {
                 var entryEvents = newEvents.Where(e => e is Event<Post>);
                 logger.LogTrace("Processing {0} new potential entry events", entryEvents.Count());
-                foreach (Event<Entry> e in entryEvents.Where(e => e is Event<Entry>))
+                foreach (Event<Post> e in entryEvents.Where(e => e is Event<Post>))
                 {
                     if (!projections.TryGetValue(e.AggregateId, out Post aggregate))
                     {
@@ -66,7 +66,7 @@ namespace SV.Maat.Projections
                     }
                     e.Apply(aggregate);
 
-                    if (aggregate.Data.Type.Contains("h-entry"))
+                    if (aggregate.Data.Type.Contains("entry"))
                     {
                         projections.AddOrUpdate(aggregate.Id, aggregate, (key, oldValue) => aggregate);
                     }
