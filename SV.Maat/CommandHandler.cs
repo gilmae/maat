@@ -29,7 +29,7 @@ namespace SV.Maat
             {
                 newEvent.AggregateId = aggregate.Id;
                 _eventStore.StoreEvent(newEvent);
-                _pipeline.Run(newEvent);
+                //_pipeline.Run(newEvent);
             }
 
             return success;
