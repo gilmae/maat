@@ -30,7 +30,7 @@ namespace SV.Maat.Micropub
         IFileStore _fileStore;
         Pipeline _pipeline;
         CommandHandler _commandHandler;
-        IEntryProjection _entries;
+        IPostsProjection _entries;
         IUserStore _userStore;
 
         public MicropubController(ILogger<MicropubController> logger,
@@ -38,7 +38,7 @@ namespace SV.Maat.Micropub
             IFileStore fileStore,
             Pipeline pipeline,
             CommandHandler commandHandler,
-            IEntryProjection entries,
+            IPostsProjection entries,
             IUserStore userStore
             )
         {
@@ -61,10 +61,10 @@ namespace SV.Maat.Micropub
             {
                 return Create(post);
             }
-            //else if (post.Action == ActionType.update.ToString())
-            //{
-            //    return Update(post);
-            //}
+            else if (post.Action == ActionType.update.ToString())
+            {
+                return Update(post);
+            }
             //else if (post.Action == ActionType.delete.ToString())
             //{
             //    return Delete(post);
@@ -188,46 +188,50 @@ namespace SV.Maat.Micropub
         //    return Ok();
         //}
 
-        //private IActionResult Update(MicropubPublishModel model)
-        //{
-        //    if (string.IsNullOrEmpty(model.Url))
-        //    {
-        //        return BadRequest(new {
-        //            error = "invalid_request",
-        //            error_description = "URL was not provided"
-        //        });
-        //    }
+        private IActionResult Update(MicropubPublishModel model)
+        {
+            if (string.IsNullOrEmpty(model.Url))
+            {
+                return BadRequest(new
+                {
+                    error = "invalid_request",
+                    error_description = "URL was not provided"
+                });
+            }
 
-        //    Guid? entryId = _entries.Get(new Uri(model.Url)?.AbsolutePath)?.Id;
+            Guid? entryId = _entries.Get(model.Url)?.Id;
 
-        //    if (entryId == null || entryId == Guid.Empty)
-        //    {
-        //        return BadRequest(new
-        //        {
-        //            error = "invalid_request",
-        //            error_description = "URL could not be parsed."
-        //        });
-        //    }
+            if (entryId == null || entryId == Guid.Empty)
+            {
+                return BadRequest(new
+                {
+                    error = "invalid_request",
+                    error_description = "URL could not be parsed."
+                });
+            }
 
-        //    try
-        //    {
-        //        if (model.Add?.Count() > 0) {
-        //            return HandleAddUpdate(model.Add, entryId.Value);
-        //        }
-        //        else if (model.Replace?.Count() > 0) {
-        //            return HandleReplaceUpdate(model.Replace, entryId.Value);
-        //        }
-        //        else if (model.Delete?.Count() > 0) { 
-        //            return HandleRemoveUpdate(model.Delete, entryId.Value);
-        //        }
-        //    }
-        //    catch
-        //    {
-        //        throw;
-        //    }
+            try
+            {
+                if (model.Add?.Count() > 0)
+                {
+                    return HandleAddUpdate(model.Add, entryId.Value);
+                }
+                //else if (model.Replace?.Count() > 0)
+                //{
+                //    return HandleReplaceUpdate(model.Replace, entryId.Value);
+                //}
+                //else if (model.Delete?.Count() > 0)
+                //{
+                //    return HandleRemoveUpdate(model.Delete, entryId.Value);
+                //}
+            }
+            catch
+            {
+                throw;
+            }
 
-        //    return Ok();
-        //}
+            return Ok();
+        }
 
         //private IEnumerable<Entry.MediaLink> ParseMediaReference(IEnumerable<dynamic> items, string type)
         //{
@@ -343,42 +347,19 @@ namespace SV.Maat.Micropub
         //    return Created(UrlHelper.EntryUrl(entry, _userStore.Find(entry.OwnerId)), null);
         //}
 
-        //private ActionResult HandleAddUpdate(Dictionary<string, string[]> values, Guid id)
-        //{
-        //    List<ICommand> commands = new List<ICommand> { };
-        //    commands.Add(new AddContent
-        //    {
-        //        Name = ContentHelper.ParseContentArray(values.GetValueOrDefault("name")),
-        //        Content = ContentHelper.ParseContentArray(values.GetValueOrDefault("content")),
-        //        BookmarkOf = values.GetValueOrDefault("bookmark-of")?[0]?.ToString()
-        //    });
+        private ActionResult HandleAddUpdate(Dictionary<string, object[]> values, Guid id)
+        {
+            var cmd = new AddToPost() { Properties = values };
 
-        //    if (values.GetValueOrDefault("category") != null)
-        //    {
-        //        string[] categories = (values.GetValueOrDefault("category") as object[]).Select(x => x.ToString()).ToArray();
-        //        commands.AddRange(categories.Select(c => new AddToCategory { Category = c }));
-        //    }
+            if (!_commandHandler.Handle<Post>(id, cmd))
+                {
+                    return BadRequest($"Could not execute {cmd.GetType().Name}");
+                }
+            
 
-        //    var media = ParseMediaReference(values.GetValueOrDefault("photo"), "photo");
-        //    commands.AddRange(media.Select(m => new AttachMediaToEntry { Description = m.Description, Type = m.Type, Url = m.Url }));
-
-        //    if (values.GetValueOrDefault("mp-syndicate-to") != null)
-        //    {
-        //        string[] syndicateTo = (values.GetValueOrDefault("mp-syndicate-to") as object[]).Select(x => x.ToString()).ToArray();
-        //        commands.AddRange(syndicateTo.Select(c => new Syndicate { SyndicationAccount=c}));
-        //    }
-
-        //    foreach (ICommand command in commands)
-        //    {
-        //        if (!_commandHandler.Handle<Entry>(id, command))
-        //        {
-        //            return BadRequest($"Could not {command.GetType().Name}");
-        //        }
-        //    }
-
-        //    Entry entry = _entries.Get(id);
-        //    return Created(UrlHelper.EntryUrl(entry, _userStore.Find(entry.OwnerId)), null);
-        //}
+            Post entry = _entries.Get(id);
+            return Created(entry.Data.Properties["url"]?.FirstOrDefault().ToString(), null);
+        }
 
         private byte[] ReadStream(Stream data)
         {

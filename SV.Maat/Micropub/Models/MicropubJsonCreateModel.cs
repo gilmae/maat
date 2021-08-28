@@ -26,7 +26,7 @@ namespace SV.Maat.Micropub.Models
 
         [JsonPropertyName("add")]
         [BindProperty(Name = "add")]
-        public Dictionary<string, string[]> Add { get; set; }
+        public Dictionary<string, object[]> Add { get; set; }
 
         [JsonPropertyName("delete")]
         [BindProperty(Name = "delete")]
@@ -34,7 +34,7 @@ namespace SV.Maat.Micropub.Models
 
         [JsonPropertyName("replace")]
         [BindProperty(Name = "replace")]
-        public Dictionary<string, string[]> Replace { get; set; }
+        public Dictionary<string, object []> Replace { get; set; }
 
     }
 
