@@ -27,7 +27,7 @@ namespace Tests.Mocks
 
         public Entry Get(string slug)
         {
-            return _entries.FirstOrDefault(e => e.Url != null && e.Url.Any(s => !string.IsNullOrEmpty(s) && new Uri(s).AbsolutePath.ToString() == slug));
+            return _entries.FirstOrDefault(e => e.Url != null && e.Url.Any(s => !string.IsNullOrEmpty((string)s) && new Uri((string)s).AbsolutePath.ToString() == slug));
         }
 
         public IEnumerable<Entry> GetAfter(int numItems, DateTime after)
