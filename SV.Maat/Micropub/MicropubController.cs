@@ -216,10 +216,10 @@ namespace SV.Maat.Micropub
                 {
                     return HandleAddUpdate(model.Add, entryId.Value);
                 }
-                //else if (model.Replace?.Count() > 0)
-                //{
-                //    return HandleReplaceUpdate(model.Replace, entryId.Value);
-                //}
+                else if (model.Replace?.Count() > 0)
+                {
+                    return HandleReplaceUpdate(model.Replace, entryId.Value);
+                }
                 //else if (model.Delete?.Count() > 0)
                 //{
                 //    return HandleRemoveUpdate(model.Delete, entryId.Value);
@@ -299,53 +299,19 @@ namespace SV.Maat.Micropub
         //    return Created(UrlHelper.EntryUrl(entry, _userStore.Find(entry.OwnerId)), null);
         //}
 
-        //private ActionResult HandleReplaceUpdate(Dictionary<string, string[]> values, Guid id)
-        //{
-        //    List<ICommand> commands = new List<ICommand> { };
-        //    commands.Add(new SetContent
-        //    {
-        //        Name = ContentHelper.ParseContentArray(values.GetValueOrDefault("name")),
-        //        Content = ContentHelper.ParseContentArray(values.GetValueOrDefault("content")),
-        //        BookmarkOf = values.GetValueOrDefault("bookmark-of")?[0]?.ToString()
-        //    });
+        private ActionResult HandleReplaceUpdate(Dictionary<string, object[]> values, Guid id)
+        {
+            var cmd = new ReplaceInPost() { Properties = values };
 
-        //    if (values.GetValueOrDefault("category") != null)
-        //    {
-        //        commands.Add(new ClearCategoriesFromEntry());
-        //        string[] categories = (values.GetValueOrDefault("category") as object[]).Select(x => x.ToString()).ToArray();
-        //        commands.AddRange(categories.Select(c => new AddToCategory { Category = c }));
-        //    }
+            if (!_commandHandler.Handle<Post>(id, cmd))
+            {
+                return BadRequest($"Could not execute {cmd.GetType().Name}");
+            }
 
-        //    var media = ParseMediaReference(values.GetValueOrDefault("photo"), "photo");
-        //    if (media.Any())
-        //    {
-        //        commands.Add(new ClearMediaFromEntry());
-        //        commands.AddRange(media.Select(m => new AttachMediaToEntry { Description = m.Description, Type = m.Type, Url = m.Url }));
-        //    }
 
-        //    //if (post.Properties.GetValueOrDefault("mp-syndicate-to") != null)
-        //    //{
-        //    //    string[] syndicateTo = (post.Properties.GetValueOrDefault("mp-syndicate-to") as object[]).Select(x => x.ToString()).ToArray();
-        //    //    commands.AddRange(syndicateTo.Select(c => new Syndicate { SyndicationAccount = c }));
-        //    //}
-
-        //    //string postStatus = post.Properties.GetValueOrDefault("post-status")?[0]?.ToString();
-        //    //if (postStatus == null || postStatus != "draft")
-        //    //{
-        //    //    commands.Add(new PublishEntry());
-        //    //}
-
-        //    foreach (ICommand command in commands)
-        //    {
-        //        if (!_commandHandler.Handle<Entry>(id, command))
-        //        {
-        //            return BadRequest($"Could not {command.GetType().Name}");
-        //        }
-        //    }
-
-        //    Entry entry = _entries.Get(id);
-        //    return Created(UrlHelper.EntryUrl(entry, _userStore.Find(entry.OwnerId)), null);
-        //}
+            Post entry = _entries.Get(id);
+            return Created(entry.Data.Properties["url"]?.FirstOrDefault().ToString(), null);
+        }
 
         private ActionResult HandleAddUpdate(Dictionary<string, object[]> values, Guid id)
         {
