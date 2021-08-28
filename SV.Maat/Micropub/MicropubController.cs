@@ -216,14 +216,14 @@ namespace SV.Maat.Micropub
                 {
                     return HandleAddUpdate(model.Add, entryId.Value);
                 }
-                else if (model.Replace?.Count() > 0)
+                if (model.Replace?.Count() > 0)
                 {
                     return HandleReplaceUpdate(model.Replace, entryId.Value);
                 }
-                //else if (model.Delete?.Count() > 0)
-                //{
-                //    return HandleRemoveUpdate(model.Delete, entryId.Value);
-                //}
+                if (model.Delete?.Count() > 0)
+                {
+                    return HandleRemoveUpdate(model.Delete, entryId.Value);
+                }
             }
             catch
             {
@@ -264,40 +264,19 @@ namespace SV.Maat.Micropub
         //    return media;
         //}
 
-        //private ActionResult HandleRemoveUpdate(string[] values, Guid id)
-        //{
-        //    List<ICommand> commands = new List<ICommand> { };
-        //    if (values.Contains("name") || values.Contains("content") || values.Contains("bookmark-of"))
-        //    {
-        //        commands.Add(new SetContent
-        //        {
-        //            Name = values.Contains("name") ? new Content() : null,
-        //            Content = values.Contains("content") ? new Content() : null,
-        //            BookmarkOf = values.Contains("bookmark-of") ? "" : null
-        //        });
-        //    }
+        private ActionResult HandleRemoveUpdate(string[] values, Guid id)
+        {
+            var cmd = new DeleteFromPost() { Properties = values };
 
-        //    if (values.Contains("reply-to"))
-        //    {
-        //        commands.Add(new ReplyTo { ReplyToUrl = string.Empty });
-        //    }
+            if (!_commandHandler.Handle<Post>(id, cmd))
+            {
+                return BadRequest($"Could not execute {cmd.GetType().Name}");
+            }
 
-        //    if (values.Contains("category"))
-        //    {
-        //        commands.Add(new ClearCategoriesFromEntry());
-        //    }
 
-        //    foreach (ICommand command in commands)
-        //    {
-        //        if (!_commandHandler.Handle<Entry>(id, command))
-        //        {
-        //            return BadRequest($"Could not {command.GetType().Name}");
-        //        }
-        //    }
-
-        //    Entry entry = _entries.Get(id);
-        //    return Created(UrlHelper.EntryUrl(entry, _userStore.Find(entry.OwnerId)), null);
-        //}
+            Post entry = _entries.Get(id);
+            return Created(entry.Data.Properties["url"]?.FirstOrDefault().ToString(), null);
+        }
 
         private ActionResult HandleReplaceUpdate(Dictionary<string, object[]> values, Guid id)
         {
