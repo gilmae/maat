@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Events;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.Extensions.Logging;
 using StrangeVanilla.Blogging.Events;
 using SV.Maat.Commands;
@@ -65,14 +63,14 @@ namespace SV.Maat.Micropub
             {
                 return Update(post);
             }
-            //else if (post.Action == ActionType.delete.ToString())
-            //{
-            //    return Delete(post);
-            //}
-            //else if (post.Action == ActionType.undelete.ToString())
-            //{
-            //    return Undelete(post);
-            //}
+            else if (post.Action == ActionType.delete.ToString())
+            {
+                return Delete(post);
+            }
+            else if (post.Action == ActionType.undelete.ToString())
+            {
+                return Undelete(post);
+            }
 
             return BadRequest();
         }
@@ -134,59 +132,70 @@ namespace SV.Maat.Micropub
             return Created(location, null);
         }
 
-        //public IActionResult Delete(MicropubPublishModel model)
-        //{
-        //    if (string.IsNullOrEmpty(model.Url))
-        //    {
-        //        return BadRequest(new
-        //        {
-        //            error = "invalid_request",
-        //            error_description = "URL was not provided"
-        //        });
-        //    }
+        public IActionResult Delete(MicropubPublishModel model)
+        {
+            if (string.IsNullOrEmpty(model.Url))
+            {
+                return BadRequest(new
+                {
+                    error = "invalid_request",
+                    error_description = "URL was not provided"
+                });
+            }
 
-        //    Guid? entryId = _entries.Get(new Uri(model.Url)?.AbsolutePath)?.Id;
+            Guid? entryId = _entries.Get(model.Url)?.Id;
 
-        //    if (entryId == null || entryId == Guid.Empty)
-        //    {
-        //        return BadRequest(new
-        //        {
-        //            error = "invalid_request",
-        //            error_description = "URL could not be parsed."
-        //        });
-        //    }
+            if (entryId == null || entryId == Guid.Empty)
+            {
+                return BadRequest(new
+                {
+                    error = "invalid_request",
+                    error_description = "URL could not be parsed."
+                });
+            }
 
-        //    _commandHandler.Handle<Entry>(entryId.Value, new DeleteEntry());
+            _ = _commandHandler.Handle<Post>(entryId.Value, new ReplaceInPost
+            {
+                Properties = new Dictionary<string, object[]> {
+                    {"deleted", new object[]{
+                        DateTime.UtcNow
+                        }
+                    }
+                }
+            });
 
-        //    return Ok();
-        //}
+            return Ok();
+        }
 
-        //public IActionResult Undelete(MicropubPublishModel model)
-        //{
-        //    if (string.IsNullOrEmpty(model.Url))
-        //    {
-        //        return BadRequest(new
-        //        {
-        //            error = "invalid_request",
-        //            error_description = "URL was not provided"
-        //        });
-        //    }
+        public IActionResult Undelete(MicropubPublishModel model)
+        {
+            if (string.IsNullOrEmpty(model.Url))
+            {
+                return BadRequest(new
+                {
+                    error = "invalid_request",
+                    error_description = "URL was not provided"
+                });
+            }
 
-        //    Guid? entryId = _entries.Get(new Uri(model.Url)?.AbsolutePath)?.Id;
+            Guid? entryId = _entries.Get(model.Url)?.Id;
 
-        //    if (entryId==null || entryId == Guid.Empty)
-        //    {
-        //        return BadRequest(new
-        //        {
-        //            error = "invalid_request",
-        //            error_description = "URL could not be parsed."
-        //        });
-        //    }
+            if (entryId == null || entryId == Guid.Empty)
+            {
+                return BadRequest(new
+                {
+                    error = "invalid_request",
+                    error_description = "URL could not be parsed."
+                });
+            }
 
-        //    _commandHandler.Handle<Entry>(entryId.Value, new UndeleteEntry());
+            _ = _commandHandler.Handle<Post>(entryId.Value, new DeleteFromPost
+            {
+                Properties = new string[]{"deleted"}
+            });
 
-        //    return Ok();
-        //}
+            return Ok();
+        }
 
         private IActionResult Update(MicropubPublishModel model)
         {
@@ -233,37 +242,6 @@ namespace SV.Maat.Micropub
             return Ok();
         }
 
-        //private IEnumerable<Entry.MediaLink> ParseMediaReference(IEnumerable<dynamic> items, string type)
-        //{
-        //    IList<Entry.MediaLink> media = new List<Entry.MediaLink>();
-        //    if (items == null)
-        //    {
-        //        return media;
-        //    }
-
-        //    foreach (dynamic item in items)
-        //    {
-        //        if (item is string)
-        //        {
-        //            media.Add(new Entry.MediaLink { Url = item.ToString(), Type = type });
-        //        }
-        //        else
-        //        {
-        //            var m = new Entry.MediaLink { Url = item.value, Type = type };
-        //            try
-        //            {
-        //                m.Description = item.alt;
-        //            }
-        //            catch (RuntimeBinderException)
-        //            {
-
-        //            }
-        //            media.Add(m);
-        //        }
-        //    }
-        //    return media;
-        //}
-
         private ActionResult HandleRemoveUpdate(string[] values, Guid id)
         {
             var cmd = new DeleteFromPost() { Properties = values };
@@ -304,20 +282,6 @@ namespace SV.Maat.Micropub
 
             Post entry = _entries.Get(id);
             return Created(entry.Data.Properties["url"]?.FirstOrDefault().ToString(), null);
-        }
-
-        private byte[] ReadStream(Stream data)
-        {
-            var bytes = new byte[data.Length];
-
-            var index = 0;
-            while (index < data.Length)
-            {
-                data.Read(bytes, index, 1000);
-                index += 1000;
-            }
-
-            return bytes;
         }
     }
 }
