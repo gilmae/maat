@@ -113,7 +113,8 @@ namespace SV.Maat.Mastodon
             {
                 var media_request = new RestRequest("api/v2/media");
                 byte[] data = Downloader.Download(m.Url).Result;
-                media_request.AddFileBytes("file", data, Guid.NewGuid().ToString(), m.Type);
+                var filename = $"{Guid.NewGuid().ToString()}.{MimeTypes.MimeTypeMap.GetExtension(m.Type)}";
+                media_request.AddFileBytes("file", data, filename, m.Type);
                 media_request.AddParameter("description", m.Description);
                 var response = client.Post<Attachment>(media_request);
                 return response?.Data?.Id;
@@ -141,7 +142,6 @@ namespace SV.Maat.Mastodon
                     website = url,
                     scopes = "read write follow push"
                 });
-            string data = $"client_name={name}&redirect_uris={returnurls}&scopes=read+write+follow+push&website={url}";
             var response = client.Post<AppRegistration>(request);
 
             return response.Data;
