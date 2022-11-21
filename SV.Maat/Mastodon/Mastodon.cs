@@ -116,7 +116,7 @@ namespace SV.Maat.Mastodon
                 {
                     var media_request = new RestRequest("api/v2/media");
                     byte[] data = Downloader.Download(m.Url).Result;
-                    var filename = $"{Guid.NewGuid().ToString()}.{MimeTypes.MimeTypeMap.GetExtension(m.Type)}";
+                    var filename = $"{Guid.NewGuid().ToString()}";
                     media_request.AddFileBytes("file", data, filename, m.Type);
                     media_request.AddParameter("description", m.Description);
                     var media_response = client.Post<Attachment>(media_request);
