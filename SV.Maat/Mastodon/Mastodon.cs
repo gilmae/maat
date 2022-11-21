@@ -109,16 +109,52 @@ namespace SV.Maat.Mastodon
             var client = new RestClient(App.instance);
             client.Authenticator = new OAuth2AuthorizationRequestHeaderAuthenticator(credentials.Secret, "Bearer");
 
-            var media_ids = entry.AssociatedMedia?.Select(m =>
+            IList<long> media_ids = new List<long>();
+            if (entry.AssociatedMedia != null)
             {
-                var media_request = new RestRequest("api/v2/media");
-                byte[] data = Downloader.Download(m.Url).Result;
-                var filename = $"{Guid.NewGuid().ToString()}.{MimeTypes.MimeTypeMap.GetExtension(m.Type)}";
-                media_request.AddFileBytes("file", data, filename, m.Type);
-                media_request.AddParameter("description", m.Description);
-                var response = client.Post<Attachment>(media_request);
-                return response?.Data?.Id;
-            }).ToList();
+                foreach (var m in entry.AssociatedMedia)
+                {
+                    var media_request = new RestRequest("api/v2/media");
+                    byte[] data = Downloader.Download(m.Url).Result;
+                    var filename = $"{Guid.NewGuid().ToString()}.{MimeTypes.MimeTypeMap.GetExtension(m.Type)}";
+                    media_request.AddFileBytes("file", data, filename, m.Type);
+                    media_request.AddParameter("description", m.Description);
+                    var media_response = client.Post<Attachment>(media_request);
+
+                    if (media_response==null || media_response.Data == null)
+                    {
+                        continue;
+                    }
+                    long id = media_response.Data.Id;
+
+                    if (media_response.StatusCode == HttpStatusCode.OK)
+                    {
+                        media_ids.Add(id);
+                    }
+                    // If we get a 202 then Mastodon is still trying to process the file
+                    // So we'll go into a loop and check for when it is accepted.
+                    // Sleep for a few seconds to give Mastodon some time and then GET the file
+                    // If we get a 200, then processing is done and we can proceed
+                    // Otherwise we increment the try_count and go again
+                    // The sleep is ever increasing
+                    // Once we get to 5 attempts, just give it up, it's not going to work
+                    else if (media_response.StatusCode == HttpStatusCode.Accepted)
+                    {
+                        var try_count = 1;
+                        var status_check_request = new RestRequest($"api/v2/media/{id}");
+                        while (try_count < 6) {
+                            System.Threading.Thread.Sleep(try_count * 10000);
+                            var status_check_response = client.Get(status_check_request);
+                            if (status_check_response.StatusCode == HttpStatusCode.OK)
+                            {
+                                media_ids.Add(id);
+                                break;
+                            }
+                            try_count += 1;
+                        }
+                    }
+                }
+            }
 
             var request = new RestRequest("api/v1/statuses")
                 .AddJsonBody(new
