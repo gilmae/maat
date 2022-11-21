@@ -141,7 +141,7 @@ namespace SV.Maat.Mastodon
                     else if (media_response.StatusCode == HttpStatusCode.Accepted)
                     {
                         var try_count = 1;
-                        var status_check_request = new RestRequest($"api/v2/media/{id}");
+                        var status_check_request = new RestRequest($"api/v1/media/{id}");
                         while (try_count < 6) {
                             System.Threading.Thread.Sleep(try_count * 10000);
                             var status_check_response = client.Get(status_check_request);
